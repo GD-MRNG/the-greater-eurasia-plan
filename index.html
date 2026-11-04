@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Greater Eurasia Plan</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<!-- Static page shell. Everything with an id is filled in by js/views.js and js/map.js. -->
+<div class="nav"><div class="in">
+  <div class="brand">The Greater <span>Eurasia</span> Plan</div>
+  <nav class="tabs" id="tabs"></nav>
+</div></div>
+<div class="wrap">
+<header id="hero"></header>
+<div class="stats" id="stats"></div>
+<div class="card mapcard">
+  <h2 id="mapTitle">The map at a glance</h2>
+  <p class="hint" id="mapHint"></p>
+  <div class="views" id="views"></div>
+  <div class="mapbox" id="mapbox">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Map. Drag to pan, scroll to zoom, arrow keys to move."></div>
+    <div class="mapctl">
+      <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+      <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <button type="button" id="zoomReset" class="txt" title="Back to the whole route">Reset</button>
+      <button type="button" id="mapMove" class="txt touch-only" aria-pressed="false">Move map</button>
+    </div>
+  </div>
+  <p class="maptip" id="mapTip"></p>
+  <div class="legend" id="legend"></div>
+</div>
+<div class="arcs" id="arcs"></div>
+<div class="card" style="margin-bottom:8px">
+  <h2>Stages</h2>
+  <p class="hint">Every stage, arc by arc, trunk first then its branches. Filter by arc or status, or search any place. Tap a dot on the map to jump to its stage.</p>
+  <div class="controls" id="filters"></div>
+  <div class="controls"><input type="search" id="q" placeholder="Search a country, city or sight"></div>
+</div>
+<div id="stages"></div>
+
+<div class="shared">
+<h2>Shared across every page</h2>
+<div class="grid2">
+  <div class="card" id="ways"></div>
+  <div class="card">
+    <h2>How it gets done</h2>
+    <ol>
+      <li><b>Go country by country.</b> Each country is its own win, even if an arc takes several trips.</li>
+      <li><b>Follow the trunk, take the branches you want.</b> The trunk of each arc is the spine. Branches are optional side trips that rejoin or end on their own.</li>
+      <li><b>Group countries into corridors.</b> A run of countries in one trip, sharing one visa, SIM, payment and insurance setup.</li>
+      <li><b>Use hubs as bases.</b> Istanbul, Dubai, Tashkent and Bangkok, easy to fly home from and restart from.</li>
+      <li><b>Log every trip.</b> Places, dates and a few photos in Notion and Google Maps, so the map keeps growing.</li>
+    </ol>
+  </div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h2>Before every leg</h2>
+    <ol>
+      <li>Check the current travel advisory.</li>
+      <li>Confirm travel insurance covers it.</li>
+      <li>Confirm a payment method that works there.</li>
+      <li>Know the nearest bail-out hub, ideally within a day's travel.</li>
+    </ol>
+    <div class="warn">As of 3 Nov 2026, the Iran war is unresolved and the Strait of Hormuz is closed. Russia, Iran and the Gulf stay in the plan but need a fresh check right before booking. Other stages marked <b>Check first</b> (for example Sudan, the Sahel, Venezuela, Haiti) need the same.</div>
+  </div>
+  <div class="card">
+    <h2>A lens to carry along</h2>
+    <p class="hint">The world is shifting from one dominant power towards several. Not a syllabus, just things to notice.</p>
+    <ul>
+      <li>Who built the railways, ports and roads.</li>
+      <li>Which cards, apps and currencies actually work.</li>
+      <li>Which languages get you by.</li>
+      <li>Whose brands fill the shops and streets.</li>
+    </ul>
+    <div class="links" style="margin-top:12px">
+      <a href="https://www.swp-berlin.org/publications/products/research_papers/2026RP08_Multipolarities.pdf" target="_blank" rel="noopener">Multipolarities: The World Order Visions of Others <span>SWP Berlin</span></a>
+      <a href="https://www.cfr.org/articles/middle-powers-take-center-stage" target="_blank" rel="noopener">Middle Powers Take Center Stage <span>CFR</span></a>
+      <a href="https://www.stimson.org/2026/they-dont-make-great-powers-like-they-used-to/" target="_blank" rel="noopener">They Don't Make Great Powers Like They Used To <span>Stimson Center</span></a>
+    </div>
+  </div>
+</div>
+</div>
+<footer id="updated"></footer>
+</div>
+
+<!-- Script order matters: this list is also the build order (see tools/build.js).
+     shared -> data -> model -> map -> panzoom -> views -> main -->
+<script src="src/js/shared.js"></script>
+<script src="src/data/meta.js"></script>
+<script src="src/data/tabs.js"></script>
+<script src="src/data/arcs.js"></script>
+<script src="src/data/branches.js"></script>
+<script src="src/data/entries.js"></script>
+<script src="src/data/stages/upper.js"></script>
+<script src="src/data/stages/silk.js"></script>
+<script src="src/data/stages/lower.js"></script>
+<script src="src/data/stages/europe.js"></script>
+<script src="src/data/stages/africa.js"></script>
+<script src="src/data/stages/americas.js"></script>
+<script src="src/data/land.js"></script>
+<script src="src/js/model.js"></script>
+<script src="src/js/map.js"></script>
+<script src="src/js/panzoom.js"></script>
+<script src="src/js/views.js"></script>
+<script src="src/js/main.js"></script>
+</body>
+</html>

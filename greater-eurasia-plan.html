@@ -1,0 +1,2121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Greater Eurasia Plan</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%0A%20%20%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2214%22%20fill%3D%22%230b0f17%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M8%2044%20Q22%2016%2056%2020%22%20fill%3D%22none%22%20stroke%3D%22%234f9dff%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M8%2044%20Q30%2036%2056%2038%22%20fill%3D%22none%22%20stroke%3D%22%23f2b134%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Cpath%20d%3D%22M8%2044%20Q26%2056%2056%2054%22%20fill%3D%22none%22%20stroke%3D%22%232fd0b5%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%2F%3E%0A%20%20%3Ccircle%20cx%3D%228%22%20cy%3D%2244%22%20r%3D%225%22%20fill%3D%22%23e8edf6%22%2F%3E%0A%3C%2Fsvg%3E">
+<style>
+/*
+ * styles.css: all styling for the dashboard (one dark theme, no frameworks).
+ *
+ * Colours come from the variables in :root. Arc colours and the hero gradient (--g1..--g3)
+ * are set at runtime from the data (see js/views.js), so there are no per-arc rules here.
+ * Status pills: .p-next .p-planned .p-check .p-done (the status ids in data/stages).
+ */
+
+/* ===== Theme variables and base elements ===== */
+:root{
+  --bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#243049;--text:#e8edf6;--muted:#93a0b8;--dim:#6b7790;
+  --next:#4f9dff;--done:#3ccf7a;--check:#ff9f43;--planned:#7d8aa3;--sea-map:#0d1422;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1200px 600px at 70% -10%,#16223a 0%,var(--bg) 60%);background-attachment:fixed;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;min-height:100vh}
+a{color:#7db4ff}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 64px}
+/* ===== Top bar: brand and tab pills ===== */
+.nav{position:sticky;top:0;z-index:20;background:rgba(11,15,23,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .in{max-width:1240px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px}
+.brand{font-weight:700;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+.brand span{background:linear-gradient(90deg,#4f9dff,#f2b134,#2fd0b5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:7px 16px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.tab small{font-weight:500;color:var(--dim);margin-left:6px}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tab.on small{color:#4b5568}
+/* ===== Hero: eyebrow, title, chips, stat tiles ===== */
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin:28px 0 24px}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 10px}
+h1 span{background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:680px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+.chip b{color:var(--text);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.stat .n{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.stat .l{font-size:13px;color:var(--muted)}
+/* ===== Generic card (map card, filters card, shared cards) ===== */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.card h2{font-size:18px;margin-bottom:4px}
+.card .hint{font-size:13px;color:var(--muted);margin-bottom:14px}
+/* ===== Map card: preset buttons, pan/zoom box and controls, legend ===== */
+.mapcard{margin-bottom:20px}
+.views{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mapbox{position:relative;border-radius:14px;overflow:hidden;background:var(--sea-map);border:1px solid var(--line)}
+.mapbox.active{border-color:#4f9dff;box-shadow:0 0 0 2px rgba(79,157,255,.45)}
+.mapwrap{overflow:hidden;cursor:grab;outline:none;touch-action:pan-y pan-x;user-select:none;-webkit-user-select:none}
+.mapwrap:focus-visible{box-shadow:inset 0 0 0 2px #4f9dff}
+.mapbox.dragging .mapwrap{cursor:grabbing}
+.mapbox.active .mapwrap{touch-action:none}
+.mapctl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.mapctl button{min-width:36px;height:36px;border:1px solid var(--line);background:rgba(18,24,38,.92);color:var(--text);border-radius:10px;font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
+.mapctl button.txt{font-size:12.5px;font-weight:600;padding:0 10px}
+.mapctl button:hover:not(:disabled){border-color:#4f9dff}
+.mapctl button:disabled{opacity:.4;cursor:default}
+.mapbox:not(.touch) .touch-only{display:none}
+.maptip{font-size:12.5px;color:var(--dim);margin:8px 2px 0}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:inherit}
+.dot{cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--muted);margin-top:12px;align-items:center}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:3px;margin-right:6px;vertical-align:3px}
+.legend i.dash{background:none!important;border-top:3px dashed var(--c);height:0}
+.legend .k{display:inline-block;width:9px;height:9px;border-radius:50%;background:#8da0c0;margin-right:5px;vertical-align:-1px}
+.legend .k.s{width:6px;height:6px;margin-right:6px}
+.legend .k.h{background:none;border:2px solid #f2b134;width:12px;height:12px;margin-right:5px;vertical-align:-3px}
+.legend .k.e{border-radius:2px;background:#fff;transform:rotate(45deg);width:8px;height:8px}
+/* ===== Arc cards and their branch chips (--c = arc colour, set inline) ===== */
+.arcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-bottom:20px}
+.arc{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px 20px;transition:.15s;position:relative;overflow:hidden}
+.arc:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.arc:hover,.arc.on{border-color:var(--c);background:var(--panel2)}
+.arc h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.arc h3 em{font-style:normal;font-size:12px;color:var(--c);font-weight:700;letter-spacing:.08em}
+.arc .route{font-size:13px;color:var(--muted);margin:6px 0 10px}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar div{height:100%;background:var(--c)}
+.arc .meta{font-size:12px;color:var(--dim);margin:6px 0 8px}
+.brs{display:flex;flex-wrap:wrap;gap:5px}
+.br{font-size:11.5px;border:1px dashed var(--c);color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer;background:transparent}
+.br:hover,.br.on{background:var(--c);color:#0b0f17;border-style:solid}
+.br.tr{border-style:solid}
+/* ===== Filters: buttons and search ===== */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{color:var(--text)}
+.btn.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.sep{width:10px}
+input[type=search]{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--text);padding:8px 14px;font-size:14px;outline:none;font-family:inherit}
+input[type=search]:focus{border-color:#4f9dff}
+/* ===== Stage list: arc group > trunk/branch heading > stage cards ===== */
+.group{margin:24px 0 8px}
+.ghead{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:4px}
+.ghead h3{font-size:19px;color:var(--c)}
+.ghead span{font-size:13px;color:var(--muted)}
+.sub2{margin:14px 0 8px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sub2:before{content:"";width:22px;border-top:3px var(--bs,solid) var(--c)}
+.sub2 small{font-weight:400;color:var(--dim);letter-spacing:0}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;border-top:3px solid var(--c)}
+.stage.flash{box-shadow:0 0 0 2px var(--c),0 0 24px var(--c)}
+.stage .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.code{font-size:12px;font-weight:700;color:var(--c);letter-spacing:.06em}
+.pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.p-next{color:var(--next)}.p-done{color:var(--done)}.p-check{color:var(--check)}.p-planned{color:var(--planned)}
+.stage h4{font-size:16px;margin-bottom:2px}
+.bd{font-size:11.5px;color:var(--c);margin-bottom:6px}
+.bd.trunk{color:var(--muted)}
+.stage .note{font-size:13px;color:var(--muted);margin-bottom:8px}
+.stops{font-size:12.5px;color:var(--dim);line-height:1.65}
+.stops b{color:var(--text);font-weight:600}
+.stops i{font-style:normal;color:#b9a56a}
+.stage .on2{font-size:12px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.hubtag{display:inline-block;font-size:10.5px;border:1px solid #f2b134;color:#f2b134;border-radius:999px;padding:0 7px;margin-left:6px;vertical-align:1px}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+/* ===== Shared cards: how it gets done, before every leg, lens, ways between pages ===== */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px}
+ol,ul{padding-left:20px;color:var(--muted);font-size:14px}
+li{margin:6px 0}
+li b{color:var(--text)}
+.warn{margin-top:14px;border:1px solid var(--check);background:rgba(255,159,67,.08);border-radius:12px;padding:12px 14px;font-size:13px;color:#ffd2a6}
+.tandem{display:grid;gap:10px}
+.tandem div{background:var(--panel2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--muted)}
+.tandem b{color:var(--text);display:block;margin-bottom:2px}
+.tandem a{color:inherit;text-decoration:none;display:block}
+.tandem a:hover b{color:#7db4ff}
+.links a{display:block;font-size:14px;margin:6px 0;text-decoration:none}
+.links span{color:var(--dim);font-size:12px}
+.shared{margin-top:36px;padding-top:12px;border-top:1px solid var(--line)}
+.shared>h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:14px 0 14px;font-weight:600}
+/* ===== Footer ===== */
+footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
+/* ===== Phones ===== */
+@media (max-width:640px){
+  .wrap{padding:0 14px 48px}.nav .in{padding:8px 12px;gap:10px}.brand{display:none}
+  .tab{padding:7px 13px}.stages{grid-template-columns:1fr}.card{padding:16px;border-radius:16px}
+  .grid2{grid-template-columns:1fr}
+  .mapctl{flex-direction:row;top:auto;bottom:8px;right:8px;gap:5px}
+  .mapctl button{min-width:34px;height:34px}
+}
+</style>
+</head>
+<body>
+<!-- Static page shell. Everything with an id is filled in by js/views.js and js/map.js. -->
+<div class="nav"><div class="in">
+  <div class="brand">The Greater <span>Eurasia</span> Plan</div>
+  <nav class="tabs" id="tabs"></nav>
+</div></div>
+<div class="wrap">
+<header id="hero"></header>
+<div class="stats" id="stats"></div>
+<div class="card mapcard">
+  <h2 id="mapTitle">The map at a glance</h2>
+  <p class="hint" id="mapHint"></p>
+  <div class="views" id="views"></div>
+  <div class="mapbox" id="mapbox">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Map. Drag to pan, scroll to zoom, arrow keys to move."></div>
+    <div class="mapctl">
+      <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+      <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+      <button type="button" id="zoomReset" class="txt" title="Back to the whole route">Reset</button>
+      <button type="button" id="mapMove" class="txt touch-only" aria-pressed="false">Move map</button>
+    </div>
+  </div>
+  <p class="maptip" id="mapTip"></p>
+  <div class="legend" id="legend"></div>
+</div>
+<div class="arcs" id="arcs"></div>
+<div class="card" style="margin-bottom:8px">
+  <h2>Stages</h2>
+  <p class="hint">Every stage, arc by arc, trunk first then its branches. Filter by arc or status, or search any place. Tap a dot on the map to jump to its stage.</p>
+  <div class="controls" id="filters"></div>
+  <div class="controls"><input type="search" id="q" placeholder="Search a country, city or sight"></div>
+</div>
+<div id="stages"></div>
+
+<div class="shared">
+<h2>Shared across every page</h2>
+<div class="grid2">
+  <div class="card" id="ways"></div>
+  <div class="card">
+    <h2>How it gets done</h2>
+    <ol>
+      <li><b>Go country by country.</b> Each country is its own win, even if an arc takes several trips.</li>
+      <li><b>Follow the trunk, take the branches you want.</b> The trunk of each arc is the spine. Branches are optional side trips that rejoin or end on their own.</li>
+      <li><b>Group countries into corridors.</b> A run of countries in one trip, sharing one visa, SIM, payment and insurance setup.</li>
+      <li><b>Use hubs as bases.</b> Istanbul, Dubai, Tashkent and Bangkok, easy to fly home from and restart from.</li>
+      <li><b>Log every trip.</b> Places, dates and a few photos in Notion and Google Maps, so the map keeps growing.</li>
+    </ol>
+  </div>
+</div>
+<div class="grid2">
+  <div class="card">
+    <h2>Before every leg</h2>
+    <ol>
+      <li>Check the current travel advisory.</li>
+      <li>Confirm travel insurance covers it.</li>
+      <li>Confirm a payment method that works there.</li>
+      <li>Know the nearest bail-out hub, ideally within a day's travel.</li>
+    </ol>
+    <div class="warn">As of 3 Nov 2026, the Iran war is unresolved and the Strait of Hormuz is closed. Russia, Iran and the Gulf stay in the plan but need a fresh check right before booking. Other stages marked <b>Check first</b> (for example Sudan, the Sahel, Venezuela, Haiti) need the same.</div>
+  </div>
+  <div class="card">
+    <h2>A lens to carry along</h2>
+    <p class="hint">The world is shifting from one dominant power towards several. Not a syllabus, just things to notice.</p>
+    <ul>
+      <li>Who built the railways, ports and roads.</li>
+      <li>Which cards, apps and currencies actually work.</li>
+      <li>Which languages get you by.</li>
+      <li>Whose brands fill the shops and streets.</li>
+    </ul>
+    <div class="links" style="margin-top:12px">
+      <a href="https://www.swp-berlin.org/publications/products/research_papers/2026RP08_Multipolarities.pdf" target="_blank" rel="noopener">Multipolarities: The World Order Visions of Others <span>SWP Berlin</span></a>
+      <a href="https://www.cfr.org/articles/middle-powers-take-center-stage" target="_blank" rel="noopener">Middle Powers Take Center Stage <span>CFR</span></a>
+      <a href="https://www.stimson.org/2026/they-dont-make-great-powers-like-they-used-to/" target="_blank" rel="noopener">They Don't Make Great Powers Like They Used To <span>Stimson Center</span></a>
+    </div>
+  </div>
+</div>
+</div>
+<footer id="updated"></footer>
+</div>
+
+<!-- Script order matters: this list is also the build order (see tools/build.js).
+     shared -> data -> model -> map -> panzoom -> views -> main -->
+<script>
+/* ---- src/js/shared.js ---- */
+/**
+ * shared.js: the GEP namespace, the data schema, and tiny helpers.
+ *
+ * Loaded first. Everything else hangs off the single global `GEP`:
+ *   GEP.data     all editable content (filled by the files in src/data/)
+ *   GEP.model    parsed stops, paths and lookups   (js/model.js)
+ *   GEP.map      the SVG map renderer              (js/map.js)
+ *   GEP.views    HTML renderers for the page       (js/views.js)
+ *
+ * Exposes: GEP, GEP.stage(), GEP.STATUS_LABEL, GEP.$(), GEP.esc(), GEP.svgEl().
+ * Depends on: nothing.
+ *
+ * ---------------------------------------------------------------------------
+ * DATA SCHEMA (the one place it is documented; README.md mirrors it)
+ * ---------------------------------------------------------------------------
+ *
+ * TAB      GEP.data.tabs[tabId]            tabId: "eurasia" | "africa" | "americas"
+ *   label      text in the top nav
+ *   blurb      one line shown when other pages link here
+ *   g          [c1, c2, c3] gradient colours for the page title
+ *   eyebrow, title (HTML allowed), sub, chips [[plain, bold], ...]   hero text
+ *   mapHint    one-line help above the map
+ *   views      [{n: "Button text", b: [lonMin, lonMax, latMin, latMax]}]   preset zoom views; the first is the default and also fixes the map box shape and zoom limits
+ *   regions    [[TEXT, lon, lat], ...]   faint names painted on the map
+ *
+ * ARC      GEP.data.arcs[arcId]
+ *   tab, code (short, used for stage codes like "S3"), name, color, route (one-paragraph summary)
+ *   from       optional: name of a stop the arc's trunk starts from (draws a link into the first stage)
+ *
+ * BRANCH   GEP.data.branches[branchId]
+ *   arc        the arc it belongs to
+ *   name       shown on chips and stage cards
+ *   from       name of the stop where it leaves (must exist in some stage)
+ *   to         optional: name of the stop where it rejoins
+ *
+ * ENTRY    GEP.data.entries[]              ways between pages, drawn as white diamonds
+ *   at         [lon, lat]
+ *   eurasia | africa | americas   label text; the diamond shows on every tab that has a label
+ *
+ * STAGE    one call per stage, in travel order, in src/data/stages/*.js:
+ *   s(arc, branch, name, note, stops, status, onward)
+ *     arc      arc id
+ *     branch   branch id, or "" for the arc's trunk
+ *     name     card heading
+ *     note     one sentence under the heading
+ *     stops    "Name lon lat flags; Name lon lat flags; ..." in travel order
+ *     status   "" (= planned) | "next" | "done" | "check"      ("check" = needs a fresh safety check)
+ *     onward   optional text for the "Onward:" line
+ *
+ *   Stop flags (any combination, after the latitude):
+ *     *  key stop: big dot, always labelled when there is room
+ *     +  labelled when there is room
+ *     ~  side trip: hollow dot, off the line (not part of the drawn route)
+ *     ^  modern corridor hub: gold ring
+ *   A stop with no flag is a small dot, labelled only when zoomed in.
+ *
+ *   Example:  "Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Karakul 73.55 39.0 ~"
+ *
+ *   Rules: stop names are looked up across all tabs and the first one wins, so two different places
+ *   must not share a name (use "La Paz (Baja)"). The same name in two stages draws one dot;
+ *   `from` / `to` of arcs and branches refer to stop names; every branch needs at least one stage.
+ *   Run `node tools/check-data.js` to verify all of this.
+ */
+
+/** The single global namespace. */
+const GEP = {
+  /** All editable content. Filled by the files in src/data/. */
+  data: {stages: []},
+
+  /** Status id -> label shown on the pill and filter buttons. */
+  STATUS_LABEL: {next: "Next up", done: "Done", check: "Check first", planned: "Planned"},
+
+  /**
+   * Register one stage (see the schema above). Used by the files in src/data/stages/.
+   * @param {string} arc      arc id
+   * @param {string} branch   branch id, or "" for the trunk
+   * @param {string} name     card heading
+   * @param {string} note     one-sentence description
+   * @param {string} stops    stop DSL string
+   * @param {string} [status] "" | "next" | "done" | "check"
+   * @param {string} [onward] text for the "Onward" line
+   */
+  stage(arc, branch, name, note, stops, status, onward) {
+    GEP.data.stages.push({
+      arc, branch: branch || "", name, note: note || "", stops,
+      status: status || "planned", onward: onward || ""
+    });
+  },
+
+  /** Shorthand for document.getElementById. */
+  $: id => document.getElementById(id),
+
+  /** Escape text for safe use inside HTML. */
+  esc: text => String(text).replace(/[&<>"]/g, ch => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[ch])),
+
+  /**
+   * Create an SVG element, set attributes and optionally append it to a parent.
+   * @param {string} name
+   * @param {Object} [attrs]
+   * @param {Element} [parent]
+   * @returns {SVGElement}
+   */
+  svgEl(name, attrs, parent) {
+    const node = document.createElementNS("http://www.w3.org/2000/svg", name);
+    for (const key in attrs || {}) node.setAttribute(key, attrs[key]);
+    if (parent) parent.appendChild(node);
+    return node;
+  }
+};
+</script>
+<script>
+/* ---- src/data/meta.js ---- */
+/**
+ * Site-wide metadata. Change `updated` whenever the content changes.
+ * Depends on: shared.js.  Exposes: GEP.data.updated.
+ */
+GEP.data.updated = "4 Nov 2026";
+</script>
+<script>
+/* ---- src/data/tabs.js ---- */
+/**
+ * Page (tab) definitions: hero text, zoom views and faint region names.
+ * `blurb` is the one-liner shown when other pages link here. Edit this file to change a tab's wording or add a zoom view.
+ * Depends on: shared.js.  Exposes: GEP.data.tabs.
+ */
+GEP.data.tabs = {
+  eurasia:{label:"Eurasia", g:["#4f9dff","#f2b134","#2fd0b5"], blurb:"Four arcs connect East Asia, Central Asia, South Asia and Europe.",
+    eyebrow:"Route overview",
+    title:'The Greater <span>Eurasia</span> Plan',
+    sub:"Four arcs connect East Asia, Central Asia, South Asia and Europe. The Modern Silk Road follows today's rail, road and sea corridors alongside historic highlights.",
+    chips:[["4","arcs"],["Start:","Japan and Korea"]],
+    mapHint:"A rough sketch, not to scale. Solid lines are each arc's trunk, dashed lines are branches. Big dots are labelled, small dots are other stops (hover for the name), hollow dots are side trips, gold rings are modern corridor hubs. Use the view buttons to zoom.",
+    views:[
+      {n:"Whole route", b:[-14,146,-9,72]},
+      {n:"Europe and Türkiye", b:[-13,40,34,62]},
+      {n:"Nordics and Arctic", b:[4,46,54,72]},
+      {n:"Russia", b:[26,146,40,70]},
+      {n:"Caucasus and Middle East", b:[24,64,24,46]},
+      {n:"Central Asia and West China", b:[48,112,26,54]},
+      {n:"East Asia", b:[98,146,16,52]},
+      {n:"South and SE Asia", b:[66,125,-9,32]}
+    ],
+    regions:[["CHINA",104,35.5],["RUSSIA",78,63],["CENTRAL ASIA",65,45.5],["MIDDLE EAST",44,26.5],["INDIA",78,22],["SE ASIA",103,15],["EUROPE",14,49.5],["MONGOLIA",103,46.8],["JAPAN",136,38.8]]
+  },
+  africa:{label:"Africa", g:["#ff8a5b","#8bd450","#5ad1ff"], blurb:"Four arcs across North, East, Southern and West Africa.",
+    eyebrow:"Route overview",
+    title:'The <span>Africa</span> arcs',
+    sub:"Four arcs cover North Africa, the Nile and East Africa, Southern Africa and the West African Atlantic coast.",
+    chips:[["4","arcs"],["Start:","Spain, Italy, Jordan or Gulf"]],
+    mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds are ways in from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
+    views:[
+      {n:"Whole of Africa", b:[-28,58,-36,42]},
+      {n:"North Africa and Egypt", b:[-12,38,14,40]},
+      {n:"West Africa", b:[-28,16,-6,32]},
+      {n:"East Africa", b:[28,52,-18,16]},
+      {n:"Southern Africa", b:[8,42,-36,-8]}
+    ],
+    regions:[["SAHARA",10,24],["WEST AFRICA",-3,10.5],["EAST AFRICA",40,2],["SOUTHERN AFRICA",24,-24],["CONGO BASIN",21,-2]]
+  },
+  americas:{label:"Americas", g:["#4f9dff","#ff7a59","#3ccf9a"], blurb:"Three arcs across North, Central and South America.",
+    eyebrow:"Route overview",
+    title:'The <span>Americas</span> arcs',
+    sub:"Three arcs cover North, Central and South America, with entry points across the Pacific or Atlantic.",
+    chips:[["3","arcs"],["Start:","Pacific or Atlantic"]],
+    mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds mark where you arrive from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
+    views:[
+      {n:"Whole of the Americas", b:[-170,-30,-56,72]},
+      {n:"North America", b:[-168,-50,14,72]},
+      {n:"Mexico, Central America, Caribbean", b:[-118,-58,4,33]},
+      {n:"South America", b:[-84,-32,-56,14]}
+    ],
+    regions:[["NORTH AMERICA",-100,50],["MEXICO",-102,24],["SOUTH AMERICA",-60,-12],["PACIFIC",-150,38],["ATLANTIC",-42,25]]
+  }
+};
+</script>
+<script>
+/* ---- src/data/arcs.js ---- */
+/**
+ * Arcs: the long routes. Each arc belongs to one tab and has a trunk (its spine) plus branches.
+ * Depends on: shared.js.  Exposes: GEP.data.arcs.
+ */
+GEP.data.arcs = {
+  upper:{tab:"eurasia",code:"U",name:"Upper arc",color:"#4f9dff",route:"Japan, Korea, north China, Mongolia, the Trans-Siberian across Russia, on to Europe. Branches: Hokkaido, Jeju, the Gobi, Baikal, the Far East, Murmansk and more."},
+  silk: {tab:"eurasia",code:"S",name:"Modern Silk Road arc",color:"#f2b134",route:"Today's corridors: Xi'an and Xinjiang, Khorgos into Kazakhstan, Central Asia's hubs, the Middle Corridor across the Caspian, Baku to Tbilisi to Kars, Marmaray into Istanbul. Branches: Karakoram Highway, Pamir, Turkmenistan, Armenia, Black Sea and more."},
+  lower:{tab:"eurasia",code:"L",name:"Lower arc",color:"#2fd0b5",route:"Singapore up through SE Asia and the Laos–China railway, then India, Pakistan, Iran and the Gulf. Branches: Borneo, Indonesia, Philippines, Nepal, Sri Lanka, Rajasthan, Jordan and more."},
+  europe:{tab:"eurasia",code:"E",name:"Europe: where the arcs meet",color:"#b48cff",from:"St Petersburg",route:"The upper arc comes in through Finland and the Baltics, the Silk Road arc through Istanbul and the Balkans. A trunk runs west to the Atlantic at Lisbon, with branches to the Nordics, Britain and Ireland, Italy, Greece and the Balkans."},
+  an:{tab:"africa",code:"AN",name:"North Africa arc",color:"#ff8a5b",route:"Spain across to Morocco, then Algeria, Tunisia and Egypt. Branches: Atlas and Sahara, the Western Desert oases."},
+  ae:{tab:"africa",code:"AE",name:"Nile and East Africa arc",color:"#8bd450",from:"Cairo",route:"Up the Nile from Egypt, through Sudan or by air to Ethiopia, Kenya, Tanzania, Malawi and Zambia. Branches: Sinai and the Red Sea, Rift Valley and Omo, Uganda and Rwanda, the Swahili coast, the northern safari circuit."},
+  as:{tab:"africa",code:"AS",name:"Southern Africa loop",color:"#5ad1ff",from:"Livingstone",route:"Victoria Falls, Botswana, Namibia, then South Africa from Cape Town to Kruger. Branches: Zimbabwe, Lesotho, Eswatini, Mozambique, Angola, Madagascar and Mauritius."},
+  aw:{tab:"africa",code:"AW",name:"West Africa Atlantic arc",color:"#ff6fae",from:"Marrakech",route:"Down the Atlantic coast from Morocco through Western Sahara and Mauritania to Senegal, then the Gulf of Guinea to Cameroon and Gabon. Branches: the Sahel, Cabo Verde."},
+  na:{tab:"americas",code:"NA",name:"North America arc",color:"#4f9dff",route:"Alaska, the Yukon, the Rockies and Vancouver, then down the Pacific coast to San Diego. Branches: across Canada, Rockies and Midwest, Southwest and Deep South, the East Coast."},
+  ca:{tab:"americas",code:"CA",name:"Central America arc",color:"#ff7a59",from:"Tijuana",route:"Mexico from Tijuana to the Yucatán, then Belize to Panama. Branches: Baja, Copper Canyon, the Caribbean islands."},
+  sa:{tab:"americas",code:"SA",name:"South America arc",color:"#3ccf9a",from:"Panama City",route:"Colombia down the Andes through Ecuador, Peru, Bolivia and Chile to Patagonia and Ushuaia. Branches: Argentina and Uruguay, Brazil and the Atlantic coast, the Amazon river, Venezuela and the Guianas."}
+};
+</script>
+<script>
+/* ---- src/data/branches.js ---- */
+/**
+ * Branches: optional side routes that leave an arc at one stop and optionally rejoin at another.
+ * `from` and `to` are stop names that must exist in a stage file.
+ * Depends on: shared.js.  Exposes: GEP.data.branches.
+ */
+GEP.data.branches = {
+  /* upper */
+  "u-hokkaido":{arc:"upper",name:"Tohoku and Hokkaido",from:"Tokyo"},
+  "u-alps":{arc:"upper",name:"Japan Alps and the Sea of Japan coast",from:"Nagoya",to:"Kyoto"},
+  "u-shikoku":{arc:"upper",name:"Shikoku and Setouchi",from:"Okayama",to:"Hiroshima"},
+  "u-korea-east":{arc:"upper",name:"Korea's east coast",from:"Seoul",to:"Gyeongju"},
+  "u-korea-sw":{arc:"upper",name:"Southwest Korea and Jeju",from:"Daejeon"},
+  "u-northeast":{arc:"upper",name:"Northeast China",from:"Beijing"},
+  "u-gobi":{arc:"upper",name:"Gobi and central Mongolia",from:"Ulaanbaatar"},
+  "u-khovsgol":{arc:"upper",name:"Khövsgöl and the north",from:"Ulaanbaatar"},
+  "u-mn-west":{arc:"upper",name:"Western Mongolia and the Altai",from:"Ulaanbaatar"},
+  "u-far-east":{arc:"upper",name:"Russian Far East (east end of the Trans-Siberian)",from:"Harbin",to:"Ulan-Ude"},
+  "u-karelia":{arc:"upper",name:"Karelia, Kola and Murmansk",from:"St Petersburg"},
+  "u-altai":{arc:"upper",name:"Altai and Sayan",from:"Novosibirsk"},
+  "u-volga":{arc:"upper",name:"Volga and the south",from:"Kazan"},
+  /* silk */
+  "s-kkh":{arc:"silk",name:"Karakoram Highway: Kashgar to Pakistan (CPEC link)",from:"Urumqi",to:"Islamabad"},
+  "s-irkeshtam":{arc:"silk",name:"Kashgar to Osh via Irkeshtam",from:"Kashgar",to:"Osh"},
+  "s-pamir":{arc:"silk",name:"Pamir branch: Pamir Highway to Tajikistan",from:"Sary-Tash",to:"Samarkand"},
+  "s-trans-kaz":{arc:"silk",name:"Trans-Kazakh rail line: Tashkent to Aktau",from:"Tashkent",to:"Aktau"},
+  "s-astana":{arc:"silk",name:"Kazakh heartland: Astana",from:"Almaty"},
+  "s-turkmen":{arc:"silk",name:"Turkmenistan branch: Turkmenbashi to Baku",from:"Khiva",to:"Baku"},
+  "s-armenia":{arc:"silk",name:"Armenia loop",from:"Tbilisi"},
+  "s-black-sea":{arc:"silk",name:"Black Sea Türkiye",from:"Erzurum",to:"Istanbul"},
+  "s-southeast":{arc:"silk",name:"Southeast Türkiye",from:"Göreme",to:"Kars"},
+  "s-aegean":{arc:"silk",name:"Aegean and Mediterranean Türkiye",from:"Istanbul"},
+  /* lower */
+  "l-borneo":{arc:"lower",name:"Borneo",from:"Kuala Lumpur"},
+  "l-indonesia":{arc:"lower",name:"Indonesia island branch (optional)",from:"Singapore"},
+  "l-phil":{arc:"lower",name:"Philippines island branch (optional)",from:"Kota Kinabalu"},
+  "l-andaman":{arc:"lower",name:"Andaman coast",from:"Surat Thani"},
+  "l-north-thai":{arc:"lower",name:"Northern Thailand and the Mekong slow boat",from:"Bangkok",to:"Luang Prabang"},
+  "l-yunnan":{arc:"lower",name:"West Yunnan and Sichuan",from:"Kunming"},
+  "l-south-china":{arc:"lower",name:"Guangxi, Guangdong and Hong Kong",from:"Hanoi"},
+  "l-rajasthan":{arc:"lower",name:"Rajasthan loop",from:"Delhi"},
+  "l-himalaya":{arc:"lower",name:"Himalayan India",from:"Delhi"},
+  "l-south-india":{arc:"lower",name:"West and South India",from:"Delhi"},
+  "l-srilanka":{arc:"lower",name:"Sri Lanka",from:"Kochi"},
+  "l-nepal":{arc:"lower",name:"Nepal",from:"Varanasi"},
+  "l-nw-iran":{arc:"lower",name:"Northwest Iran and the Caucasus link",from:"Tehran",to:"Yerevan"},
+  "l-levant":{arc:"lower",name:"Levant branch: Jordan",from:"Dubai"},
+  /* europe */
+  "e-andalusia":{arc:"europe",name:"Madrid and Andalusia",from:"Bilbao"},
+  "e-med":{arc:"europe",name:"Rhône, Provence and the Spanish Mediterranean",from:"Paris"},
+  "e-it-north":{arc:"europe",name:"Riviera and northern Italy",from:"Marseille"},
+  "e-it-south":{arc:"europe",name:"Tuscany, Rome and the south",from:"Genoa"},
+  "e-swiss":{arc:"europe",name:"Switzerland and the Alps",from:"Lyon",to:"Munich"},
+  "e-bavaria":{arc:"europe",name:"Bavaria and Austria",from:"Zurich"},
+  "e-central":{arc:"europe",name:"Czechia, Slovakia and Hungary",from:"Berlin"},
+  "e-romania":{arc:"europe",name:"Romania and the Danube",from:"Budapest",to:"Sofia"},
+  "e-balkans":{arc:"europe",name:"Balkans: Istanbul to the Adriatic",from:"Istanbul",to:"Trieste"},
+  "e-sw-balkans":{arc:"europe",name:"Albania, North Macedonia and Kosovo",from:"Sofia",to:"Ioannina"},
+  "e-greece":{arc:"europe",name:"Greece (from Türkiye or the Balkans)",from:"Istanbul"},
+  "e-isles":{arc:"europe",name:"Greek islands",from:"Athens"},
+  "e-uk":{arc:"europe",name:"Britain and Ireland",from:"Brussels"},
+  "e-nordics":{arc:"europe",name:"Sweden, Norway and Lapland",from:"Helsinki"},
+  "e-denmark":{arc:"europe",name:"Denmark and Gothenburg",from:"Hamburg",to:"Oslo"},
+  /* africa */
+  "an-atlas":{arc:"an",name:"Atlas and Sahara",from:"Casablanca"},
+  "an-western-desert":{arc:"an",name:"Western Desert oases",from:"Cairo",to:"Luxor"},
+  "ae-sinai":{arc:"ae",name:"Sinai and the Red Sea (in from Jordan by ferry)",from:"Cairo",to:"Edfu"},
+  "ae-omo":{arc:"ae",name:"Rift Valley and Omo",from:"Addis Ababa"},
+  "ae-gorillas":{arc:"ae",name:"Uganda and Rwanda",from:"Nairobi"},
+  "ae-swahili":{arc:"ae",name:"Swahili coast",from:"Nairobi"},
+  "ae-safari":{arc:"ae",name:"Northern safari circuit",from:"Arusha"},
+  "as-zimbabwe":{arc:"as",name:"Zimbabwe",from:"Victoria Falls",to:"Johannesburg"},
+  "as-angola":{arc:"as",name:"Angola link",from:"Windhoek"},
+  "as-mozambique":{arc:"as",name:"Eswatini and the Mozambique coast",from:"Johannesburg"},
+  "as-islands":{arc:"as",name:"Island branch: Madagascar and Mauritius (optional)",from:"Johannesburg"},
+  "aw-sahel":{arc:"aw",name:"The Sahel",from:"Dakar"},
+  "aw-capeverde":{arc:"aw",name:"Cabo Verde (optional)",from:"Dakar"},
+  /* americas */
+  "na-canada":{arc:"na",name:"Across Canada",from:"Banff"},
+  "na-rockies":{arc:"na",name:"Rockies and Midwest",from:"Seattle"},
+  "na-southwest":{arc:"na",name:"Southwest and the Deep South",from:"Los Angeles"},
+  "na-east":{arc:"na",name:"East Coast",from:"Montréal"},
+  "ca-baja":{arc:"ca",name:"Baja California",from:"Tijuana"},
+  "ca-copper":{arc:"ca",name:"Copper Canyon",from:"Mazatlán"},
+  "ca-caribbean":{arc:"ca",name:"Caribbean branch",from:"Cancún"},
+  "sa-argentina":{arc:"sa",name:"Argentina and Uruguay",from:"Tupiza"},
+  "sa-brazil":{arc:"sa",name:"Brazil and the Atlantic coast",from:"Buenos Aires"},
+  "sa-amazon":{arc:"sa",name:"Amazon river route",from:"Quito",to:"Belém"},
+  "sa-venezuela":{arc:"sa",name:"Venezuela and the Guianas",from:"Santa Marta",to:"Belém"}
+};
+</script>
+<script>
+/* ---- src/data/entries.js ---- */
+/**
+ * Ways between the pages, drawn as white diamonds. `at` is [lon, lat].
+ * Add a label under the tab key (eurasia, africa, americas) to show it on that tab.
+ * Depends on: shared.js.  Exposes: GEP.data.entries.
+ */
+GEP.data.entries = [
+  {at:[-5.6,36.0], eurasia:"to Morocco: ferry", africa:"In from Spain: Tarifa to Tangier ferry"},
+  {at:[35.0,29.5], eurasia:"to Egypt: Aqaba to Nuweiba ferry", africa:"In from Jordan: Aqaba to Nuweiba ferry"},
+  {at:[13.4,38.1], africa:"In from Italy: ferries to Tunis"},
+  {at:[-0.5,38.3], africa:"In from Spain: ferries to Algeria"},
+  {at:[55.3,25.2], africa:"In from the Gulf: flights to Cairo, Nairobi, Addis"},
+  {at:[143.5,37.5], eurasia:"Pacific to the Americas"},
+  {at:[-12.5,39.5], eurasia:"Atlantic to the Americas"},
+  {at:[-168,50], americas:"In from Japan or Korea across the Pacific"},
+  {at:[-38,40], americas:"In from Europe across the Atlantic"}
+];
+</script>
+<script>
+/* ---- src/data/stages/upper.js ---- */
+/**
+ * Stages: the Upper arc (Japan, Korea, China, Mongolia, Russia).
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+s("upper","","Japan: Tokyo to Hiroshima","The start of everything. Rail south through the old capitals.",
+ "Tokyo 139.7 35.7 *; Nikko 139.6 36.75 ~; Kamakura 139.55 35.32 ~; Hakone 139.02 35.23 ~; Mount Fuji 138.73 35.36 ~; Nagoya 136.9 35.18 +; Kyoto 135.77 35.01 *; Nara 135.8 34.69 ~; Osaka 135.5 34.69 +; Himeji 134.69 34.82; Okayama 133.92 34.66; Hiroshima 132.46 34.39 *; Miyajima 132.32 34.3 ~","next","Continue to Kyushu");
+s("upper","","Japan: Kyushu and the ferry out","Down to Fukuoka, then the ferry to Busan.",
+ "Fukuoka 130.4 33.59 *; Nagasaki 129.88 32.75 ~; Kumamoto 130.74 32.8 ~; Mount Aso 131.1 32.88 ~; Beppu 131.5 33.28 ~; Kagoshima 130.56 31.6 ~; Naha (Okinawa) 127.68 26.21 ~","next","Ferry from Fukuoka to Busan");
+s("upper","u-hokkaido","Tohoku and Hokkaido","Temples, volcanoes and the north.",
+ "Sendai 140.87 38.27; Matsushima 141.06 38.37 ~; Hiraizumi 141.1 39.0 ~; Aomori 140.74 40.82; Hakodate 140.73 41.77 +; Sapporo 141.35 43.06 *; Otaru 141.0 43.19 ~; Asahikawa 142.37 43.77; Shiretoko 145.2 44.1 ~");
+s("upper","u-alps","Japan Alps and Kanazawa","The mountain route between Nagoya and Kyoto.",
+ "Matsumoto 137.97 36.24; Kamikochi 137.64 36.25 ~; Takayama 137.25 36.14 +; Shirakawa-go 136.9 36.26 ~; Kanazawa 136.65 36.56 *");
+s("upper","u-shikoku","Shikoku and the Seto Inland Sea","Art islands and pilgrimage country.",
+ "Takamatsu 134.05 34.34; Naoshima 133.99 34.46 ~; Matsuyama 132.77 33.84 +; Shimanami Kaido 133.1 34.25 ~");
+s("upper","","South Korea: Busan to Seoul","Land at Busan, then north through the old kingdom of Silla.",
+ "Busan 129.07 35.18 *; Gyeongju 129.21 35.84 *; Andong 128.73 36.57 ~; Daegu 128.6 35.87; Haeinsa 128.1 35.8 ~; Daejeon 127.38 36.35; Suwon 127.0 37.26 ~; Seoul 126.98 37.57 *; DMZ 126.68 37.96 ~; Incheon 126.7 37.46 ~","next","Fly or ferry to China");
+s("upper","u-korea-east","Korea's east coast","Mountains and sea between Seoul and Gyeongju.",
+ "Sokcho 128.59 38.2 +; Seoraksan 128.47 38.12 ~; Gangneung 128.9 37.75; Samcheok 129.17 37.45; Pohang 129.37 36.03");
+s("upper","u-korea-sw","Southwest Korea and Jeju","Food capital, tea fields and the island.",
+ "Jeonju 127.15 35.82; Gwangju 126.85 35.16; Suncheon 127.49 34.95 ~; Mokpo 126.39 34.81; Jeju 126.53 33.5 *; Seogwipo 126.56 33.25 ~");
+s("upper","","Northern China: Beijing and the Great Wall","Over to Beijing, then the Trans-Mongolian line north.",
+ "Tianjin 117.2 39.1 ~; Beijing 116.4 39.9 *; Mutianyu Great Wall 116.57 40.43 ~; Chengde 117.94 40.97 ~; Datong 113.3 40.08 +; Yungang Grottoes 113.13 40.11 ~; Hohhot 111.67 40.84 ~; Erenhot 111.98 43.65","","Train to Ulaanbaatar");
+s("upper","u-northeast","Northeast China","Old Manchuria, ice and Russian echoes.",
+ "Shenyang 123.43 41.8; Dalian 121.6 38.9 ~; Changchun 125.3 43.88; Harbin 126.64 45.75 *");
+s("upper","","Mongolia: Ulaanbaatar and the north line","Steppe, gers and the rail line to Russia.",
+ "Sainshand 110.1 44.89; Ulaanbaatar 106.9 47.92 *; Terelj 107.5 47.98 ~; Darkhan 105.97 49.49; Sükhbaatar 106.2 50.23","","Rail on to Ulan-Ude in Russia");
+s("upper","u-gobi","Gobi and central Mongolia","Karakorum, dunes and flaming cliffs.",
+ "Kharkhorin 102.84 47.2 +; Dalanzadgad 104.42 43.57; Yolyn Am 104.1 43.5 ~; Bayanzag 103.7 44.14 ~; Khongoryn Els 102.3 43.77 ~");
+s("upper","u-khovsgol","Khövsgöl and the north","Mongolia's great blue lake.",
+ "Erdenet 104.1 49.03; Mörön 100.15 49.64; Lake Khövsgöl 100.2 51.0 *");
+s("upper","u-mn-west","Western Mongolia and the Altai","Eagle hunters and the far west.",
+ "Ölgii 89.97 48.97 *; Khovd 91.64 48.0; Tavan Bogd 87.8 49.1 ~");
+s("upper","","Russia: Buryatia and Lake Baikal","Into Siberia and the deepest lake on Earth.",
+ "Ulan-Ude 107.6 51.83 *; Ivolginsky Datsan 107.2 51.7 ~; Listvyanka 104.87 51.87 ~; Irkutsk 104.28 52.29 *; Olkhon Island 107.34 53.2 ~","check");
+s("upper","","Russia: Krasnoyarsk to Omsk","The long Siberian middle.",
+ "Krasnoyarsk 92.87 56.01 *; Stolby Reserve 92.77 55.9 ~; Tomsk 84.95 56.5 ~; Novosibirsk 82.92 55.03 *; Omsk 73.37 54.99","check");
+s("upper","","Russia: the Urals and the Volga","Across the Europe–Asia line to Kazan.",
+ "Tyumen 65.53 57.15; Yekaterinburg 60.6 56.84 *; Europe-Asia obelisk 60.0 56.9 ~; Perm 56.25 58.01; Kazan 49.1 55.8 *; Nizhny Novgorod 44.0 56.33 +","check");
+s("upper","","Russia: Moscow and the Golden Ring","The capital and the old towns around it.",
+ "Vladimir 40.4 56.13 ~; Suzdal 40.43 56.42 ~; Sergiev Posad 38.13 56.3 ~; Moscow 37.62 55.75 *","check");
+s("upper","","Russia: Tver, Novgorod and St Petersburg","The imperial end of the line.",
+ "Tver 35.9 56.86; Veliky Novgorod 31.27 58.52 ~; St Petersburg 30.32 59.94 *; Vyborg 28.75 60.7 ~","check","Overland to Finland or the Baltics, border rules permitting");
+s("upper","u-far-east","Russian Far East","The east end of the Trans-Siberian and the Pacific side.",
+ "Suifenhe 131.15 44.4 ~; Vladivostok 131.9 43.12 *; Ussuriysk 131.95 43.8 ~; Khabarovsk 135.08 48.48 *; Birobidzhan 132.9 48.8; Chita 113.5 52.03","check");
+s("upper","u-karelia","Karelia, Kola and Murmansk","Wooden churches, White Sea and the Arctic.",
+ "Petrozavodsk 34.35 61.79; Kizhi Island 35.22 62.07 ~; Solovetsky Islands 35.7 65.0 ~; Murmansk 33.08 68.97 *; Teriberka 35.12 69.2 ~","check");
+s("upper","u-altai","Altai and Sayan","Mountains in southern Siberia.",
+ "Barnaul 83.77 53.35; Gorno-Altaysk 85.96 51.96; Chemal 86.0 51.4 ~; Belukha 86.6 49.8 ~","check");
+s("upper","u-volga","Volga and the south","Down the river to the Caspian.",
+ "Ulyanovsk 48.4 54.3 ~; Samara 50.1 53.2; Saratov 46.0 51.5; Volgograd 44.5 48.7 *; Astrakhan 48.05 46.35","check");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/stages/silk.js ---- */
+/**
+ * Stages: the Modern Silk Road arc (Xi'an to Istanbul) and its branches.
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+s("silk","","China: Xi'an to Lanzhou","The eastern anchor of the modern corridor, and the old capital.",
+ "Xi'an 108.94 34.34 *^; Terracotta Army 109.27 34.38 ~; Tianshui 105.7 34.58 ~; Lanzhou 103.83 36.06 +; Labrang Monastery 102.5 35.2 ~; Zhangye 100.45 38.93; Danxia Landform 100.1 38.9 ~");
+s("silk","","China: the Hexi Corridor to Xinjiang","Gansu's desert corridor, then Xinjiang, where the rail and road links to Central Asia begin.",
+ "Jiayuguan 98.28 39.77 +; Dunhuang 94.66 40.14 *; Mogao Caves 94.8 40.04 ~; Turpan 89.19 42.95; Urumqi 87.6 43.82 *^; Heavenly Lake 88.13 43.88 ~; Alashankou 82.57 45.17 ~+^; Khorgos 80.4 44.2 *^","","Rail dry port at Khorgos, then into Kazakhstan");
+s("silk","","Kazakhstan: Almaty and the southeast","The modern hub of Central Asia, with canyons and lakes nearby.",
+ "Almaty 76.95 43.24 *^; Charyn Canyon 79.1 43.35 ~; Kolsay Lakes 78.3 42.9 ~; Medeu 77.06 43.16 ~");
+s("silk","","Kyrgyzstan: Bishkek to Osh","Mountains, lakes and yurts on the way to the Fergana side.",
+ "Bishkek 74.6 42.87 *; Burana Tower 75.25 42.74 ~; Cholpon-Ata 77.0 42.65 ~; Issyk-Kul 77.5 42.45 ~; Karakol 78.4 42.49 ~; Kochkor 75.8 42.2; Song-Kol 75.1 41.8 ~; Naryn 76.0 41.43 +; Osh 72.8 40.53 *");
+s("silk","","Uzbekistan: Fergana and Tashkent","Down the Fergana Valley into Central Asia's biggest hub.",
+ "Fergana 71.78 40.38; Kokand 70.94 40.53 ~; Tashkent 69.24 41.3 *^");
+s("silk","","Uzbekistan: Samarkand, Bukhara and Khiva","The old Silk Road cities, linked today by high-speed rail.",
+ "Samarkand 66.96 39.65 *; Shakhrisabz 66.83 39.05 ~; Bukhara 64.42 39.77 *; Khiva 60.36 41.38 *; Nukus 59.6 42.46 +");
+s("silk","","Aral Sea and Aktau: the Caspian gateway","Across the western Kazakh desert to the Middle Corridor port.",
+ "Moynaq 59.0 43.77 ~; Beyneu 55.2 45.3; Aktau 51.2 43.65 *^","","Cross the Caspian to Baku (cargo ferries, check passenger rules, or fly)");
+s("silk","","Azerbaijan: Baku","The Caspian port at the other end of the Middle Corridor.",
+ "Baku 49.87 40.41 *^; Gobustan 49.4 40.1 ~; Sheki 47.19 41.19 ~; Ganja 46.36 40.68 +");
+s("silk","","Georgia: Tbilisi to Batumi","Wine, mountains and the Black Sea.",
+ "Tbilisi 44.8 41.72 *^; Mtskheta 44.72 41.84 ~; Kazbegi 44.64 42.66 ~; Sighnaghi 45.92 41.62 ~; Kutaisi 42.7 42.25; Mestia 42.73 43.05 ~; Batumi 41.64 41.65 +","","On to Kars on the Baku–Tbilisi–Kars rail corridor, by train where it runs or by road");
+s("silk","","Türkiye: Kars to Cappadocia","Eastern Anatolia and the heart of the plateau.",
+ "Kars 43.1 40.6 *^; Ani 43.57 40.51 ~; Doğubayazıt 44.08 39.55 ~; Erzurum 41.27 39.9; Sivas 37.02 39.75; Göreme 34.83 38.64 *");
+s("silk","","Türkiye: Ankara and Istanbul","Through the capital to Istanbul, where Marmaray crosses under the Bosphorus into Europe.",
+ "Ankara 32.85 39.93 +; Istanbul 28.98 41.01 *^","","Marmaray rail tunnel to Europe, then the Balkans or Greece");
+s("silk","s-kkh","Karakoram Highway and the CPEC link","From Kashgar over the Khunjerab Pass to Pakistan. The pass is seasonal, so check.",
+ "Korla 86.15 41.77; Kuqa 82.96 41.72; Aksu 80.26 41.17; Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Khunjerab Pass 75.42 36.85 *; Sost 74.8 36.7 ~; Karimabad 74.66 36.32 *; Gilgit 74.3 35.92","");
+s("silk","s-irkeshtam","Kashgar to Osh via Irkeshtam","A road crossing into Kyrgyzstan. A rail link between the three countries has been in the works, but for now it is road, so check.",
+ "Irkeshtam Pass 73.9 39.7 *; Sary-Tash 73.3 39.73 +");
+s("silk","s-pamir","Pamir Highway","One of the great road journeys: Sary-Tash to Dushanbe.",
+ "Karakul 73.55 39.0 ~; Murghab 73.96 38.17 *; Wakhan Valley 72.7 37.0 ~; Khorog 71.55 37.49 *; Kalaikhum 70.8 38.45; Dushanbe 68.78 38.56 *; Iskanderkul 68.37 39.07 ~; Penjikent 67.6 39.5 +");
+s("silk","s-trans-kaz","Trans-Kazakh rail line","The northern rail route from Tashkent to the Caspian.",
+ "Shymkent 69.6 42.3; Turkistan 68.25 43.3 +; Kyzylorda 65.5 44.85; Aralsk 61.67 46.8");
+s("silk","s-astana","Kazakh heartland: Astana","The new capital and the steppe.",
+ "Karaganda 73.1 49.8; Astana 71.43 51.17 *^; Burabay 70.3 53.1 ~");
+s("silk","s-turkmen","Turkmenistan branch","Desert gate, Merv and the Turkmenbashi port on the Caspian.",
+ "Konye-Urgench 59.15 42.32; Darvaza 58.4 40.25 *; Ashgabat 58.38 37.95 *; Nisa 58.2 37.97 ~; Merv 62.18 37.66 ~; Turkmenbashi 52.97 40.02 *^");
+s("silk","s-armenia","Armenia loop","A loop out of Tbilisi. The Armenia–Türkiye land border is a question mark, so check.",
+ "Dilijan 44.86 40.74 ~; Lake Sevan 45.0 40.55 ~; Yerevan 44.51 40.18 *; Garni and Geghard 44.73 40.11 ~; Echmiadzin 44.29 40.16 ~; Tatev 46.25 39.38 ~; Gyumri 43.85 40.79");
+s("silk","s-black-sea","Black Sea Türkiye","Mountain monasteries and the northern coast.",
+ "Trabzon 39.72 41.0 *; Sumela Monastery 39.66 40.69 ~; Amasya 35.83 40.65; Safranbolu 32.69 41.25 +; Amasra 32.39 41.75 ~");
+s("silk","s-southeast","Southeast Türkiye","Mosaics, Göbekli Tepe and Nemrut.",
+ "Gaziantep 37.38 37.07 +; Mount Nemrut 38.74 37.98 ~; Şanlıurfa 38.79 37.16; Göbekli Tepe 38.92 37.22 ~; Mardin 40.74 37.31 *; Diyarbakır 40.22 37.91; Van 43.38 38.5 +");
+s("silk","s-aegean","Aegean and Mediterranean Türkiye","Troy, Ephesus and the turquoise coast.",
+ "Gallipoli 26.35 40.4 ~; Çanakkale 26.4 40.15; Troy 26.24 39.96 ~; İzmir 27.14 38.42 +; Ephesus 27.34 37.94 ~; Pamukkale 29.12 37.92 ~; Bodrum 27.43 37.04; Antalya 30.7 36.9 *");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/stages/lower.js ---- */
+/**
+ * Stages: the Lower arc (Singapore to the Gulf) and its branches.
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+s("lower","","Singapore and Malaysia","Home base. North by rail and road.",
+ "Singapore 103.82 1.35 *; Johor Bahru 103.74 1.49 ~; Melaka 102.25 2.19; Kuala Lumpur 101.69 3.14 *; Cameron Highlands 101.37 4.47 ~; Ipoh 101.09 4.6; Penang 100.33 5.41 *; Langkawi 99.8 6.35 ~; Hat Yai 100.47 7.0");
+s("lower","","Thailand: south to Bangkok","Islands, then the capital.",
+ "Surat Thani 99.33 9.14; Koh Samui 100.06 9.5 ~; Hua Hin 99.96 12.57; Bangkok 100.5 13.75 *; Ayutthaya 100.57 14.35 ~; Nong Khai 102.74 17.88","","Rail to Vientiane");
+s("lower","","Laos: Vientiane to the China border","Down the Mekong and up the Laos–China railway.",
+ "Vientiane 102.6 17.97 *; Vang Vieng 102.45 18.92; Luang Prabang 102.14 19.89 *; Kuang Si Falls 102.2 19.75 ~; Boten 101.69 21.17; Pakse 105.78 15.12 ~; Bolaven Plateau 106.2 15.1 ~; Si Phan Don 105.9 14.1 ~","","Laos–China railway to Kunming");
+s("lower","","Southern China: Kunming and southern Yunnan","The Yunnan capital and the way down to Vietnam.",
+ "Jinghong 100.8 22.0 ~; Kunming 102.83 25.04 *; Stone Forest 103.3 24.8 ~; Yuanyang Terraces 102.75 23.1 ~; Hekou 103.97 22.5","","Border crossing at Hekou to Lao Cai");
+s("lower","","Vietnam: Hanoi to Saigon","The length of the country by the Reunification line.",
+ "Hanoi 105.85 21.03 *; Ha Long Bay 107.07 20.95 ~; Sapa 103.84 22.34 ~; Ninh Binh 105.97 20.25 ~; Phong Nha 106.28 17.59 ~; Hue 107.59 16.46 *; Hoi An 108.33 15.88 *; Da Nang 108.2 16.05; Nha Trang 109.19 12.24; Da Lat 108.44 11.94; Saigon 106.7 10.78 *; Can Tho 105.78 10.04 ~");
+s("lower","","Cambodia","Phnom Penh and Angkor.",
+ "Phnom Penh 104.92 11.56 *; Kampot 104.18 10.61 ~; Battambang 103.2 13.1 ~; Siem Reap 103.86 13.36 *; Angkor Wat 103.87 13.41 ~","","Fly west");
+s("lower","","Myanmar","Pagodas and plains.",
+ "Yangon 96.15 16.8 *; Bago 96.48 17.34 ~; Kyaiktiyo 97.1 17.48 ~; Bagan 94.86 21.17 *; Inle Lake 96.9 20.55 ~; Mandalay 96.08 21.97 +","check","Fly to India");
+s("lower","","Bangladesh and Kolkata","Dhaka and the old capital of the Raj.",
+ "Dhaka 90.41 23.81 *; Sundarbans 89.0 22.0 ~; Kolkata 88.36 22.57 *; Darjeeling 88.26 27.04 ~; Puri 85.83 19.8 ~");
+s("lower","","India: Varanasi, Agra and Delhi","The Ganges plain and the Golden Triangle.",
+ "Bodh Gaya 84.99 24.7 ~; Varanasi 83.0 25.32 *; Lucknow 80.95 26.85 ~; Agra 78.01 27.18 *; Delhi 77.2 28.6 *; Amritsar 74.87 31.63 *","","Wagah crossing to Lahore. Its status can change, so check");
+s("lower","","Pakistan","Lahore, Islamabad and the hills.",
+ "Wagah 74.57 31.6 ~; Lahore 74.34 31.55 *; Multan 71.47 30.2 ~; Karachi 67.0 24.86 ~; Taxila 72.83 33.75 ~; Islamabad 73.05 33.68 *","check","Iran, by air or a checked land route");
+s("lower","","Iran","Persian cities, gardens and ruins.",
+ "Tehran 51.39 35.69 *; Kashan 51.45 33.98 ~; Isfahan 51.68 32.65 *; Yazd 54.37 31.9 *; Shiraz 52.53 29.59 *; Persepolis 52.89 29.93 ~; Bandar Abbas 56.27 27.19","check","Gulf side, with the Hormuz situation checked first");
+s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. Hormuz is closed as of 3 Nov 2026, so check.",
+ "Dubai 55.3 25.2 *; Abu Dhabi 54.37 24.45; Doha 51.53 25.29 ~; Al Ain 55.76 24.2 ~; Muscat 58.4 23.59 *; Nizwa 57.53 22.93 ~; Wahiba Sands 58.8 22.4 ~; Salalah 54.1 17.02 ~","check","Jordan by air, or back to Istanbul");
+s("lower","l-borneo","Borneo","Mountains and rainforest.",
+ "Kuching 110.35 1.55 *; Brunei 114.94 4.89; Mount Kinabalu 116.56 6.08 ~; Kota Kinabalu 116.07 5.98 *");
+s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, if the plan stretches.",
+ "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~");
+s("lower","l-phil","Philippines island branch","Optional island hopping.",
+ "Palawan El Nido 119.4 11.18 ~; Cebu 123.9 10.3; Manila 120.98 14.6 *; Banaue 121.06 16.92 ~");
+s("lower","l-andaman","Andaman coast","Thailand's west coast islands.",
+ "Krabi 98.9 8.09; Phuket 98.39 7.88 *");
+s("lower","l-north-thai","Northern Thailand and the slow boat","Temples, then the two-day Mekong slow boat into Laos.",
+ "Sukhothai 99.82 17.0 ~; Chiang Mai 98.99 18.79 *; Chiang Rai 99.83 19.91; Huay Xai 100.42 20.27 *; Pakbeng 101.1 19.9 ~");
+s("lower","l-yunnan","West Yunnan and Sichuan","Old towns and gorges, out to Chengdu.",
+ "Dali 100.23 25.6 *; Lijiang 100.23 26.87 *; Tiger Leaping Gorge 100.1 27.2 ~; Shangri-La 99.7 27.83; Chengdu 104.07 30.67 *; Leshan Giant Buddha 103.77 29.55 ~; Chongqing 106.55 29.56 ~");
+s("lower","l-south-china","Guangxi, Guangdong and Hong Kong","Karst country and the south coast.",
+ "Nanning 108.37 22.82; Guilin 110.29 25.27 *; Yangshuo 110.5 24.78 ~; Zhangjiajie 110.48 29.12 ~; Guangzhou 113.26 23.13; Hong Kong 114.17 22.32 *");
+s("lower","l-rajasthan","Rajasthan loop","Forts, palaces and desert.",
+ "Jaipur 75.79 26.91 *; Pushkar 74.55 26.49 ~; Jodhpur 73.02 26.3; Udaipur 73.7 24.58 *; Jaisalmer 70.92 26.92 ~");
+s("lower","l-himalaya","Himalayan India","Hills and high passes.",
+ "Rishikesh 78.27 30.09; Shimla 77.17 31.1; Dharamshala 76.32 32.22 ~; Manali 77.19 32.24; Leh 77.58 34.15 *");
+s("lower","l-south-india","West and South India","Mumbai down to Kerala and Chennai.",
+ "Mumbai 72.88 19.08 *; Goa 73.83 15.5 +; Hampi 76.46 15.34 ~; Kochi 76.27 9.97 *; Alleppey 76.33 9.5 ~; Madurai 78.12 9.92; Chennai 80.27 13.08 *");
+s("lower","l-srilanka","Sri Lanka","The teardrop island.",
+ "Colombo 79.86 6.93 *; Sigiriya 80.76 7.96 ~; Kandy 80.63 7.29; Ella 81.05 6.87 ~; Galle 80.22 6.03; Jaffna 80.0 9.66 ~");
+s("lower","l-nepal","Nepal","Kathmandu, Pokhara and the Himalaya.",
+ "Lumbini 83.28 27.47 ~; Chitwan 84.4 27.5 ~; Pokhara 83.99 28.21 *; Kathmandu 85.32 27.72 *; Everest Base Camp trek 86.85 28.0 ~");
+s("lower","l-nw-iran","Northwest Iran and the Caucasus link","Tabriz and the road to the Caucasus.",
+ "Tabriz 46.29 38.08 *; Kandovan 46.2 37.8 ~; Jolfa 45.63 38.95","check");
+s("lower","l-levant","Levant branch: Jordan","Petra, Wadi Rum and the Dead Sea. The Gulf situation affects this one too, so check.",
+ "Amman 35.93 31.95 *; Jerash 35.9 32.28 ~; Dead Sea 35.5 31.5 ~; Petra 35.44 30.33 *; Wadi Rum 35.42 29.58 ~; Aqaba 35.0 29.53 +","check","Aqaba to Nuweiba ferry into Egypt");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/stages/europe.js ---- */
+/**
+ * Stages: Europe, where the arcs meet (St Petersburg to Lisbon) and its branches.
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+s("europe","","Finland and the Baltics","Where the upper arc arrives, by Helsinki and the ferry across.",
+ "Helsinki 24.94 60.17 *; Tallinn 24.75 59.44 *; Pärnu 24.5 58.38 ~; Riga 24.1 56.95 *; Vilnius 25.28 54.69 *; Trakai 24.93 54.65 ~; Kaunas 23.9 54.9 ~; Curonian Spit 21.0 55.3 ~");
+s("europe","","Poland","Warsaw and the old Hanseatic and royal cities.",
+ "Białowieża 23.87 52.7 ~; Warsaw 21.01 52.23 *; Gdańsk 18.65 54.35 ~+; Poznań 16.93 52.41; Wrocław 17.04 51.11 ~; Kraków 19.94 50.06 ~+; Zakopane 19.95 49.3 ~");
+s("europe","","Germany","Berlin west to the Rhine.",
+ "Berlin 13.4 52.52 *; Hannover 9.73 52.37; Cologne 6.96 50.94 *; Rhine Valley 7.77 50.06 ~; Heidelberg 8.69 49.4 ~; Frankfurt 8.68 50.11 ~; Hamburg 9.99 53.55 ~+; Leipzig 12.37 51.34 ~");
+s("europe","","Netherlands and Belgium","Canals, art cities and the rail hub of the west.",
+ "Amsterdam 4.9 52.37 *; Rotterdam 4.48 51.92; Antwerp 4.4 51.22 ~; Bruges 3.22 51.21 ~; Brussels 4.35 50.85 *; Luxembourg 6.13 49.61 ~");
+s("europe","","France: Paris to Bordeaux","The big one in the middle, then the Atlantic side.",
+ "Paris 2.35 48.86 *; Rouen 1.1 49.44 ~; Mont-Saint-Michel -1.51 48.64 ~; Tours 0.69 47.39; Bordeaux -0.58 44.84 *; Biarritz -1.56 43.48 ~; Strasbourg 7.75 48.57 ~; Chamonix 6.87 45.92 ~");
+s("europe","","Basque Country, Galicia and Portugal","Along the Atlantic edge to the westernmost point of mainland Europe.",
+ "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","","The Atlantic end of the line");
+s("europe","e-andalusia","Madrid and Andalusia","From the capital to the south coast, with Tarifa the way to Morocco.",
+ "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","","Ferry to Tangier");
+s("europe","e-med","Rhône, Provence and the Spanish Mediterranean","South from Paris to the sea and on to Barcelona and Valencia.",
+ "Lyon 4.83 45.76 *; Avignon 4.81 43.95 ~; Marseille 5.37 43.3 *; Barcelona 2.17 41.39 *; Valencia -0.38 39.47");
+s("europe","e-it-north","Riviera and northern Italy","The coast, Milan and the lakes, then Venice and Trieste.",
+ "Nice 7.27 43.7; Genoa 8.93 44.41 *; Milan 9.19 45.46 *; Lake Como 9.26 46.0 ~; Verona 10.99 45.44; Venice 12.33 45.44 *; Dolomites 12.14 46.54 ~; Trieste 13.77 45.65 +");
+s("europe","e-it-south","Tuscany, Rome and the south","The classic Italian line, then across to Sicily.",
+ "Cinque Terre 9.7 44.13 ~; Pisa 10.4 43.72 ~; Florence 11.25 43.77 *; Siena 11.33 43.32 ~; Rome 12.5 41.9 *; Naples 14.27 40.85 *; Pompeii 14.49 40.75 ~; Amalfi 14.6 40.63 ~; Palermo 13.36 38.12 *; Mount Etna 15.0 37.75 ~; Syracuse 15.29 37.08 ~");
+s("europe","e-swiss","Switzerland and the Alps","Lakes, trains and big peaks.",
+ "Geneva 6.14 46.2 *; Lausanne 6.63 46.52 ~; Zermatt 7.75 46.02 ~; Bern 7.45 46.95; Interlaken 7.86 46.69 ~; Lucerne 8.31 47.05 *; Lugano 8.95 46.0 ~; Zurich 8.54 47.38 *");
+s("europe","e-bavaria","Bavaria and Austria","Munich, the Salzkammergut and Vienna.",
+ "Munich 11.58 48.14 *; Innsbruck 11.39 47.26 ~; Salzburg 13.04 47.8 *; Hallstatt 13.65 47.56 ~; Vienna 16.37 48.21 *");
+s("europe","e-central","Czechia, Slovakia and Hungary","Central Europe's cities.",
+ "Dresden 13.74 51.05; Prague 14.42 50.09 *; Český Krumlov 14.32 48.81 ~; Bratislava 17.11 48.15; Budapest 19.04 47.5 *");
+s("europe","e-romania","Romania and the Danube","Transylvania and the Black Sea side.",
+ "Cluj 23.6 46.77; Sighișoara 24.79 46.22 ~; Sibiu 24.15 45.8; Brașov 25.6 45.65 *; Bucharest 26.1 44.43 *; Danube Delta 28.8 45.18 ~; Constanța 28.65 44.18 ~; Veliko Tarnovo 25.65 43.08 ~");
+s("europe","e-balkans","Bulgaria and Serbia","From Istanbul through the Balkans.",
+ "Plovdiv 24.75 42.15; Rila Monastery 23.34 42.13 ~; Sofia 23.32 42.7 *; Niš 21.9 43.32; Belgrade 20.46 44.82 *; Novi Sad 19.84 45.25 ~");
+s("europe","e-balkans","Bosnia, Montenegro, Croatia and Slovenia","The Adriatic side.",
+ "Sarajevo 18.41 43.86 *; Mostar 17.81 43.34 ~; Dubrovnik 18.09 42.65 *; Kotor 18.77 42.43 ~; Split 16.44 43.51 *; Plitvice Lakes 15.6 44.88 ~; Zagreb 15.98 45.81 *; Lake Bled 14.1 46.37 ~; Ljubljana 14.51 46.05 *");
+s("europe","e-sw-balkans","Albania, North Macedonia and Kosovo","The quieter Balkans, then across to Greece.",
+ "Skopje 21.43 42.0 *; Prishtina 21.17 42.67 ~; Ohrid 20.8 41.12 *; Tirana 19.82 41.33 *; Shkodër 19.51 42.07 ~; Berat 19.95 40.7 ~; Gjirokastër 20.14 40.08 ~");
+s("europe","e-greece","Greece: north and Meteora","Overland in from Türkiye, or down from the Balkans.",
+ "Alexandroupoli 25.88 40.85 ~; Kavala 24.4 40.94; Thessaloniki 22.94 40.64 *; Mount Olympus 22.35 40.09 ~; Meteora 21.63 39.72 *; Ioannina 20.85 39.67; Delphi 22.5 38.48 *");
+s("europe","e-greece","Greece: Athens and the Peloponnese","Ancient Greece, in order.",
+ "Athens 23.73 37.98 *; Mycenae 22.76 37.73 ~; Nafplio 22.8 37.57; Monemvasia 23.04 36.69 ~; Mystras 22.37 37.07 ~; Olympia 21.63 37.64 *; Patras 21.73 38.25");
+s("europe","e-isles","Greek islands","Cyclades to Crete, plus Rhodes.",
+ "Mykonos 25.33 37.45; Naxos 25.38 37.1 ~; Santorini 25.43 36.39 *; Heraklion 25.14 35.34 *; Rhodes 28.23 36.43 ~");
+s("europe","e-uk","England and Wales","By Eurostar from Brussels or Paris.",
+ "London -0.13 51.51 *; Canterbury 1.08 51.28 ~; Oxford -1.26 51.75; Bath -2.36 51.38 ~; St Ives -5.48 50.21 ~; Cardiff -3.18 51.48; Snowdonia -4.0 53.07 ~; Liverpool -2.98 53.4; Lake District -2.9 54.38 ~; York -1.08 53.96 *");
+s("europe","e-uk","Scotland and Ireland","Up to the Highlands, then by ferry to Ireland.",
+ "Edinburgh -3.19 55.95 *; Inverness -4.22 57.48 ~; Isle of Skye -6.2 57.3 ~; Belfast -5.93 54.6; Dublin -6.26 53.35 *; Galway -9.05 53.27; Killarney -9.5 52.06 ~; Cork -8.47 51.9");
+s("europe","e-nordics","Sweden, Norway and Lapland","Ferry from Helsinki to Stockholm, then the fjords and the Arctic.",
+ "Stockholm 18.07 59.33 *; Oslo 10.75 59.91 *; Bergen 5.32 60.39 *; Flåm 7.11 60.86 ~; Geirangerfjord 7.2 62.1 ~; Trondheim 10.4 63.43; Bodø 14.4 67.28; Lofoten 14.57 68.23 *; Tromsø 18.96 69.65 *; North Cape 25.78 71.17 ~; Rovaniemi 25.73 66.5 *");
+s("europe","e-denmark","Denmark and Gothenburg","Over the Øresund to the Swedish west coast.",
+ "Odense 10.39 55.4 ~; Copenhagen 12.57 55.68 *; Aarhus 10.2 56.16 ~; Malmö 13.0 55.6; Gothenburg 11.97 57.71 *");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/stages/africa.js ---- */
+/**
+ * Stages: the four Africa arcs (North Africa, Nile and East Africa, Southern Africa loop, West Africa Atlantic).
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+/* ============ AFRICA: NORTH AFRICA ARC ============ */
+s("an","","Morocco: Tangier to Casablanca","In from Spain by the Tarifa ferry. Blue town, imperial cities, the coast.",
+ "Tangier -5.8 35.76 *; Tetouan -5.37 35.57 ~; Chefchaouen -5.26 35.17 *; Volubilis -5.55 34.07 ~; Meknes -5.55 33.9 ~; Fes -5.0 34.03 *; Rabat -6.84 34.02 *; Casablanca -7.59 33.57 *","","Fly or sail on: the Morocco–Algeria land border has been closed for decades, so check");
+s("an","an-atlas","Atlas and Sahara","Marrakech, the High Atlas and the dunes.",
+ "Marrakech -8.0 31.63 *; Aït Benhaddou -7.13 31.05 ~; Ouarzazate -6.9 30.92; Todra Gorge -5.58 31.58 ~; Dades Gorge -5.9 31.5 ~; Merzouga -4.0 31.1 *");
+s("an","","Algeria","Roman ruins, the Casbah and the east.",
+ "Oran -0.64 35.7; Tipaza 2.44 36.59 ~; Algiers 3.06 36.75 *; Djemila 5.74 36.32 ~; Constantine 6.61 36.37 *; Timgad 6.47 35.48 ~; Ghardaïa 3.67 32.49 ~","","Ferries link Spain and France with Algeria");
+s("an","","Tunisia","Ferries from Italy, Carthage and the desert south. Libya is skipped for now.",
+ "Tunis 10.18 36.8 *; Carthage 10.33 36.85 ~; Dougga 9.22 36.42 ~; Sousse 10.64 35.83; Kairouan 10.1 35.68 *; El Djem 10.71 35.3 ~; Tozeur 8.13 33.92 *; Douz 9.02 33.46; Matmata 9.97 33.54 ~; Djerba 10.86 33.8 *","","Fly Tunis to Cairo");
+s("an","","Egypt: Alexandria and Cairo","The Mediterranean coast and the capital.",
+ "Alexandria 29.92 31.2 *; Siwa Oasis 25.52 29.2 ~+; Port Said 32.3 31.26 ~; Cairo 31.24 30.04 *; Giza Pyramids 31.13 29.98 ~; Saqqara 31.22 29.87 ~; Fayoum 30.84 29.31 ~");
+s("an","an-western-desert","Western Desert oases","The White Desert loop from Cairo to Luxor.",
+ "Bahariya 28.85 28.35; White Desert 28.2 27.3 *; Farafra 27.97 27.06; Dakhla Oasis 29.0 25.5; Kharga 30.55 25.45");
+
+/* ============ AFRICA: NILE AND EAST AFRICA ARC ============ */
+s("ae","","Egypt: Luxor to Aswan","Temples along the Nile, then the Lake Nasser ferry to Sudan.",
+ "Luxor 32.64 25.7 *; Valley of the Kings 32.6 25.74 ~; Edfu 32.87 24.98; Kom Ombo 32.93 24.45 ~; Aswan 32.9 24.09 *; Abu Simbel 31.62 22.34 ~+","","Lake Nasser ferry to Wadi Halfa, or fly to Addis");
+s("ae","ae-sinai","Sinai and the Red Sea","Mountains and reefs. The Aqaba–Nuweiba ferry is the way in from Jordan.",
+ "St Catherine 33.95 28.56 +; Mount Sinai 33.98 28.54 ~; Nuweiba 34.67 29.03 ~+; Dahab 34.5 28.5 *; Sharm el-Sheikh 34.33 27.91; Hurghada 33.8 27.26 *; Marsa Alam 34.9 25.06");
+s("ae","","Sudan","Pyramids of Meroë and the confluence of the Niles. Overland through Sudan needs a fresh check, otherwise fly Cairo to Addis.",
+ "Wadi Halfa 31.33 21.8; Dongola 30.48 19.17; Jebel Barkal 31.85 18.55 ~; Meroë 33.75 16.94 *; Khartoum 32.53 15.5 *; Kassala 36.4 15.45 ~","check");
+s("ae","","Ethiopia: the northern historic circuit","Addis, Lake Tana, Gondar, Axum and the rock churches of Lalibela. Regional conflict makes this one a check.",
+ "Addis Ababa 38.76 9.03 *; Bahir Dar 37.39 11.6 *; Gondar 37.47 12.6 *; Simien Mountains 38.0 13.2 ~; Axum 38.72 14.12 *; Mekele 39.47 13.5; Lalibela 39.04 12.03 *; Erta Ale 40.67 13.6 ~; Harar 42.12 9.31 ~","check");
+s("ae","ae-omo","Rift Valley and Omo","Lakes, Konso villages and the Omo tribes.",
+ "Hawassa 38.47 7.06; Arba Minch 37.55 6.04; Jinka 36.57 5.78; Turmi 36.5 4.9 ~; Moyale 39.05 3.52","","Northern Kenya road to Nairobi: check");
+s("ae","","Kenya: Nairobi and the Rift","Safari country. The SGR train runs Nairobi to Mombasa.",
+ "Nairobi 36.82 -1.29 *; Lake Nakuru 36.08 -0.37 ~; Lake Naivasha 36.43 -0.77 ~; Mount Kenya 37.31 -0.15 ~; Maasai Mara 35.15 -1.5 *; Amboseli 37.26 -2.65 ~","","Overland south to Arusha");
+s("ae","ae-swahili","Swahili coast","Mombasa down through Zanzibar to Mozambique Island.",
+ "Mombasa 39.67 -4.04 *; Lamu 40.9 -2.27 ~+; Diani Beach 39.57 -4.3 ~; Tanga 39.1 -5.07; Zanzibar Stone Town 39.19 -6.16 *; Dar es Salaam 39.28 -6.79 *; Kilwa Kisiwani 39.5 -8.96 ~; Mtwara 40.19 -10.27; Pemba (Mozambique) 40.52 -12.97 ~; Mozambique Island 40.73 -15.03 *");
+s("ae","ae-gorillas","Uganda and Rwanda","The source of the Nile and the mountain gorillas.",
+ "Jinja 33.2 0.44 ~; Kampala 32.58 0.35 *; Murchison Falls 31.7 2.28 ~; Queen Elizabeth NP 30.0 -0.2 ~; Bwindi 29.7 -1.05 *; Volcanoes NP 29.5 -1.47 ~; Lake Kivu 29.26 -1.7 ~; Kigali 30.06 -1.95 *");
+s("ae","","Tanzania: Kilimanjaro to the south","Kilimanjaro, then south along the Tazara corridor.",
+ "Moshi 37.34 -3.35; Kilimanjaro 37.35 -3.07 ~+; Arusha 36.68 -3.37 *; Dodoma 35.74 -6.16; Iringa 35.7 -7.77; Ruaha 34.9 -7.6 ~; Mbeya 33.46 -8.9");
+s("ae","ae-safari","Northern safari circuit","The classic Tanzania parks.",
+ "Tarangire 36.0 -3.85 ~; Lake Manyara 35.8 -3.6; Ngorongoro 35.58 -3.17 *; Serengeti 34.83 -2.33 *");
+s("ae","","Malawi and Zambia","Lake Malawi, Lusaka and on to Livingstone.",
+ "Karonga 33.9 -9.93; Livingstonia 34.1 -10.6 ~; Nkhata Bay 34.3 -11.6 *; Lilongwe 33.78 -13.97 *; Cape Maclear 34.83 -14.0 ~; South Luangwa 31.8 -13.0 ~; Lusaka 28.28 -15.39 *; Kafue NP 26.0 -15.0 ~; Livingstone 25.86 -17.85 *");
+
+/* ============ AFRICA: SOUTHERN AFRICA LOOP ============ */
+s("as","","Victoria Falls and Chobe","Where the Zambezi drops, and Botswana's elephants.",
+ "Victoria Falls 25.85 -17.93 *; Kasane (Chobe) 25.15 -17.8 *");
+s("as","","Botswana: Okavango","Delta, salt pans and the Kalahari.",
+ "Nata 26.2 -20.2 ~; Makgadikgadi 25.5 -20.6 ~; Maun 23.42 -19.98 *; Moremi 23.0 -19.2 ~; Ghanzi 21.7 -21.7");
+s("as","","Namibia","Dunes, desert coast, Etosha and the canyon.",
+ "Windhoek 17.08 -22.56 *; Etosha 16.0 -18.8 *; Spitzkoppe 15.2 -21.8 ~; Swakopmund 14.53 -22.68 *; Walvis Bay 14.5 -22.96 ~; Sossusvlei 15.3 -24.73 *; Lüderitz 15.16 -26.65 ~; Fish River Canyon 17.6 -27.6 *");
+s("as","","South Africa: Cape Town and the Garden Route","The Cape, wine country and the south coast.",
+ "Cape Town 18.42 -33.92 *; Cape Point 18.5 -34.36 ~; Stellenbosch 18.86 -33.93 ~; Hermanus 19.24 -34.42 ~; Oudtshoorn 22.2 -33.6 ~; Knysna 23.05 -34.04 *; Tsitsikamma 23.9 -34.0 ~; Gqeberha 25.6 -33.96 +; Addo 25.7 -33.45 ~");
+s("as","","South Africa: Wild Coast, Durban and the Drakensberg","Beaches and mountains up to Zululand.",
+ "Coffee Bay 29.15 -31.98 ~; Durban 31.03 -29.86 *; Drakensberg 29.2 -29.0 *; Sani Pass 29.3 -29.58 ~; Maseru (Lesotho) 27.48 -29.31 ~+; St Lucia 32.4 -28.38 ~; Hluhluwe 31.9 -28.0 ~");
+s("as","","South Africa: Johannesburg and Kruger","The big city, then the park.",
+ "Johannesburg 28.05 -26.2 *; Pretoria 28.19 -25.75 ~; Blyde River Canyon 30.8 -24.6 ~; Kruger 31.5 -24.0 *");
+s("as","as-zimbabwe","Zimbabwe","Falls to Great Zimbabwe, then south to Johannesburg.",
+ "Hwange 26.5 -18.9 ~; Bulawayo 28.58 -20.15; Matobo Hills 28.5 -20.5 ~; Great Zimbabwe 30.93 -20.27 *; Harare 31.05 -17.83 ~");
+s("as","as-angola","Angola link","Up the Atlantic side from Namibia.",
+ "Ruacana 14.2 -17.4 ~; Lubango 13.5 -14.9; Benguela 13.4 -12.58; Luanda 13.23 -8.84 *");
+s("as","as-mozambique","Eswatini and the Mozambique coast","Out of Johannesburg to the Indian Ocean.",
+ "Mbabane (Eswatini) 31.13 -26.32 *; Maputo 32.57 -25.97 *; Tofo Beach 35.55 -23.85 *; Vilankulo 35.3 -22.0 ~; Gorongosa 34.4 -18.8 ~; Beira 34.84 -19.84");
+s("as","as-islands","Madagascar and Mauritius","Optional island branch, by air.",
+ "Antananarivo 47.5 -18.9 *; Andasibe 48.4 -18.95 ~; Antsirabe 47.03 -19.87; Ranomafana 47.45 -21.25 ~; Isalo 45.4 -22.55 ~; Morondava Baobab Avenue 44.42 -20.25 ~; Nosy Be 48.27 -13.3 ~; Port Louis (Mauritius) 57.5 -20.16 ~");
+
+/* ============ AFRICA: WEST AFRICA ATLANTIC ARC ============ */
+s("aw","","Morocco's Atlantic coast and Western Sahara","South from Marrakech to the Sahara coast. The status of Western Sahara needs a check.",
+ "Essaouira -9.77 31.51 *; Agadir -9.6 30.43; Sidi Ifni -10.17 29.38 ~; Laâyoune -13.2 27.15; Dakhla -15.96 23.7 *");
+s("aw","","Mauritania","Desert coast, the ore train and the oases.",
+ "Nouadhibou -17.0 20.93; Nouakchott -15.98 18.08 *; Atar -13.05 20.52 ~; Chinguetti -12.37 20.46 ~");
+s("aw","","Senegal and the Gambia","Dakar, Saint-Louis and the river.",
+ "Saint-Louis -16.5 16.03 *; Lac Rose -17.23 14.84 ~; Dakar -17.47 14.69 *; Gorée -17.4 14.67 ~; Saloum Delta -16.7 13.9 ~; Banjul -16.58 13.45 *; Kunta Kinteh -16.0 13.33 ~");
+s("aw","","Guinea-Bissau, Guinea, Sierra Leone and Liberia","The Upper Guinea coast.",
+ "Bissau -15.6 11.86; Bijagós Islands -16.0 11.2 ~; Conakry -13.7 9.5; Freetown -13.23 8.48 *; Monrovia -10.8 6.3");
+s("aw","","Côte d'Ivoire and Ghana","Abidjan, the old forts and Accra.",
+ "Abidjan -4.02 5.36 *; Grand-Bassam -3.74 5.2 ~; Yamoussoukro -5.28 6.82 ~; Cape Coast -1.25 5.1 *; Accra -0.19 5.6 *; Kumasi -1.62 6.69 ~");
+s("aw","","Togo, Benin and Nigeria","Lomé to Lagos.",
+ "Lomé 1.22 6.13 *; Ouidah 2.09 6.37 ~; Cotonou 2.42 6.37; Abomey 1.99 7.18 ~; Lagos 3.38 6.52 *; Benin City 5.63 6.34 ~; Calabar 8.33 4.95 ~");
+s("aw","","Cameroon and Gabon","The Gulf of Guinea's far corner.",
+ "Douala 9.7 4.05 *; Limbe 9.2 4.02 ~; Yaoundé 11.5 3.85 ~; Libreville 9.45 0.39 *");
+s("aw","aw-sahel","The Sahel","Bamako, Timbuktu, Dogon country and Niamey. The Sahel needs a fresh check before anything is booked.",
+ "Bamako -8.0 12.64 *; Djenné -4.55 13.9 ~; Mopti -4.2 14.5; Bandiagara (Dogon) -3.6 14.35 ~; Timbuktu -3.0 16.77 ~+; Ouagadougou -1.52 12.37 *; Niamey 2.11 13.51 *; Agadez 7.99 16.97 ~","check");
+s("aw","aw-capeverde","Cabo Verde","Optional island branch, by air.",
+ "Praia -23.51 14.92 *; Mindelo -24.99 16.89; Santo Antão -25.1 17.05 ~");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/stages/americas.js ---- */
+/**
+ * Stages: the three Americas arcs (North, Central, South).
+ * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+/* ============ AMERICAS: NORTH AMERICA ARC ============ */
+s("na","","Alaska","In from Japan or Korea across the Pacific. Glaciers, Denali and the Dalton Highway.",
+ "Anchorage -149.9 61.22 *; Seward -149.44 60.1 ~; Homer -151.55 59.64 ~; Talkeetna -150.1 62.32 ~; Denali -151.0 63.07 *; Fairbanks -147.72 64.84 *; Deadhorse -148.5 70.2 ~; Juneau -134.42 58.3 ~; Skagway -135.3 59.46 ~");
+s("na","","Yukon, Alberta and British Columbia","The Alaska Highway south, the Rockies, then the coast at Vancouver.",
+ "Dawson City -139.43 64.06 ~; Whitehorse -135.06 60.72 *; Jasper -118.08 52.88 *; Banff -115.57 51.18 *; Lake Louise -116.18 51.43 ~; Calgary -114.07 51.05 ~; Vancouver -123.12 49.28 *; Whistler -122.95 50.12 ~; Victoria -123.37 48.43 ~");
+s("na","","Pacific Northwest","Seattle, the Olympic coast and Oregon.",
+ "Seattle -122.33 47.61 *; Olympic NP -123.6 47.8 ~; Mount Rainier -121.76 46.85 ~; Portland -122.68 45.52 *; Cannon Beach -123.96 45.89 ~; Crater Lake -122.1 42.94 ~");
+s("na","","California","The coast road to the border.",
+ "Redwood NP -124.0 41.3 *; San Francisco -122.42 37.77 *; Yosemite -119.54 37.85 ~; Monterey -121.89 36.6 ~; Big Sur -121.8 36.27 ~; Santa Barbara -119.7 34.42 ~; Los Angeles -118.24 34.05 *; Death Valley -116.9 36.5 ~; Joshua Tree -115.9 33.9 ~; San Diego -117.16 32.72 *","","Cross into Mexico at Tijuana");
+s("na","na-canada","Across Canada: prairies to the Great Lakes","By road or The Canadian rail line, east from the Rockies.",
+ "Saskatoon -106.67 52.13; Winnipeg -97.14 49.9 *; Churchill -94.17 58.77 ~; Thunder Bay -89.25 48.38");
+s("na","na-canada","Ontario, Quebec and the Maritimes","From Toronto to the Atlantic.",
+ "Toronto -79.38 43.65 *; Niagara Falls -79.07 43.09 *; Ottawa -75.7 45.42; Montréal -73.57 45.5 *; Québec City -71.21 46.81 *; Halifax -63.57 44.65 *; Cape Breton -60.4 46.5 ~; Charlottetown -63.13 46.24 ~; St. John's -52.71 47.56 ~");
+s("na","na-rockies","Rockies and Midwest","Glacier, Yellowstone and the Plains to Chicago.",
+ "Glacier NP -113.8 48.7 *; Yellowstone -110.5 44.6 *; Grand Teton -110.8 43.8 ~; Salt Lake City -111.89 40.76 ~; Denver -104.99 39.74 ~+; Rocky Mountain NP -105.7 40.34 ~; Mount Rushmore -103.46 43.88 *; Badlands -102.5 43.8 ~; Minneapolis -93.27 44.98; Chicago -87.63 41.88 *");
+s("na","na-southwest","Southwest and the Deep South","Desert parks, Santa Fe, Texas and New Orleans.",
+ "Las Vegas -115.14 36.17 *; Zion -113.03 37.3 ~; Bryce Canyon -112.17 37.59 ~; Grand Canyon -112.11 36.06 *; Monument Valley -110.1 36.98 ~; Sedona -111.76 34.87 ~; Santa Fe -105.94 35.69 *; Austin -97.74 30.27 *; San Antonio -98.49 29.42 ~; New Orleans -90.07 29.95 *; Memphis -90.05 35.15; Nashville -86.78 36.16 *; Great Smoky Mountains -83.5 35.6 ~; Atlanta -84.39 33.75");
+s("na","na-east","East Coast","Boston down to Miami and the Keys.",
+ "Boston -71.06 42.36 *; New York -74.0 40.71 *; Philadelphia -75.16 39.95; Washington DC -77.04 38.91 *; Shenandoah -78.4 38.5 ~; Charleston -79.93 32.78 *; Savannah -81.1 32.08 ~; Miami -80.19 25.76 *; Everglades -80.9 25.4 ~; Key West -81.78 24.56 ~");
+
+/* ============ AMERICAS: CENTRAL AMERICA ARC ============ */
+s("ca","","Northwest Mexico","Over the border at Tijuana, then the Pacific side.",
+ "Tijuana -117.04 32.53 *; Mazatlán -106.41 23.22 *");
+s("ca","ca-baja","Baja California","The peninsula, optional.",
+ "Ensenada -116.6 31.87; Loreto -111.35 26.0 *; La Paz (Baja) -110.31 24.14 *; Los Cabos -109.9 22.89 *");
+s("ca","ca-copper","Copper Canyon","By the Chepe train.",
+ "Los Mochis -108.99 25.8; Creel -107.63 27.75 *; Chihuahua -106.09 28.63 *");
+s("ca","","Central Mexico highlands","Colonial cities and the capital.",
+ "Guadalajara -103.35 20.67 *; Tequila -103.84 20.88 ~; Guanajuato -101.26 21.02 *; San Miguel de Allende -100.74 20.91 ~; Mexico City -99.13 19.43 *; Teotihuacán -98.84 19.69 ~; Puebla -98.2 19.04");
+s("ca","","Oaxaca and Chiapas","Food, mountains and Maya country in the south.",
+ "Oaxaca -96.73 17.06 *; Monte Albán -96.77 17.04 ~; Puerto Escondido -97.08 15.86 ~; San Cristóbal de las Casas -92.64 16.74 *; Palenque -91.98 17.48 *");
+s("ca","","Yucatán and the Caribbean coast","Maya sites, cenotes and the sea.",
+ "Campeche -90.53 19.85 ~; Mérida -89.62 20.97 *; Chichén Itzá -88.57 20.68 ~; Cancún -86.85 21.16 +; Tulum -87.46 20.21 *; Bacalar -88.39 18.68 +");
+s("ca","","Belize","Cayes and jungle.",
+ "Belize City -88.19 17.5; Caye Caulker -88.0 17.74 ~; San Ignacio -89.07 17.16 *; Placencia -88.37 16.52 ~");
+s("ca","","Guatemala","Tikal, Lake Atitlán and Antigua.",
+ "Flores -89.89 16.93 *; Tikal -89.62 17.22 ~; Semuc Champey -89.96 15.78 ~; Río Dulce -88.8 15.8 ~; Guatemala City -90.51 14.63; Antigua -90.73 14.56 *; Chichicastenango -91.11 14.94 ~; Lake Atitlán -91.2 14.69 *");
+s("ca","","El Salvador and Honduras","Copán and the coffee route.",
+ "Copán -89.14 14.84 *; Santa Ana -89.56 14.0; Juayúa -89.74 13.85 ~; San Salvador -89.2 13.69 *; El Tunco -89.38 13.49 ~; Tegucigalpa -87.2 14.07 ~; Roatán -86.53 16.34 ~");
+s("ca","","Nicaragua","Colonial cities and the volcano island.",
+ "León -86.88 12.43 *; Managua -86.25 12.13; Granada -85.96 11.93 *; Ometepe -85.55 11.5 *");
+s("ca","","Costa Rica","Cloud forest, volcanoes and two coasts.",
+ "Arenal -84.7 10.46 ~; Monteverde -84.8 10.3 *; San José -84.08 9.93 *; Tortuguero -83.5 10.54 ~; Manuel Antonio -84.15 9.39 ~; Puerto Viejo -82.8 9.65 ~");
+s("ca","","Panama","The canal, islands and the end of the road at the Darién Gap.",
+ "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","","No road across the Darién Gap: fly or sail to Colombia");
+s("ca","ca-caribbean","Cuba","From Cancún across to the island.",
+ "Havana -82.37 23.14 *; Viñales -83.7 22.62 ~; Trinidad -80.0 21.8 *; Santiago de Cuba -75.83 20.02 *");
+s("ca","ca-caribbean","Jamaica","Reggae and the Blue Mountains.",
+ "Kingston -76.8 17.97 *; Blue Mountains -76.6 18.05 ~");
+s("ca","ca-caribbean","Haiti","Needs a fresh check before anything is planned.",
+ "Port-au-Prince -72.34 18.54 *","check");
+s("ca","ca-caribbean","Dominican Republic and Puerto Rico","Colonial Santo Domingo and the island chain.",
+ "Santo Domingo -69.9 18.48 *; Samaná -69.3 19.2 ~; Punta Cana -68.4 18.58 ~; San Juan -66.1 18.47 *");
+
+/* ============ AMERICAS: SOUTH AMERICA ARC ============ */
+s("sa","","Colombia","Caribbean coast, coffee and the Andes.",
+ "Cartagena -75.51 10.39 *; Santa Marta -74.2 11.24 ~; Tayrona -73.9 11.3 ~; Medellín -75.57 6.25 *; Guatapé -75.16 6.23 ~; Bogotá -74.07 4.71 *; Villa de Leyva -73.53 5.63 ~; Salento -75.57 4.64 *; Cali -76.53 3.45; Popayán -76.6 2.44; San Agustín -76.28 1.89 ~; Ipiales -77.59 0.81");
+s("sa","","Ecuador","Volcano avenue and the colonial south.",
+ "Quito -78.47 -0.18 *; Cotopaxi -78.44 -0.68 ~; Quilotoa -78.9 -0.85 ~; Baños -78.42 -1.4 *; Cuenca -79.0 -2.9 *; Guayaquil -79.9 -2.17 ~; Galápagos -90.3 -0.74 ~");
+s("sa","","Peru","Machu Picchu, the Sacred Valley and the coast.",
+ "Máncora -80.97 -4.1 ~; Trujillo -79.03 -8.11; Huaraz -77.53 -9.53 *; Lima -77.04 -12.05 *; Paracas -76.25 -13.8 ~; Huacachina -75.76 -14.09 ~; Nazca -74.93 -14.83; Arequipa -71.54 -16.4 *; Colca Canyon -71.6 -15.6 ~; Cusco -71.97 -13.52 *; Ollantaytambo -72.26 -13.26 ~; Machu Picchu -72.55 -13.16 *; Rainbow Mountain -71.3 -13.87 ~; Puno -70.02 -15.84 *");
+s("sa","","Bolivia","Altiplano, the Salar and the white city.",
+ "Copacabana -69.09 -16.17; Isla del Sol -69.15 -16.0 ~; La Paz -68.15 -16.5 *; Sucre -65.26 -19.03 *; Potosí -65.75 -19.58 ~; Uyuni -66.83 -20.46 *; Salar de Uyuni -67.5 -20.2 ~; Tupiza -65.7 -21.45");
+s("sa","","Chile: north and central","Atacama, then the wine valleys and Santiago.",
+ "Arica -70.3 -18.48 ~; Iquique -70.15 -20.2 ~; San Pedro de Atacama -68.2 -22.91 *; La Serena -71.25 -29.9; Valparaíso -71.62 -33.05 *; Santiago -70.65 -33.45 *; Easter Island -109.4 -27.1 ~");
+s("sa","","Chile: lakes, Chiloé and the Carretera Austral","Volcanoes, islands and Chile's southern road.",
+ "Pucón -71.95 -39.28 *; Valdivia -73.25 -39.82 ~; Puerto Varas -72.98 -41.32; Chiloé (Castro) -73.76 -42.48 *; Coyhaique -72.07 -45.57 *; Puerto Río Tranquilo -72.6 -46.6 ~; Villa O'Higgins -72.56 -48.47");
+s("sa","","Patagonia to the end of the world","Glaciers, granite and Ushuaia.",
+ "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","","The southern end");
+s("sa","sa-argentina","Argentina and Uruguay","The northwest, Mendoza, Buenos Aires and the river across to Uruguay.",
+ "Purmamarca -65.5 -23.74 ~; Salta -65.41 -24.79 *; Cafayate -65.97 -26.07 ~; Mendoza -68.84 -32.89 *; Córdoba -64.18 -31.42; Buenos Aires -58.38 -34.6 *; Colonia -57.84 -34.47 ~; Montevideo -56.19 -34.9 *; Punta del Este -54.95 -34.96 ~; Bariloche -71.31 -41.13 ~");
+s("sa","sa-brazil","Brazil: Iguazú to Rio","Waterfalls, then the southern coast and Rio.",
+ "Iguazú Falls -54.44 -25.69 *; Pantanal -56.8 -17.6 ~; Bonito -56.5 -21.1 ~; Florianópolis -48.55 -27.6; São Paulo -46.63 -23.55 *; Paraty -44.72 -23.22 ~; Rio de Janeiro -43.17 -22.9 *; Ouro Preto -43.5 -20.38 ~; Brasília -47.93 -15.8 ~");
+s("sa","sa-brazil","Brazil: the northeast coast","Salvador to Fortaleza and the dunes.",
+ "Salvador -38.5 -12.97 *; Chapada Diamantina -41.4 -12.6 ~; Recife -34.88 -8.05 *; Fortaleza -38.54 -3.73 *; Jericoacoara -40.5 -2.8 ~; Lençóis Maranhenses -43.0 -2.5 ~; São Luís -44.3 -2.53");
+s("sa","sa-amazon","Amazon river route","By boat from Iquitos to Belém.",
+ "Tena -77.8 -0.99 ~; Iquitos -73.25 -3.75 *; Leticia -69.94 -4.2; Manaus -60.02 -3.12 *; Santarém -54.7 -2.44 ~; Belém -48.5 -1.46 *");
+s("sa","sa-venezuela","Venezuela","Angel Falls and the Caribbean coast. Needs a fresh check.",
+ "Mérida (Venezuela) -71.14 8.6 ~; Caracas -66.9 10.48 *; Los Roques -66.75 11.85 ~; Angel Falls -62.5 5.97 *; Roraima -60.76 5.14 ~","check");
+s("sa","sa-venezuela","The Guianas","Guyana, Suriname and French Guiana.",
+ "Georgetown -58.16 6.8; Paramaribo -55.2 5.85; Cayenne -52.33 4.94");
+})(GEP.stage);
+</script>
+<script>
+/* ---- src/data/land.js ---- */
+/**
+ * Coarse hand-made landmass outlines and inland seas for the sketch map. Not survey data.
+ * Each polygon is a string of "lon,lat" pairs. `water` polygons are painted over the land.
+ * Depends on: shared.js.  Exposes: GEP.data.land, GEP.data.water.
+ */
+GEP.data.land = [
+/* Eurasia mainland incl. Arabia */
+"-5.6,36 -9,37 -9.5,38.7 -8.8,41.5 -9.3,43 -8,43.7 -1.8,43.4 -1.2,46.2 -2.2,47.3 -4.7,48.3 -1.6,48.7 -1.2,49.7 1.6,50.2 3.5,51.3 4.5,52.6 6.5,53.5 8.7,53.9 8.2,55.5 8.2,57 10.6,57.7 10.3,56 9.8,55 10.9,54.2 14,54 18.5,54.7 19.5,54.4 21,55.2 21,57 23,57.2 24,58 24.5,59.4 30,59.9 26,60.4 22,60 21.5,61.5 21.3,63 25,65 24,65.8 22,65.7 21,64.5 17.5,62.5 17.5,60.5 19,59.8 18.5,59.2 16.5,57.5 16,56.2 14.3,55.5 12.8,55.5 12,57 11,58.5 11.2,59.2 10.6,60.0 10.0,59.3 8,58 5.1,59 5,61 5.2,62.2 8,63.4 11,64.8 13,66.5 15,68.3 19,70 23,70.8 28,71.1 31,70.3 33,69.4 40,67.8 41,66.4 34,66.5 33,65 36,64.2 40,64.6 44,66.2 44,68 53,68.8 60,69 68,69 70,73 80,73.5 87,75 100,76.5 105,77.7 113,74 125,73.5 130,71 140,72.7 150,71.5 160,70 170,70 180,69 180,65 178,64.5 172,60.5 163,59.8 162,56 156.5,51.2 156,57 156,60 151,59.4 143,59.2 137,54 141,53 140,48 135,43 132,42.8 130,42.4 129.5,40.5 127.5,39.5 129.5,37 129.4,35.1 126.5,34.4 126.5,37.5 125,38.5 124.5,39.8 121.5,39 122,40.5 118,39 119,37.2 122.5,37.2 120.5,36 119,34.5 121.8,31.5 122,30 121,28 119,25.5 117,23.5 114,22.3 110.5,21.2 108,21.6 106.5,20 105.7,19 108.8,15.5 109.3,12 107,10.4 105,8.6 104.8,10 102.5,12 100.5,13.3 99.5,10.5 100.3,7 102,6 103.5,4 104.2,1.4 103.5,1.3 101,2.7 100.4,5.2 98.5,8 98.4,10.5 97.8,16 94.3,16.5 94,19 92.2,21.2 91,22.5 90,21.8 86.8,20.5 84.8,19 82.3,16.5 80.2,15.5 80.2,13 79.8,10.3 78,8.9 77.2,8.1 76.2,10 74.8,12.7 73.2,17.5 72.8,21 70.5,20.8 68.8,22.3 70,24 67,24.8 62,25.2 57,25.7 56.5,27.1 54,26.7 51.5,27.9 50,30 48.5,30 47.8,29.9 48.7,27.8 50,26.5 50.8,25 51.6,24.2 54,24 56,26 56.5,25 58.5,23.7 59.8,22.4 58.7,20.4 57.8,19 55.2,17.3 52.2,15.8 49,14.2 45,12.8 43.4,12.7 42.8,15 41,18 39,21.5 37,25 35,28.2 34.9,29.5 34.3,31.3 35.1,33 35.8,34.6 36,36.5 34,36.2 32,36.1 30.5,36.6 29,36.6 27.4,37 26.5,38.3 26.3,39.5 26.2,40.2 26.5,40.8 24.5,40.9 23.5,40.3 22.9,40.6 22.7,39.4 24,38.2 24,37.7 23,36.5 22.4,36.5 21.7,37 21.2,38 21,39.2 19.4,40.4 19.3,41.9 18.5,42.5 16,43.5 14.5,45 13.7,45.6 12.3,45.3 12.5,44.2 14,42.3 16,41.9 18.5,40.2 17,39.5 16.5,38.5 15.7,37.95 16,39.3 15.6,40 14.5,40.6 12.5,41.5 10.5,42.8 9.5,44.2 8,43.9 6.5,43.2 4.5,43.4 3.1,43.2 3.2,42 0.8,41 -0.3,39.5 0,38.7 -0.8,37.6 -2.2,36.7 -4.5,36.7",
+/* Africa */
+"-5.9,35.8 -2,35.1 1,36.5 5,36.8 10.2,37.3 11,36.9 10.3,35.5 11,33.5 15.2,32.3 20,32.2 20,31 25,31.7 30,31.4 32.3,31.2 32.6,29.9 33.8,27.3 35.5,24 37.2,21 37.5,18.5 38.6,17.8 39.5,15.5 41.5,13.5 43,12.5 43.3,11.8 44.5,10.4 48,11.2 51.3,11.8 51,10.3 49.5,7.5 47.5,4.5 44,1.5 41.5,-1.5 40.2,-3 39.2,-5 38.8,-6.8 39.3,-8.5 40.6,-10.5 40.5,-14 40.8,-15.5 37,-17.6 35,-19.8 35.4,-22 35.5,-24 33,-25.5 32.9,-26.8 32.3,-28.5 31,-30 28.5,-32.5 26,-34 22.5,-34 20,-34.8 18.4,-34.1 18,-32.5 17.2,-30.5 15.3,-27.2 14.5,-22.5 11.8,-17.5 12.2,-15 13.5,-12 13.2,-9 12.2,-6 9.8,-2.5 9.3,0 9.7,3.5 8.7,4.5 6.5,4.3 4.5,6.2 1.5,6.1 -2,4.8 -4.5,5.2 -7.5,4.4 -11,6.8 -13.2,8.5 -15,11 -16.8,12.5 -17.4,14.7 -16.5,16.5 -16.2,19.5 -17,21 -15.9,23.5 -14.5,26.2 -13,27.7 -10,29.5 -9.8,31.5 -8.5,33.2 -6.8,34.3",
+/* Madagascar */
+"49.3,-12 50.5,-15.5 49.8,-17.5 48.5,-21 47.3,-25 45,-25.5 43.7,-23.5 43.3,-21.5 44.2,-19.8 44.2,-16.5 46.3,-15.7 48,-13.5",
+/* The Americas, North to South in one piece */
+"-168,65.6 -166,68.3 -163,69.5 -156.5,71.3 -141,69.7 -128,70 -115,68 -108,68 -95,68.5 -85,69.5 -81,67 -87,64.5 -93.5,61 -94.5,58.7 -92.5,57 -88,56.5 -82.3,55 -82.2,52.9 -79.8,51.3 -79.2,54.5 -77,56.5 -78,59 -77.5,62.4 -73,62 -69,61 -65,60.5 -64.5,58.8 -61.5,56.5 -58,54.5 -56,52 -60,50.2 -66.5,50.2 -70.5,47 -65,49.2 -64.5,48.8 -64.2,47.1 -65,45.8 -66.5,45 -64.5,45.3 -61.5,45.3 -60,46.2 -63.7,44.6 -66,43.5 -67,44.8 -70,43.8 -70.8,42.8 -70,41.8 -72,41.2 -74,40.5 -74,39.5 -75.5,38 -76,37 -75.7,35.2 -77.5,34.2 -79.5,33 -81,31.5 -81.4,30 -80,27 -80.1,25.5 -81.2,25.2 -82.7,27.8 -82.7,29.2 -84,30 -85.5,29.7 -88,30.3 -89.5,30.1 -89.2,29 -91,29.2 -93.8,29.7 -95.5,28.8 -97.2,27.5 -97.4,25.3 -97.7,22.5 -97.2,20.5 -96.3,19 -94.5,18.2 -92,18.5 -91,19.3 -90.5,21 -87,21.5 -87.3,19.6 -88,18 -88.3,15.8 -84.5,15.8 -83.2,14.9 -83.6,11 -82.3,9.2 -80,9.4 -77.4,8.6 -76,9.5 -75.5,10.7 -72,11.8 -70,12.2 -68,10.6 -64,10.6 -62,10.7 -61,9 -58,6.5 -55,5.8 -52,4.8 -50,1.5 -50.5,0 -48.5,-1.5 -44.5,-2.5 -40,-2.8 -37,-4.8 -35,-6 -34.8,-8 -37,-11 -39,-13.5 -39,-17.8 -41,-22 -43.2,-23 -47,-24.8 -48.7,-26.5 -48.8,-28.5 -51,-31 -53.5,-34 -55,-35 -56,-34.9 -58.5,-34.2 -58.4,-35.5 -57.5,-36.5 -57,-38 -62,-39 -62.2,-41 -65,-41 -64.2,-42.8 -65.5,-45 -67.5,-46.5 -66,-48 -69,-51 -68.4,-52.4 -71,-53.8 -68,-55 -72.5,-54 -74.5,-52 -75.5,-48 -74,-44 -73.7,-40 -73.5,-37 -71.5,-32.5 -71.5,-28 -70.3,-23 -70.3,-18.4 -75,-15 -76.5,-13.5 -79,-8 -81,-6 -81.2,-4.2 -80,-2.5 -80.5,-0.5 -80,1 -78.8,1.8 -77.4,4 -77.5,6.5 -77.3,8 -80,7.3 -81.5,8 -83.5,8.4 -85.7,10 -87,12.3 -88.5,13.2 -91.5,14 -94,16 -96.5,15.7 -99,16.7 -102,18 -105.5,20 -105.3,21.5 -106,23 -108,25.3 -109.5,26.5 -112.5,29 -114.8,31.8 -112.8,28.5 -111,26 -109.5,23 -110.3,23 -112,24.8 -114.5,27.8 -115.5,29.8 -116.7,31.8 -117.2,32.7 -118.5,34 -120.5,34.5 -121.9,36.6 -122.5,37.8 -124,40.3 -124.2,43 -124,46.3 -124.7,48.4 -123,48.3 -123,49.5 -125,50.5 -128,52.5 -130.5,54.5 -133,57 -136,58.2 -140,59.7 -145,60.2 -148,59.8 -151.8,59.3 -153,57.5 -157.5,56.5 -162,55 -164.5,54.5 -161,58 -162,59.7 -165,60.8 -165,62.5 -161,64.5",
+/* Islands */
+"130.9,34 132,34.9 135.5,35.7 136.7,37.3 138.5,37.5 139.8,39.8 140,41.3 141.5,41.4 141.9,39.5 141,38 140.8,36.9 140.8,35.7 139.8,35 138.2,34.6 136.9,34.5 135.8,33.5 135,34.3 133,34.2 131,33.9",
+"129.7,33.4 131,33.9 131.9,33.2 131.4,31.4 130.7,31 130.2,32 129.7,33.1",
+"132.4,33.7 134.6,34.2 134.2,33.3 133,32.8 132.4,33.3",
+"140,41.5 141.2,41.8 143.3,42 145.5,43.3 145.3,44.2 142,45.5 141.6,43.5 140.3,43.2 139.8,42.6 140.1,41.8",
+"142,46 143.5,46.5 143.2,49 143.2,52 142.5,54 141.8,53.5 142,50",
+"120.1,23 121,25.1 121.9,24.9 121,22",
+"108.7,19.5 110.5,20.1 111,19.6 110,18.3 108.7,18.5",
+"79.8,8 80.2,9.8 81.9,7.5 81.4,6.2 80.2,5.9 79.8,7",
+"95.3,5.6 97.5,5.2 100.5,2.4 103.5,-1 106,-3 105.8,-5.8 104.5,-5.9 102,-4 100.4,-1 98.7,1.7 96.5,3.7",
+"105.2,-6.8 106.5,-6 108.5,-6.5 111,-6.5 113,-7.1 114.5,-7.8 114.4,-8.7 110,-8.2 106.5,-7.4 105.3,-6.9",
+"109,1.5 109,-1 110.3,-2.9 112.5,-3.5 114.5,-4 116.2,-3.5 116.5,-1 117.5,0.5 118.5,1 119,5 117.5,7 116.7,6.9 115.5,5.5 114,4.5 111,2.3 109.6,2",
+"119.3,-5.5 120.5,-5 120.3,-2.8 121.5,-4.5 122.8,-5 123,-4 121.5,-1.5 123.3,0.9 125,1.6 120.8,1.2 119.8,0.3 118.8,-2.5 119.4,-3.5",
+"120.5,18.5 122.2,18.5 122.5,16.5 121.6,14.2 124,13 122,13.5 120.6,14.2 119.8,16",
+"122,7 123.5,8.5 125.5,9.8 126.5,7.5 125.5,6 124,6.8 122,6.8",
+"131,-0.8 134,-0.8 138,-1.7 141,-2.6 141,-9 138,-8.3 135,-4.5 132.5,-3.3",
+"-5.7,50.1 -3,50.7 1.4,51.1 1.7,52.7 0.2,53.5 -0.2,54.5 -1.6,55.6 -2.5,56 -1.8,57.5 -3.5,58.6 -5,58.6 -6,57.5 -5.6,56 -4.9,55 -3,54.9 -3.2,53.5 -4.6,52.8 -4.2,52 -5.2,51.7 -3,51.4 -4.2,51",
+"-10,51.8 -6.2,52.2 -6,53.7 -5.5,54.5 -7.2,55.3 -8.5,54.5 -10,53.8 -9.8,52.5",
+"-24,65.5 -22,66.4 -16,66.5 -13.5,65 -18,63.4 -22.5,63.8 -22,64.5",
+"12.4,37.9 15.6,38.3 15.1,36.7 12.5,37.6",
+"8.2,41 9.7,41 9.6,39.2 8.5,39",
+"8.6,42.4 9.5,43 9.5,41.4 8.7,41.6",
+"23.5,35.5 26.3,35.3 24,35",
+"32.3,35 34.6,35.7 33.8,34.9 32.5,34.7",
+"-80,73.5 -72,71.5 -68,70 -62,67 -65,63 -70,62.5 -75,64.5 -78,64 -79,66 -73,68 -85,70",
+"-73,78 -60,82 -30,83.5 -20,80 -18,76 -22,70 -30,68 -40,65 -43,60 -50,63 -53,67 -56,72 -66,76",
+"-85,22 -82,23.2 -77,21.6 -74.2,20.2 -77.5,19.9 -80,21.5 -84,21.8",
+"-74.4,18.4 -72.8,19.9 -70,19.8 -68.4,18.6 -71,17.8 -73.8,18.1",
+"-78.3,18.4 -76.3,18.2 -77.5,17.7",
+"-59.3,47.6 -56,51.5 -55.5,49.5 -53,46.7 -55.5,47",
+"-128.3,50.8 -124.7,48.4 -123.4,48.5 -125.2,50.1"
+];
+/* inland seas and lakes, painted in the sea colour over the land */
+GEP.data.water = [
+"28,41.2 29,41.2 31,41.1 33,42 35,42 36.5,41.3 38,40.9 41.5,41.5 41.7,42.5 40,43.5 37.5,44.8 36.5,45.3 35,45 33.5,44.4 32.5,45.4 33.5,46 31,46.5 30.5,45.5 29.7,45 28.7,44 28,42.5",
+"35,46 38,47 38.5,46.7 36,45.4",
+"47,45 49.5,46.5 51,47 53,46.8 53,45 51,44.5 50.5,44 51,42 52.8,41.5 53,40 53.8,38.5 54,37.2 51,36.7 49,37.6 49,39 48.8,41.3 47.5,42.9 47,44",
+"58.5,46.5 61,46.2 61.5,44.5 59,43.6 58,44.7",
+"104,51.5 106,52.4 108.5,54 109.9,55.7 109.2,55.9 107.5,54.2 105.5,52.8 103.7,51.9",
+"-92,46.8 -88,48.8 -84.8,47.7 -84.5,46.5 -88,47.3",
+"-87.8,42 -87.5,45.5 -86,45.8 -85.5,44.5 -86.5,42",
+"-84.8,45.9 -81.5,46 -80,44.7 -82.5,43.5 -83.5,45.2",
+"-83.4,41.7 -79,42.8 -81,42.6",
+"-79.8,43.3 -76.2,43.6 -76.5,44.2 -79,43.9",
+"32,0 34,0.3 34,-1.5 33,-2.7 31.8,-1.5",
+"29.2,-4.5 30,-6 31,-8.5 30.4,-8.3 29.5,-6.5 29.1,-5",
+"34.3,-9.5 34.8,-11.5 35,-14 34.5,-14 34.2,-11 34,-9.7"
+];
+</script>
+<script>
+/* ---- src/js/model.js ---- */
+/**
+ * model.js: turns the raw data into something the renderers can use.
+ *
+ * - parses each stage's stop string into stop objects
+ * - assigns every stage an id ("st0", ...) and a code ("S3")
+ * - indexes stops by name
+ * - builds the route polyline of every trunk and branch
+ * - validates cross-references (see validate())
+ *
+ * Pure data code: it never touches the DOM, so tools/check-data.js can run it in Node.
+ *
+ * Exposes: GEP.model = {
+ *   parseStops, stopByName, arcIds, branchIds, stagesOfTab, stagesOfArc, pathOf, bestView, validate
+ * }
+ * Depends on: shared.js and every file in src/data/.
+ */
+GEP.model = (function () {
+  const {arcs, branches, stages, tabs} = GEP.data;
+  const STOP_PATTERN = /^(.*?)\s+(-?\d+(?:\.\d+)?)\s+(-?\d+(?:\.\d+)?)\s*([*+~^]*)$/;
+  const problems = [];
+  /** @type {Object<string, Object>} first stop seen for each name */
+  const stopIndex = {};
+
+  /**
+   * Parse the stop DSL ("Name lon lat flags; ...") into stop objects.
+   * @param {string} text
+   * @returns {Array<{name:string, lon:number, lat:number, key:boolean, plus:boolean, side:boolean, hub:boolean}>}
+   */
+  function parseStops(text) {
+    const result = [];
+    text.split(";").map(part => part.trim()).filter(Boolean).forEach(part => {
+      const match = STOP_PATTERN.exec(part);
+      if (!match) { problems.push("Cannot parse stop: " + part); return; }
+      const flags = match[4];
+      result.push({
+        name: match[1], lon: Number(match[2]), lat: Number(match[3]),
+        key: flags.includes("*"), plus: flags.includes("+"), side: flags.includes("~"), hub: flags.includes("^")
+      });
+    });
+    return result;
+  }
+
+  /** Decorate every stage: id, tab, code, parsed stops, search text. Fill the stop index. */
+  function buildStages() {
+    const perArc = {};
+    stages.forEach((stage, i) => {
+      const arc = arcs[stage.arc];
+      if (!arc) { problems.push("Stage '" + stage.name + "' uses unknown arc '" + stage.arc + "'"); return; }
+      perArc[stage.arc] = (perArc[stage.arc] || 0) + 1;
+      stage.id = "st" + i;
+      stage.tab = arc.tab;
+      stage.code = arc.code + perArc[stage.arc];
+      stage.pts = parseStops(stage.stops);
+      stage.pts.forEach(stop => {
+        stop.stage = stage;
+        if (!stopIndex[stop.name]) stopIndex[stop.name] = stop;
+      });
+      const branchName = stage.branch && branches[stage.branch] ? branches[stage.branch].name : "trunk";
+      stage.searchText = [stage.name, stage.note, stage.onward, branchName, stage.pts.map(p => p.name).join(" ")].join(" ").toLowerCase();
+    });
+  }
+
+  /**
+   * Check that every cross-reference in the data resolves. Problems are collected, not thrown.
+   * @returns {string[]} human-readable problems (empty when the data is consistent)
+   */
+  function validate() {
+    const out = problems.slice();
+    Object.keys(arcs).forEach(id => {
+      if (!tabs[arcs[id].tab]) out.push("Arc " + id + " uses unknown tab " + arcs[id].tab);
+      if (arcs[id].from && !stopIndex[arcs[id].from]) out.push("Arc " + id + ": 'from' stop missing: " + arcs[id].from);
+    });
+    Object.keys(branches).forEach(id => {
+      const b = branches[id];
+      if (!arcs[b.arc]) out.push("Branch " + id + " uses unknown arc " + b.arc);
+      if (!stopIndex[b.from]) out.push("Branch " + id + ": 'from' stop missing: " + b.from);
+      if (b.to && !stopIndex[b.to]) out.push("Branch " + id + ": 'to' stop missing: " + b.to);
+      if (!stages.some(s => s.branch === id)) out.push("Branch " + id + " has no stages");
+    });
+    stages.forEach(s => {
+      if (s.branch && !branches[s.branch]) out.push("Stage '" + s.name + "' uses unknown branch " + s.branch);
+      if (s.branch && branches[s.branch] && branches[s.branch].arc !== s.arc) out.push("Stage '" + s.name + "' branch belongs to another arc");
+      if (!GEP.STATUS_LABEL[s.status]) out.push("Stage '" + s.name + "' has unknown status " + s.status);
+      if (!s.pts || !s.pts.length) out.push("Stage '" + s.name + "' has no stops");
+    });
+    return out;
+  }
+
+  /** @returns {Object|undefined} the first stop with this name */
+  function stopByName(name) { return stopIndex[name]; }
+
+  /** @returns {string[]} arc ids that belong to a tab, in definition order */
+  function arcIds(tabId) { return Object.keys(arcs).filter(id => arcs[id].tab === tabId); }
+
+  /** @returns {string[]} branch ids that belong to an arc, in definition order */
+  function branchIds(arcId) { return Object.keys(branches).filter(id => branches[id].arc === arcId); }
+
+  /** @returns {Object[]} all stages on a tab, in data order */
+  function stagesOfTab(tabId) { return stages.filter(s => s.tab === tabId); }
+
+  /** @returns {Object[]} all stages of an arc, in data order */
+  function stagesOfArc(arcId) { return stages.filter(s => s.arc === arcId); }
+
+  /**
+   * The drawn route of a trunk or branch as [[lon, lat], ...]. Side trips (~) are not on the line.
+   * @param {string} arcId
+   * @param {string} branchId  "" for the trunk
+   */
+  function pathOf(arcId, branchId) {
+    const points = [];
+    const add = stop => points.push([stop.lon, stop.lat]);
+    const startName = branchId ? branches[branchId].from : arcs[arcId].from;
+    if (startName && stopIndex[startName]) add(stopIndex[startName]);
+    stages.forEach(stage => {
+      if (stage.arc === arcId && stage.branch === branchId) stage.pts.forEach(stop => { if (!stop.side) add(stop); });
+    });
+    const endName = branchId && branches[branchId].to;
+    if (endName && stopIndex[endName]) add(stopIndex[endName]);
+    return points;
+  }
+
+  /**
+   * Pick the smallest zoom view of a tab that contains a whole arc or branch.
+   * @param {string} tabId
+   * @param {{arc:string, branch:(string|null)}} selection  branch null = the whole arc
+   * @returns {number} view index (0, the default, when nothing fits)
+   */
+  function bestView(tabId, selection) {
+    const points = selection.branch === null
+      ? [].concat(...stagesOfArc(selection.arc).map(s => s.pts.filter(p => !p.side).map(p => [p.lon, p.lat])))
+      : pathOf(selection.arc, selection.branch);
+    if (points.length < 2) return 0;
+    const lons = points.map(p => p[0]), lats = points.map(p => p[1]);
+    const box = {w: Math.min(...lons), e: Math.max(...lons), s: Math.min(...lats), n: Math.max(...lats)};
+    const slack = 0.5;
+    let best = 0, bestArea = Infinity;
+    tabs[tabId].views.forEach((view, i) => {
+      const [w, e, s, n] = view.b;
+      const fits = box.w >= w - slack && box.e <= e + slack && box.s >= s - slack && box.n <= n + slack;
+      if (fits && (e - w) * (n - s) < bestArea) { best = i; bestArea = (e - w) * (n - s); }
+    });
+    return best;
+  }
+
+  buildStages();
+  return {parseStops, stopByName, arcIds, branchIds, stagesOfTab, stagesOfArc, pathOf, bestView, validate};
+})();
+</script>
+<script>
+/* ---- src/js/map.js ---- */
+/**
+ * map.js: draws the inline SVG sketch map for one tab from a camera.
+ *
+ * Camera model (shared with panzoom.js):
+ *   viewport  {width, height, aspect}   pixel size of the map box and the latitude stretch
+ *   camera    {cx, cy, scale}           lon/lat at the centre of the box, and pixels per degree of longitude
+ * Latitude is stretched by 1/aspect (aspect = cos of the tab's middle latitude) so shapes look roughly right.
+ *
+ * Every draw is a fresh render at the camera's true scale, so dots, line widths and fonts always stay at
+ * a readable pixel size, and a higher zoom reveals more labels (see LABEL_MIN_SCALE). Labels are placed
+ * greedily, biggest first, and anything that would overlap is dropped (the dot keeps its hover title).
+ *
+ * Exposes: GEP.map = { viewportFor, fitCamera, projector, draw }
+ * Depends on: shared.js, model.js, data/land.js, data/tabs.js, data/arcs.js, data/entries.js.
+ */
+GEP.map = (function () {
+  const {svgEl} = GEP;
+  const {tabs, arcs, entries, land, water} = GEP.data;
+
+  const MAX_HEIGHT = 820;        // px, cap for tall regions on wide screens
+  const NARROW_WIDTH = 640;      // px, below this the box is made taller so it is usable on a phone
+  const SEA = "#0d1422";
+  const COAST = "#3b4f78";
+  const LABEL_MIN_SCALE = 8;     // px per degree of longitude from which plain (unflagged) stops may be labelled
+  const GRID_STEPS = [30, 20, 10, 5, 2, 1];   // candidate graticule spacings in degrees
+  const GRID_MIN_PX = 60;        // keep graticule lines at least this far apart
+
+  /* ---------- viewport, camera and projection ---------- */
+
+  /**
+   * Size the map box for a tab. The height follows the shape of the tab's default view
+   * (capped on wide screens), and is kept tall enough on phones to be usable.
+   * @param {number[]} bounds         the tab's default view [lonMin, lonMax, latMin, latMax]
+   * @param {number} containerWidth   px
+   * @returns {{width:number, height:number, aspect:number}}
+   */
+  function viewportFor(bounds, containerWidth) {
+    const [lonMin, lonMax, latMin, latMax] = bounds;
+    const aspect = Math.cos((latMin + latMax) / 2 * Math.PI / 180);
+    const width = Math.max(Math.round(containerWidth), 280);
+    let height = width * (latMax - latMin) / ((lonMax - lonMin) * aspect);
+    height = width < NARROW_WIDTH ? Math.min(Math.max(height, width * 0.95), width * 1.3) : Math.min(height, MAX_HEIGHT);
+    return {width, height: Math.round(height), aspect};
+  }
+
+  /**
+   * The camera that shows a lon/lat box as large as possible inside the viewport.
+   * @param {number[]} bounds  [lonMin, lonMax, latMin, latMax]
+   * @param {{width:number, height:number, aspect:number}} viewport
+   * @returns {{cx:number, cy:number, scale:number}}
+   */
+  function fitCamera(bounds, viewport) {
+    const [lonMin, lonMax, latMin, latMax] = bounds;
+    const scale = Math.min(viewport.width / (lonMax - lonMin), viewport.height * viewport.aspect / (latMax - latMin));
+    return {cx: (lonMin + lonMax) / 2, cy: (latMin + latMax) / 2, scale};
+  }
+
+  /**
+   * Conversion functions between lon/lat and pixels inside the map box.
+   * @returns {{x:function, y:function, lon:function, lat:function}}
+   */
+  function projector(camera, viewport) {
+    const {cx, cy, scale} = camera;
+    const {width, height, aspect} = viewport;
+    return {
+      x: lon => (lon - cx) * scale + width / 2,
+      y: lat => (cy - lat) * scale / aspect + height / 2,
+      lon: px => (px - width / 2) / scale + cx,
+      lat: py => cy - (py - height / 2) * aspect / scale
+    };
+  }
+
+  /* ---------- background: land, graticule, region names ---------- */
+
+  function polygon(svg, proj, text, fill) {
+    const points = text.trim().split(/\s+/).map(pair => {
+      const [lon, lat] = pair.split(",").map(Number);
+      return proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1);
+    }).join(" ");
+    svgEl("polygon", {points, fill, stroke: COAST, "stroke-width": 1, "stroke-linejoin": "round"}, svg);
+  }
+
+  /** Graticule lines every N degrees, with N picked so the lines are never crowded. */
+  function drawGraticule(svg, proj, camera, viewport) {
+    const step = GRID_STEPS.find(s => s * camera.scale >= GRID_MIN_PX) || 1;
+    const lonMin = proj.lon(0), lonMax = proj.lon(viewport.width);
+    const latMax = proj.lat(0), latMin = proj.lat(viewport.height);
+    for (let g = Math.ceil(lonMin / step) * step; g < lonMax; g += step) {
+      svgEl("line", {x1: proj.x(g), y1: 0, x2: proj.x(g), y2: viewport.height, stroke: "#152036", "stroke-width": 1}, svg);
+    }
+    for (let g = Math.ceil(latMin / step) * step; g < latMax; g += step) {
+      svgEl("line", {x1: 0, y1: proj.y(g), x2: viewport.width, y2: proj.y(g), stroke: "#152036", "stroke-width": 1}, svg);
+    }
+  }
+
+  function drawRegionNames(svg, proj, camera, viewport, tab) {
+    (tab.regions || []).forEach(([text, lon, lat]) => {
+      const px = proj.x(lon), py = proj.y(lat);
+      if (px < 0 || px > viewport.width || py < 0 || py > viewport.height) return;
+      const node = svgEl("text", {
+        x: px, y: py, "text-anchor": "middle", fill: "#8da0c0", "fill-opacity": 0.2,
+        "font-size": Math.max(11, Math.min(20, camera.scale * 1.4)), "letter-spacing": "0.25em",
+        "font-weight": 700, "pointer-events": "none"
+      }, svg);
+      node.textContent = text;
+    });
+  }
+
+  function drawBackground(svg, proj, camera, viewport, tab) {
+    land.forEach(p => polygon(svg, proj, p, "#1c2b47"));
+    water.forEach(p => polygon(svg, proj, p, SEA));
+    drawGraticule(svg, proj, camera, viewport);
+    drawRegionNames(svg, proj, camera, viewport, tab);
+  }
+
+  /* ---------- selection dimming ---------- */
+
+  /**
+   * Opacity of an arc/branch given the current selection: everything outside the selected arc fades,
+   * and inside it the unselected branches fade a little.
+   */
+  function opacityFor(selection, arcId, branchId) {
+    if (!selection) return 1;
+    if (selection.arc !== arcId) return 0.12;
+    if (selection.branch === null) return 1;
+    return branchId === selection.branch ? 1 : 0.3;
+  }
+
+  /* ---------- lines ---------- */
+
+  function drawRoute(svg, proj, selection, arcId, branchId) {
+    const points = GEP.model.pathOf(arcId, branchId);
+    if (points.length < 2) return;
+    const isBranch = branchId !== "";
+    const emphasised = selection && selection.arc === arcId && selection.branch === branchId && isBranch;
+    const opacity = opacityFor(selection, arcId, branchId);
+    svgEl("polyline", {
+      points: points.map(([lon, lat]) => proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1)).join(" "),
+      fill: "none", stroke: arcs[arcId].color,
+      "stroke-width": isBranch ? (emphasised ? 3.4 : 2) : 3.6,
+      "stroke-dasharray": isBranch ? "6 4" : "none",
+      "stroke-linecap": "round", "stroke-linejoin": "round",
+      opacity: isBranch ? opacity * 0.9 : opacity, "pointer-events": "none"
+    }, svg);
+  }
+
+  /** Branches first, then trunks on top. */
+  function drawRoutes(svg, proj, tabId, selection) {
+    const arcList = GEP.model.arcIds(tabId);
+    arcList.forEach(arcId => GEP.model.branchIds(arcId).forEach(branchId => drawRoute(svg, proj, selection, arcId, branchId)));
+    arcList.forEach(arcId => drawRoute(svg, proj, selection, arcId, ""));
+  }
+
+  /* ---------- stops ---------- */
+
+  /**
+   * The unique stops (by name) that fall inside the box, each annotated with pixel position,
+   * label tier (3 key/hub, 2 plus, 1 plain), dot radius and opacity.
+   */
+  function visibleStops(proj, viewport, tabId, selection) {
+    const seen = {}, result = [];
+    GEP.model.stagesOfTab(tabId).forEach(stage => stage.pts.forEach(stop => {
+      if (seen[stop.name]) return;
+      seen[stop.name] = true;
+      const px = proj.x(stop.lon), py = proj.y(stop.lat);
+      if (px < -4 || px > viewport.width + 4 || py < -4 || py > viewport.height + 4) return;
+      const tier = (stop.key || stop.hub) ? 3 : stop.plus ? 2 : 1;
+      result.push({
+        stop, stage, px, py, tier,
+        radius: tier === 3 ? 4.6 : tier === 2 ? 3.6 : 2.7,
+        opacity: opacityFor(selection, stage.arc, stage.branch)
+      });
+    }));
+    return result;
+  }
+
+  /** Draw dots, small ones first so big ones sit on top. Each dot is clickable (data-stage). */
+  function drawStops(svg, shown) {
+    const layer = svgEl("g", {}, svg);
+    shown.slice().sort((a, b) => a.tier - b.tier).forEach(item => {
+      const {stop, stage, px, py, radius} = item;
+      const group = svgEl("g", {class: "dot", "data-stage": stage.id, opacity: item.opacity}, layer);
+      if (stop.hub) svgEl("circle", {cx: px, cy: py, r: radius + 4.2, fill: "none", stroke: "#f2b134", "stroke-width": 1.6}, group);
+      svgEl("circle", {cx: px, cy: py, r: Math.max(radius, 7), fill: "transparent"}, group);   // bigger tap target
+      svgEl("circle", {
+        cx: px, cy: py, r: radius,
+        fill: stop.side ? SEA : arcs[stage.arc].color, stroke: stop.side ? arcs[stage.arc].color : SEA,
+        "stroke-width": stop.side ? 1.4 : 1.2
+      }, group);
+      svgEl("title", {}, group).textContent = stop.name + " · " + stage.name + (stop.hub ? " (modern corridor hub)" : "");
+    });
+  }
+
+  /** Entries (ways between pages) that have a label on this tab and lie inside the box. */
+  function visibleEntries(proj, viewport, tabId) {
+    return entries
+      .filter(e => e[tabId])
+      .map(e => ({label: e[tabId], px: proj.x(e.at[0]), py: proj.y(e.at[1])}))
+      .filter(e => e.px >= 0 && e.px <= viewport.width && e.py >= 0 && e.py <= viewport.height);
+  }
+
+  function drawEntries(svg, list) {
+    list.forEach(entry => {
+      const group = svgEl("g", {}, svg);
+      svgEl("rect", {
+        x: entry.px - 4.5, y: entry.py - 4.5, width: 9, height: 9, fill: "#fff", stroke: SEA, "stroke-width": 1.2,
+        transform: `rotate(45 ${entry.px} ${entry.py})`
+      }, group);
+      svgEl("title", {}, group).textContent = entry.label;
+    });
+  }
+
+  /* ---------- labels ---------- */
+
+  function overlaps(a, b) { return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
+
+  /**
+   * Greedy label placer. Tries eight positions around a dot and takes the first that stays inside
+   * the map and overlaps neither an earlier label nor any dot.
+   */
+  function createLabelPlacer(svg, viewport, dotBoxes) {
+    const placed = [];
+    return function place(owner, text, fontSize, weight, color, dotRadius) {
+      const w = text.length * fontSize * 0.56 + 4, h = fontSize + 3, gap = dotRadius + 3;
+      const {px, py} = owner;
+      const spots = [
+        [px + gap, py - h / 2], [px - gap - w, py - h / 2], [px - w / 2, py - gap - h], [px - w / 2, py + gap],
+        [px + gap - 2, py - gap - h + 3], [px + gap - 2, py + gap - 3], [px - gap - w + 2, py - gap - h + 3], [px - gap - w + 2, py + gap - 3]
+      ];
+      for (const [x, y] of spots) {
+        const box = {x, y, w, h};
+        if (x < 2 || y < 2 || x + w > viewport.width - 2 || y + h > viewport.height - 2) continue;
+        if (placed.some(b => overlaps(b, box))) continue;
+        if (dotBoxes.some(b => b.owner !== owner && overlaps(b, box))) continue;
+        placed.push(box);
+        const node = svgEl("text", {
+          x: x + 2, y: y + h - 4, "font-size": fontSize, "font-weight": weight, fill: color,
+          "paint-order": "stroke", stroke: SEA, "stroke-width": 3.2, "stroke-linejoin": "round",
+          "pointer-events": "none"
+        }, svg);
+        node.textContent = text;
+        return true;
+      }
+      return false;
+    };
+  }
+
+  function drawLabels(svg, viewport, camera, shown, entryList) {
+    const dotBoxes = shown.map(item => ({x: item.px - item.radius - 1.5, y: item.py - item.radius - 1.5, w: item.radius * 2 + 3, h: item.radius * 2 + 3, owner: item}));
+    entryList.forEach(e => dotBoxes.push({x: e.px - 6, y: e.py - 6, w: 12, h: 12, owner: e}));
+    const place = createLabelPlacer(svg, viewport, dotBoxes);
+    entryList.forEach(e => place(e, e.label, 11, 600, "#ffffff", 5));
+    const lowestTier = camera.scale >= LABEL_MIN_SCALE ? 1 : 2;
+    for (let tier = 3; tier >= lowestTier; tier--) {
+      shown.forEach(item => {
+        if (item.tier !== tier || item.opacity < 0.5) return;
+        const style = tier === 3 ? [12, 700, "#f0f4fb"] : tier === 2 ? [11, 500, "#b7c3d9"] : [10.5, 500, "#b7c3d9"];
+        place(item, item.stop.name, style[0], style[1], style[2], item.radius + (item.stop.hub ? 4 : 0));
+      });
+    }
+  }
+
+  /* ---------- public ---------- */
+
+  /**
+   * Draw the map for a tab into a container, replacing what is there.
+   * @param {HTMLElement} container
+   * @param {string} tabId
+   * @param {{cx:number, cy:number, scale:number}} camera
+   * @param {{width:number, height:number, aspect:number}} viewport
+   * @param {{arc:string, branch:(string|null)}|null} selection  highlighted arc/branch, or null
+   */
+  function draw(container, tabId, camera, viewport, selection) {
+    const tab = tabs[tabId];
+    const proj = projector(camera, viewport);
+    const svg = svgEl("svg", {
+      viewBox: `0 0 ${viewport.width} ${viewport.height}`, width: viewport.width, height: viewport.height,
+      role: "img", "aria-label": tab.label + " map"
+    });
+    svg.style.cssText = `background:${SEA}`;
+    // Exposed for debugging and tests: the camera this render was drawn from.
+    Object.assign(svg.dataset, {cx: camera.cx.toFixed(3), cy: camera.cy.toFixed(3), scale: camera.scale.toFixed(3)});
+
+    drawBackground(svg, proj, camera, viewport, tab);
+    drawRoutes(svg, proj, tabId, selection);
+    const shown = visibleStops(proj, viewport, tabId, selection);
+    const entryList = visibleEntries(proj, viewport, tabId);
+    drawStops(svg, shown);
+    drawEntries(svg, entryList);
+    drawLabels(svg, viewport, camera, shown, entryList);
+
+    container.replaceChildren(svg);   // one swap, so the box never collapses in between
+  }
+
+  return {viewportFor, fitCamera, projector, draw};
+})();
+</script>
+<script>
+/* ---- src/js/panzoom.js ---- */
+/**
+ * panzoom.js: free pan and zoom for the map, plus the +/-/Reset and "Move map" controls.
+ *
+ * How it works
+ *  - The controller owns a camera {cx, cy, scale} (see map.js) and a viewport size.
+ *  - While a gesture is running, the current SVG is only moved with a cheap CSS transform, so dragging
+ *    and pinching feel instant. When the gesture settles (pointer up, or 140 ms after the last wheel tick)
+ *    the map is re-rendered at the new camera. That re-render is what keeps dots, lines and fonts at a
+ *    constant, readable pixel size and reveals more labels as you zoom in.
+ *  - The preset view buttons (fitView) just set the same camera, so presets and free movement never disagree.
+ *  - Zoom is limited: out to 85% of the tab's default view, in to 16x that.
+ *
+ * Input
+ *  - Mouse:  drag to pan, wheel (or trackpad pinch) zooms around the cursor, double-click zooms in.
+ *  - Touch:  one-finger drag pans and two fingers pinch, but ONLY while the map is "active", so the page
+ *            can still be scrolled with a finger over the map. Tap the map (not a dot) or the "Move map"
+ *            button to activate it; "Done", or a touch outside the map, deactivates it.
+ *  - Keys:   with the map focused, arrows pan and + / - / 0 zoom and reset.
+ *  - A drag never counts as a click, so tapping a dot still jumps to its stage card.
+ *
+ * "Touch device" means a coarse pointer or any touch points reported by the browser.
+ *
+ * Expected markup (see index.html): #mapbox containing #mapwrap, and #zoomIn #zoomOut #zoomReset #mapMove #mapTip.
+ *
+ * Exposes: GEP.panzoom.create(options) -> controller
+ *   options: { container: HTMLElement, render(camera, viewport), onChange() }
+ *   controller: load(views), fitView(index), zoomBy(factor), reset(), resize(), redraw(),
+ *               camera, viewport, activeView (index of the preset on screen, or null after free movement)
+ * Depends on: shared.js, map.js (fitCamera, viewportFor, projector).
+ */
+GEP.panzoom = (function () {
+  const {$} = GEP;
+
+  const ZOOM_IN_LIMIT = 16;        // max zoom, as a multiple of the default view's scale
+  const ZOOM_OUT_LIMIT = 0.85;     // min zoom, as a multiple of the default view's scale
+  const PAN_MARGIN_DEG = 6;        // the camera centre may stray this far outside the default view
+  const BUTTON_FACTOR = 1.6;       // zoom step of the + and - buttons
+  const WHEEL_STEP = 0.0016;       // zoom per wheel delta unit (zoom = exp(-delta * step))
+  const DRAG_THRESHOLD = 5;        // px of movement before a press becomes a drag
+  const SETTLE_MS = 140;           // wait after the last wheel tick before re-rendering
+  const KEY_PAN_PX = 80;
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  /**
+   * @param {{container:HTMLElement, render:function, onChange:function}} options
+   */
+  function create(options) {
+    const {container, render} = options;
+    const box = $("mapbox");
+    const isTouchDevice = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+
+    let views = [];
+    let viewport = {width: 0, height: 0, aspect: 1};
+    let camera = {cx: 0, cy: 0, scale: 1};   // camera of the SVG currently on screen
+    let live = camera;                       // camera during a gesture (differs until the next render)
+    let limits = {min: 1, max: 1, lonMin: 0, lonMax: 0, latMin: 0, latMax: 0};
+    let activeView = 0;
+    let touchActive = false;
+    let settleTimer = null;
+    const pointers = new Map();              // pointerId -> {x, y} in client px
+    let gesture = null;                      // {kind: "pan"|"pinch", ...} while a drag or pinch runs
+    let suppressClick = false;
+
+    /* ---------- camera math ---------- */
+
+    /** Client (page) pixel -> map-box pixel (the SVG is drawn 1:1 with the box, but be safe if it is not). */
+    function toBoxPoint(clientX, clientY) {
+      const rect = container.getBoundingClientRect();
+      return {x: (clientX - rect.left) * viewport.width / rect.width, y: (clientY - rect.top) * viewport.height / rect.height};
+    }
+
+    function computeLimits() {
+      const [lonMin, lonMax, latMin, latMax] = views[0].b;
+      const base = GEP.map.fitCamera(views[0].b, viewport).scale;
+      limits = {
+        min: base * ZOOM_OUT_LIMIT, max: base * ZOOM_IN_LIMIT,
+        lonMin: lonMin - PAN_MARGIN_DEG, lonMax: lonMax + PAN_MARGIN_DEG,
+        latMin: latMin - PAN_MARGIN_DEG, latMax: latMax + PAN_MARGIN_DEG
+      };
+    }
+
+    function clampCamera(c) {
+      return {
+        scale: clamp(c.scale, limits.min, limits.max),
+        cx: clamp(c.cx, limits.lonMin, limits.lonMax),
+        cy: clamp(c.cy, limits.latMin, limits.latMax)
+      };
+    }
+
+    /** Camera after zooming to `scale` while keeping the lon/lat under a box point fixed. */
+    function zoomAround(from, scale, boxPoint) {
+      const target = clamp(scale, limits.min, limits.max);
+      const before = GEP.map.projector(from, viewport);
+      const lon = before.lon(boxPoint.x), lat = before.lat(boxPoint.y);
+      return clampCamera({
+        scale: target,
+        cx: lon - (boxPoint.x - viewport.width / 2) / target,
+        cy: lat + (boxPoint.y - viewport.height / 2) * viewport.aspect / target
+      });
+    }
+
+    /** Camera after dragging the map by (dx, dy) box pixels. */
+    function panBy(from, dx, dy) {
+      return clampCamera({scale: from.scale, cx: from.cx - dx / from.scale, cy: from.cy + dy * viewport.aspect / from.scale});
+    }
+
+    /* ---------- rendering ---------- */
+
+    /** Move the existing SVG so it looks like it is already at `live`, without redrawing it. */
+    function previewTransform() {
+      const svg = container.firstElementChild;
+      if (!svg) return;
+      const k = live.scale / camera.scale;
+      const tx = (camera.cx - live.cx) * live.scale + viewport.width / 2 * (1 - k);
+      const ty = (live.cy - camera.cy) * live.scale / viewport.aspect + viewport.height / 2 * (1 - k);
+      const unit = container.getBoundingClientRect().width / viewport.width;   // css px per box px
+      svg.style.transformOrigin = "0 0";
+      svg.style.transform = `matrix(${k},0,0,${k},${tx * unit},${ty * unit})`;
+    }
+
+    /** Re-render at the live camera and tell the page. */
+    function commit() {
+      clearTimeout(settleTimer);
+      camera = live;
+      render(camera, viewport);
+      updateButtons();
+      options.onChange();
+    }
+
+    function setLive(next) { live = next; previewTransform(); }
+
+    function updateButtons() {
+      $("zoomIn").disabled = camera.scale >= limits.max * 0.999;
+      $("zoomOut").disabled = camera.scale <= limits.min * 1.001;
+    }
+
+    /* ---------- public camera commands ---------- */
+
+    /** Show preset view `index` (fits its box in the viewport). */
+    function fitView(index) {
+      if (!views[index]) return;
+      activeView = index;
+      live = clampCamera(GEP.map.fitCamera(views[index].b, viewport));
+      commit();
+    }
+
+    function zoomBy(factor) {
+      const centre = {x: viewport.width / 2, y: viewport.height / 2};
+      activeView = null;
+      live = zoomAround(live, live.scale * factor, centre);
+      commit();
+    }
+
+    /** Back to the default (first) view. */
+    function reset() { fitView(0); }
+
+    /** Switch to a new tab's views and show the first one (or the one requested). */
+    function load(newViews, firstView) {
+      views = newViews;
+      viewport = GEP.map.viewportFor(views[0].b, container.clientWidth || 1000);
+      computeLimits();
+      setTouchActive(false);
+      fitView(firstView || 0);
+    }
+
+    /** The container changed width: keep what is in view and re-render. */
+    function resize() {
+      const width = container.clientWidth;
+      if (!views.length || !width || Math.round(width) === viewport.width) return;
+      const oldWidth = viewport.width;
+      viewport = GEP.map.viewportFor(views[0].b, width);
+      computeLimits();
+      live = clampCamera({cx: live.cx, cy: live.cy, scale: live.scale * viewport.width / oldWidth});
+      commit();
+    }
+
+    /** Re-render without moving (the selection changed). */
+    function redraw() { render(camera, viewport); }
+
+    /* ---------- touch activation (so a finger can still scroll the page) ---------- */
+
+    function setTouchActive(on) {
+      touchActive = on;
+      box.classList.toggle("active", on);
+      $("mapMove").textContent = on ? "Done" : "Move map";
+      $("mapMove").setAttribute("aria-pressed", String(on));
+      $("mapTip").textContent = tipText();
+    }
+
+    function tipText() {
+      if (!isTouchDevice) return "Drag to pan. Scroll or pinch the trackpad to zoom around the cursor. Double-click to zoom in. Tap a dot to jump to its stage.";
+      return touchActive
+        ? "Map is active: drag to pan, pinch to zoom. Tap Done (or outside the map) to scroll the page again."
+        : "The page scrolls normally over the map. Tap Move map to pan and pinch, or use + and −.";
+    }
+
+    /* ---------- pointer gestures ---------- */
+
+    /** May this pointer move the map? Mice always can, touches only while the map is active. */
+    function canMove(event) { return event.pointerType !== "touch" || touchActive; }
+
+    function startPan(point) {
+      gesture = {kind: "pan", startX: point.x, startY: point.y, from: live, moved: false};
+    }
+
+    function startPinch() {
+      const [a, b] = [...pointers.values()];
+      const mid = toBoxPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
+      gesture = {kind: "pinch", startDistance: Math.hypot(a.x - b.x, a.y - b.y) || 1, startMid: mid, from: live, moved: true};
+    }
+
+    function onPointerDown(event) {
+      if (event.button > 0 && event.pointerType === "mouse") return;
+      pointers.set(event.pointerId, {x: event.clientX, y: event.clientY});
+      suppressClick = false;
+      if (!canMove(event)) return;
+      if (pointers.size === 1) startPan({x: event.clientX, y: event.clientY});
+      else if (pointers.size === 2) startPinch();
+    }
+
+    function onPointerMove(event) {
+      const tracked = pointers.get(event.pointerId);
+      if (!tracked || !gesture) return;
+      tracked.x = event.clientX; tracked.y = event.clientY;
+      if (gesture.kind === "pan") {
+        const dx = event.clientX - gesture.startX, dy = event.clientY - gesture.startY;
+        if (!gesture.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+        if (!gesture.moved) { gesture.moved = true; suppressClick = true; container.setPointerCapture(event.pointerId); box.classList.add("dragging"); }
+        const scale = viewport.width / container.getBoundingClientRect().width;   // box px per client px
+        activeView = null;
+        setLive(panBy(gesture.from, dx * scale, dy * scale));
+      } else if (gesture.kind === "pinch" && pointers.size >= 2) {
+        const [a, b] = [...pointers.values()];
+        const ratio = Math.hypot(a.x - b.x, a.y - b.y) / gesture.startDistance;
+        const mid = toBoxPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
+        suppressClick = true;
+        activeView = null;
+        // Zoom about where the fingers started, then slide so that point follows the fingers.
+        const zoomed = zoomAround(gesture.from, gesture.from.scale * ratio, gesture.startMid);
+        setLive(panBy(zoomed, mid.x - gesture.startMid.x, mid.y - gesture.startMid.y));
+      }
+    }
+
+    function onPointerEnd(event) {
+      if (!pointers.has(event.pointerId)) return;
+      const wasTap = event.type === "pointerup" && !suppressClick && event.pointerType === "touch" && !touchActive && !event.target.closest(".dot");
+      pointers.delete(event.pointerId);
+      box.classList.remove("dragging");
+      if (gesture && gesture.moved) commit();
+      gesture = null;
+      if (pointers.size === 1 && touchActive) {          // one finger left after a pinch: carry on panning
+        const rest = [...pointers.values()][0];
+        startPan(rest);
+      }
+      if (wasTap) setTouchActive(true);
+    }
+
+    /** A drag or pinch must not also click whatever is under the finger (a dot, say). */
+    function onClickCapture(event) {
+      if (!suppressClick) return;
+      suppressClick = false;
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    /* ---------- wheel, double-click, keys, buttons ---------- */
+
+    function onWheel(event) {
+      event.preventDefault();
+      const unit = event.deltaMode === 1 ? 33 : event.deltaMode === 2 ? 400 : 1;   // lines / pages -> px
+      const factor = Math.exp(-event.deltaY * unit * WHEEL_STEP * (event.ctrlKey ? 4 : 1));
+      activeView = null;
+      setLive(zoomAround(live, live.scale * factor, toBoxPoint(event.clientX, event.clientY)));
+      clearTimeout(settleTimer);
+      settleTimer = setTimeout(commit, SETTLE_MS);
+    }
+
+    function onDoubleClick(event) {
+      if (event.target.closest(".dot")) return;
+      activeView = null;
+      live = zoomAround(live, live.scale * 2, toBoxPoint(event.clientX, event.clientY));
+      commit();
+    }
+
+    function onKeyDown(event) {
+      const moves = {ArrowLeft: [KEY_PAN_PX, 0], ArrowRight: [-KEY_PAN_PX, 0], ArrowUp: [0, KEY_PAN_PX], ArrowDown: [0, -KEY_PAN_PX]};
+      if (moves[event.key]) { activeView = null; live = panBy(live, ...moves[event.key]); commit(); }
+      else if (event.key === "+" || event.key === "=") zoomBy(BUTTON_FACTOR);
+      else if (event.key === "-" || event.key === "_") zoomBy(1 / BUTTON_FACTOR);
+      else if (event.key === "0") reset();
+      else return;
+      event.preventDefault();
+    }
+
+    /** Touching anywhere outside the map hands scrolling back to the page. */
+    function onDocumentPointerDown(event) {
+      if (touchActive && event.pointerType === "touch" && !box.contains(event.target)) setTouchActive(false);
+    }
+
+    /* ---------- wiring ---------- */
+
+    container.addEventListener("pointerdown", onPointerDown);
+    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener("pointerup", onPointerEnd);
+    container.addEventListener("pointercancel", onPointerEnd);
+    container.addEventListener("click", onClickCapture, true);
+    container.addEventListener("wheel", onWheel, {passive: false});
+    container.addEventListener("dblclick", onDoubleClick);
+    container.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onDocumentPointerDown);
+    $("zoomIn").addEventListener("click", () => zoomBy(BUTTON_FACTOR));
+    $("zoomOut").addEventListener("click", () => zoomBy(1 / BUTTON_FACTOR));
+    $("zoomReset").addEventListener("click", reset);
+    $("mapMove").addEventListener("click", () => setTouchActive(!touchActive));
+    box.classList.toggle("touch", isTouchDevice);
+    setTouchActive(false);
+
+    return {
+      load, fitView, zoomBy, reset, resize, redraw,
+      get camera() { return camera; },
+      get viewport() { return viewport; },
+      get activeView() { return activeView; }
+    };
+  }
+
+  return {create};
+})();
+</script>
+<script>
+/* ---- src/js/views.js ---- */
+/**
+ * views.js: renders the page (everything except the SVG map) from the data and the UI state.
+ *
+ * Every function takes the current UI state and writes into one element of index.html.
+ * No state is kept here and no events are bound here (see main.js).
+ *
+ * UI state shape:
+ *   { tab: "eurasia", view: 0 (preset on screen, -1 after free pan or zoom), selection: null | {arc, branch|null},
+ *     filterArc: "all" | arcId, filterStatus: "all" | status, query: "" }
+ *
+ * Exposes: GEP.views = { renderAll, renderNav, renderHero, renderStats, renderMapChrome, renderViewButtons,
+ *                        renderArcs, renderFilters, renderStages, renderWays }
+ * Depends on: shared.js, model.js, data/*.
+ */
+GEP.views = (function () {
+  const {$, esc} = GEP;
+  const {tabs, arcs, branches, entries, updated} = GEP.data;
+  const model = GEP.model;
+
+  /* ---------- header area ---------- */
+
+  function renderNav(state) {
+    $("tabs").innerHTML = Object.keys(tabs).map(id =>
+      `<a class="tab${id === state.tab ? " on" : ""}" href="#${id}">${esc(tabs[id].label)}<small>${model.stagesOfTab(id).length}</small></a>`
+    ).join("");
+  }
+
+  function renderHero(state) {
+    const tab = tabs[state.tab];
+    const root = document.documentElement.style;
+    tab.g.forEach((colour, i) => root.setProperty("--g" + (i + 1), colour));
+    $("hero").innerHTML =
+      `<div><div class="eyebrow">${esc(tab.eyebrow)}</div><h1>${tab.title}</h1><p class="sub">${esc(tab.sub)}</p></div>` +
+      `<div class="facts">${tab.chips.map(([plain, bold]) => `<span class="chip">${esc(plain)} <b>${esc(bold)}</b></span>`).join("")}</div>`;
+    document.title = tab.label + " · The Greater Eurasia Plan";
+  }
+
+  function renderStats(state) {
+    const stages = model.stagesOfTab(state.tab);
+    const stopNames = new Set();
+    stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
+    const arcList = model.arcIds(state.tab);
+    const branchCount = arcList.reduce((sum, id) => sum + model.branchIds(id).length, 0);
+    const count = status => stages.filter(s => s.status === status).length;
+    const items = [
+      [stages.length, "stages"], [stopNames.size, "stops"], [arcList.length, "arcs"],
+      [branchCount, "branches"], [count("next"), "next up"], [count("check"), "check first"]
+    ];
+    $("stats").innerHTML = items.map(([n, label]) => `<div class="stat"><div class="n">${n}</div><div class="l">${label}</div></div>`).join("");
+  }
+
+  /* ---------- map chrome: title, hint, zoom buttons, legend ---------- */
+
+  function renderLegend(state) {
+    const hasHubs = model.stagesOfTab(state.tab).some(s => s.pts.some(p => p.hub));
+    const arcKeys = model.arcIds(state.tab).map(id => `<span><i style="background:${arcs[id].color}"></i>${esc(arcs[id].name)}</span>`);
+    const keys = [
+      `<span><i class="dash" style="--c:#aab6cc"></i>Branch, dashed in the arc's colour</span>`,
+      `<span><span class="k"></span>Key stop (labelled)</span>`,
+      `<span><span class="k s"></span>Other stop</span>`,
+      `<span><span class="k s" style="background:none;border:1.5px solid #8da0c0"></span>Side trip</span>`,
+      hasHubs ? `<span><span class="k h"></span>Modern corridor hub</span>` : "",
+      `<span><span class="k e"></span>Way in from another page</span>`
+    ];
+    $("legend").innerHTML = arcKeys.concat(keys).join("");
+  }
+
+  function renderMapChrome(state) {
+    const tab = tabs[state.tab];
+    $("mapTitle").textContent = state.tab === "eurasia" ? "The map at a glance" : tab.label + " map";
+    $("mapHint").textContent = tab.mapHint;
+    renderViewButtons(state);
+    renderLegend(state);
+  }
+
+  /** The preset zoom buttons. state.view is the preset on screen, or -1 after free pan/zoom. */
+  function renderViewButtons(state) {
+    $("views").innerHTML = tabs[state.tab].views.map((v, i) =>
+      `<button class="btn${i === state.view ? " on" : ""}" data-view="${i}">${esc(v.n)}</button>`).join("");
+  }
+
+  /* ---------- arc cards ---------- */
+
+  function renderArcs(state) {
+    const selection = state.selection;
+    $("arcs").innerHTML = model.arcIds(state.tab).map(arcId => {
+      const arc = arcs[arcId], stages = model.stagesOfArc(arcId);
+      const done = stages.filter(s => s.status === "done").length;
+      const stopNames = new Set();
+      stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
+      const branchList = model.branchIds(arcId);
+      const arcSelected = selection && selection.arc === arcId;
+      const chip = (branchId, label, extraClass) =>
+        `<span class="br${extraClass}${arcSelected && selection.branch === branchId ? " on" : ""}" data-arc="${arcId}" data-branch="${branchId}">${esc(label)}</span>`;
+      return `<div class="arc${arcSelected && selection.branch === null ? " on" : ""}" style="--c:${arc.color}" data-arc="${arcId}">
+        <h3>${esc(arc.name)} <em>${esc(arc.code)}</em></h3>
+        <div class="route">${esc(arc.route)}</div>
+        <div class="meta">${stages.length} stages · ${stopNames.size} stops · ${branchList.length} branches · ${done} done</div>
+        <div class="bar"><div style="width:${stages.length ? Math.round(done / stages.length * 100) : 0}%"></div></div>
+        <div class="meta" style="margin-top:8px">Trunk and branches, tap to show on the map</div>
+        <div class="brs">${chip("", "Trunk", " tr")}${branchList.map(id => chip(id, branches[id].name, "")).join("")}</div>
+      </div>`;
+    }).join("");
+  }
+
+  /* ---------- filters and stage cards ---------- */
+
+  function renderFilters(state) {
+    const button = (attr, value, text, on) => `<button class="btn${on ? " on" : ""}" data-${attr}="${value}">${esc(text)}</button>`;
+    const arcButtons = model.arcIds(state.tab).map(id =>
+      button("filter-arc", id, arcs[id].code + " · " + arcs[id].name.replace(/ arc$/, ""), state.filterArc === id));
+    const statusButtons = ["all", "next", "planned", "check", "done"].map(status =>
+      button("filter-status", status, status === "all" ? "Any status" : GEP.STATUS_LABEL[status], state.filterStatus === status));
+    $("filters").innerHTML = button("filter-arc", "all", "All arcs", state.filterArc === "all") + arcButtons.join("") +
+      `<span class="sep"></span>` + statusButtons.join("");
+  }
+
+  /** Does a stage pass the arc, status and search filters? */
+  function matchesFilters(stage, state) {
+    if (state.filterArc !== "all" && stage.arc !== state.filterArc) return false;
+    if (state.filterStatus !== "all" && stage.status !== state.filterStatus) return false;
+    return state.query.toLowerCase().split(/\s+/).filter(Boolean).every(word => stage.searchText.includes(word));
+  }
+
+  /** The stop list of a card: bold = key stop, <i> = side trip, a gold circle = modern hub. */
+  function stopsHtml(stage) {
+    return stage.pts.map(stop => {
+      let html = esc(stop.name);
+      if (stop.key) html = "<b>" + html + "</b>";
+      if (stop.side) html = "<i>" + html + "</i>";
+      if (stop.hub) html += ' <span style="color:#f2b134" title="Modern corridor hub">◎</span>';
+      return html;
+    }).join(" · ");
+  }
+
+  function stageCard(stage) {
+    const arc = arcs[stage.arc];
+    const hasHub = stage.pts.some(p => p.hub);
+    const where = stage.branch ? "Branch: " + branches[stage.branch].name : "Trunk of " + arc.name;
+    return `<div class="stage" id="${stage.id}" style="--c:${arc.color}">
+      <div class="top"><span class="code">${esc(stage.code)}</span><span class="pill p-${stage.status}">${GEP.STATUS_LABEL[stage.status]}</span></div>
+      <h4>${esc(stage.name)}${hasHub ? '<span class="hubtag">modern hub</span>' : ""}</h4>
+      <div class="bd${stage.branch ? "" : " trunk"}">${esc(where)}</div>
+      <div class="note">${esc(stage.note)}</div>
+      <div class="stops">${stopsHtml(stage)}</div>
+      ${stage.onward ? `<div class="on2">Onward: ${esc(stage.onward)}</div>` : ""}
+    </div>`;
+  }
+
+  /** A titled grid of cards, or nothing when the list is empty. */
+  function stageGroup(title, small, dashed, list) {
+    if (!list.length) return "";
+    return `<div class="sub2"${dashed ? ' style="--bs:dashed"' : ""}>${esc(title)}${small ? ` <small>${esc(small)}</small>` : ""}</div>` +
+      `<div class="stages">${list.map(stageCard).join("")}</div>`;
+  }
+
+  function renderStages(state) {
+    let html = `<p class="hint" style="font-size:12.5px;color:var(--dim);margin:6px 2px 0"><b style="color:var(--text)">Bold</b> = key stop on the map · <i style="color:#b9a56a;font-style:normal">amber</i> = side trip, off the line · <span style="color:#f2b134">◎</span> = modern corridor hub</p>`;
+    let shown = 0;
+    model.arcIds(state.tab).forEach(arcId => {
+      const arc = arcs[arcId];
+      const matching = model.stagesOfArc(arcId).filter(s => matchesFilters(s, state));
+      if (!matching.length) return;
+      shown += matching.length;
+      html += `<section class="group" style="--c:${arc.color}"><div class="ghead"><h3>${esc(arc.code)} · ${esc(arc.name)}</h3><span>${esc(arc.route)}</span></div>`;
+      html += stageGroup("Trunk", "the spine of the arc, in travel order", false, matching.filter(s => !s.branch));
+      model.branchIds(arcId).forEach(branchId => {
+        const b = branches[branchId];
+        html += stageGroup("Branch: " + b.name, "leaves at " + b.from + (b.to ? ", rejoins at " + b.to : ""), true, matching.filter(s => s.branch === branchId));
+      });
+      html += `</section>`;
+    });
+    if (!shown) html += `<p class="empty">No stages match. Clear the search or the filters.</p>`;
+    $("stages").innerHTML = html;
+  }
+
+  /* ---------- shared "ways between pages" card ---------- */
+
+  function renderWays(state) {
+    const here = entries.filter(e => e[state.tab]).map(e => `<div><b>${esc(e[state.tab])}</b></div>`);
+    const links = Object.keys(tabs).filter(id => id !== state.tab).map(id =>
+      `<div><a href="#${id}"><b>${esc(tabs[id].label)} page →</b>${esc(tabs[id].blurb || "")}</a></div>`);
+    $("ways").innerHTML = `<h2>Ways between the pages</h2><p class="hint">Where the arcs hand over to each other. Tap a page to jump.</p>` +
+      `<div class="tandem">${here.concat(links).join("")}</div>`;
+  }
+
+  /** Redraw everything except the SVG map (main.js draws the map). */
+  function renderAll(state) {
+    renderNav(state); renderHero(state); renderStats(state); renderMapChrome(state);
+    renderArcs(state); renderFilters(state); renderStages(state); renderWays(state);
+    $("updated").textContent = "Last updated " + updated + ". The map is a rough sketch, not to scale. Dates and budgets are deliberately not in here.";
+  }
+
+  return {renderAll, renderNav, renderHero, renderStats, renderMapChrome, renderViewButtons, renderArcs, renderFilters, renderStages, renderWays};
+})();
+</script>
+<script>
+/* ---- src/js/main.js ---- */
+/**
+ * main.js: owns the UI state, hash routing and all event handlers. Loaded last.
+ *
+ * Routes:  #eurasia  #africa  #americas        (default: eurasia)
+ *          #<tab>/<n>                           opens zoom view n of that tab
+ *
+ * Exposes: nothing (starts the app).
+ * Depends on: shared.js, model.js, map.js, panzoom.js, views.js.
+ */
+(function () {
+  const {$} = GEP;
+  const {tabs} = GEP.data;
+
+  /** The one mutable object. views.js and map.js only read it. */
+  const state = {tab: "eurasia", view: 0, selection: null, filterArc: "all", filterStatus: "all", query: ""};
+
+  /** Pan/zoom controller. It calls render() whenever the map needs drawing, and onChange() after it did. */
+  const mapView = GEP.panzoom.create({
+    container: $("mapwrap"),
+    render: (camera, viewport) => GEP.map.draw($("mapwrap"), state.tab, camera, viewport, state.selection),
+    onChange: () => {
+      state.view = mapView.activeView === null ? -1 : mapView.activeView;
+      GEP.views.renderViewButtons(state);
+    }
+  });
+
+  /** Reset everything that belongs to one page, then show the requested zoom view. */
+  function openTab(tabId, viewIndex) {
+    Object.assign(state, {tab: tabId, view: viewIndex, selection: null, filterArc: "all", filterStatus: "all", query: ""});
+    $("q").value = "";
+    GEP.views.renderAll(state);
+    mapView.load(tabs[tabId].views, viewIndex);
+  }
+
+  /** Read location.hash and show the right tab and zoom view. */
+  function route() {
+    const [tabPart, viewPart] = (location.hash || "").replace("#", "").toLowerCase().split("/");
+    const tabId = tabs[tabPart] ? tabPart : "eurasia";
+    const requested = Number(viewPart);
+    const hasView = viewPart !== undefined && tabs[tabId].views[requested] !== undefined;
+    if (tabId !== state.tab || !$("tabs").children.length) {
+      openTab(tabId, hasView ? requested : 0);
+      if (!hasView) window.scrollTo(0, 0);
+    } else if (hasView && requested !== state.view) {
+      mapView.fitView(requested);
+    }
+  }
+
+  /** Clear filters, show the stage card for a map dot, scroll to it and flash it. */
+  function jumpToStage(stageId) {
+    Object.assign(state, {filterArc: "all", filterStatus: "all", query: ""});
+    $("q").value = "";
+    GEP.views.renderFilters(state);
+    GEP.views.renderStages(state);
+    const card = $(stageId);
+    if (!card) return;
+    card.scrollIntoView({behavior: "smooth", block: "center"});
+    card.classList.add("flash");
+    setTimeout(() => card.classList.remove("flash"), 2200);
+  }
+
+  /** Bring the map into view when the user picks an arc further down the page. */
+  function scrollMapIntoView() {
+    const top = document.querySelector(".mapcard").getBoundingClientRect().top;
+    if (top < 60) window.scrollBy({top: top - 70, behavior: "smooth"});
+  }
+
+  /** Select (or, on a second tap, deselect) an arc or branch and zoom to fit it. */
+  function toggleSelection(arc, branch) {
+    const sel = state.selection;
+    const deselect = sel && sel.arc === arc && sel.branch === branch;
+    state.selection = deselect ? null : {arc, branch};
+    GEP.views.renderArcs(state);
+    if (deselect) mapView.redraw();
+    else mapView.fitView(GEP.model.bestView(state.tab, state.selection));
+    scrollMapIntoView();
+  }
+
+  /** One delegated click handler for the whole page. */
+  function onClick(event) {
+    const target = event.target;
+    const viewButton = target.closest("[data-view]");
+    const arcFilter = target.closest("[data-filter-arc]");
+    const statusFilter = target.closest("[data-filter-status]");
+    const chip = target.closest(".br");
+    const arcCard = target.closest(".arc");
+    const dot = target.closest(".dot");
+    if (viewButton) {
+      mapView.fitView(Number(viewButton.dataset.view));
+    } else if (arcFilter) {
+      state.filterArc = arcFilter.dataset.filterArc;
+      GEP.views.renderFilters(state);
+      GEP.views.renderStages(state);
+    } else if (statusFilter) {
+      state.filterStatus = statusFilter.dataset.filterStatus;
+      GEP.views.renderFilters(state);
+      GEP.views.renderStages(state);
+    } else if (chip) {
+      toggleSelection(chip.dataset.arc, chip.dataset.branch);
+    } else if (arcCard) {
+      toggleSelection(arcCard.dataset.arc, null);
+    } else if (dot) {
+      jumpToStage(dot.getAttribute("data-stage"));
+    }
+  }
+
+  function start() {
+    const problems = GEP.model.validate();
+    problems.forEach(p => console.error("Data problem: " + p));
+    document.addEventListener("click", onClick);
+    $("q").addEventListener("input", e => { state.query = e.target.value.trim(); GEP.views.renderStages(state); });
+    window.addEventListener("hashchange", route);
+    let resizeTimer;
+    window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(mapView.resize, 150); });
+    route();
+  }
+
+  start();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+/*
+ * styles.css: all styling for the dashboard (one dark theme, no frameworks).
+ *
+ * Colours come from the variables in :root. Arc colours and the hero gradient (--g1..--g3)
+ * are set at runtime from the data (see js/views.js), so there are no per-arc rules here.
+ * Status pills: .p-next .p-planned .p-check .p-done (the status ids in data/stages).
+ */
+
+/* ===== Theme variables and base elements ===== */
+:root{
+  --bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#243049;--text:#e8edf6;--muted:#93a0b8;--dim:#6b7790;
+  --next:#4f9dff;--done:#3ccf7a;--check:#ff9f43;--planned:#7d8aa3;--sea-map:#0d1422;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:radial-gradient(1200px 600px at 70% -10%,#16223a 0%,var(--bg) 60%);background-attachment:fixed;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5;min-height:100vh}
+a{color:#7db4ff}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 64px}
+/* ===== Top bar: brand and tab pills ===== */
+.nav{position:sticky;top:0;z-index:20;background:rgba(11,15,23,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .in{max-width:1240px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;gap:18px}
+.brand{font-weight:700;letter-spacing:-.01em;white-space:nowrap;font-size:15px}
+.brand span{background:linear-gradient(90deg,#4f9dff,#f2b134,#2fd0b5);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:7px 16px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;white-space:nowrap}
+.tab small{font-weight:500;color:var(--dim);margin-left:6px}
+.tab:hover{color:var(--text)}
+.tab.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.tab.on small{color:#4b5568}
+/* ===== Hero: eyebrow, title, chips, stat tiles ===== */
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;margin:28px 0 24px}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(30px,5vw,52px);line-height:1.05;letter-spacing:-.02em;margin:6px 0 10px}
+h1 span{background:linear-gradient(90deg,var(--g1),var(--g2),var(--g3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:680px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted)}
+.chip b{color:var(--text);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.stat .n{font-size:28px;font-weight:700;letter-spacing:-.02em}
+.stat .l{font-size:13px;color:var(--muted)}
+/* ===== Generic card (map card, filters card, shared cards) ===== */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.card h2{font-size:18px;margin-bottom:4px}
+.card .hint{font-size:13px;color:var(--muted);margin-bottom:14px}
+/* ===== Map card: preset buttons, pan/zoom box and controls, legend ===== */
+.mapcard{margin-bottom:20px}
+.views{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.mapbox{position:relative;border-radius:14px;overflow:hidden;background:var(--sea-map);border:1px solid var(--line)}
+.mapbox.active{border-color:#4f9dff;box-shadow:0 0 0 2px rgba(79,157,255,.45)}
+.mapwrap{overflow:hidden;cursor:grab;outline:none;touch-action:pan-y pan-x;user-select:none;-webkit-user-select:none}
+.mapwrap:focus-visible{box-shadow:inset 0 0 0 2px #4f9dff}
+.mapbox.dragging .mapwrap{cursor:grabbing}
+.mapbox.active .mapwrap{touch-action:none}
+.mapctl{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:6px;align-items:stretch}
+.mapctl button{min-width:36px;height:36px;border:1px solid var(--line);background:rgba(18,24,38,.92);color:var(--text);border-radius:10px;font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
+.mapctl button.txt{font-size:12.5px;font-weight:600;padding:0 10px}
+.mapctl button:hover:not(:disabled){border-color:#4f9dff}
+.mapctl button:disabled{opacity:.4;cursor:default}
+.mapbox:not(.touch) .touch-only{display:none}
+.maptip{font-size:12.5px;color:var(--dim);margin:8px 2px 0}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:inherit}
+.dot{cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--muted);margin-top:12px;align-items:center}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:3px;margin-right:6px;vertical-align:3px}
+.legend i.dash{background:none!important;border-top:3px dashed var(--c);height:0}
+.legend .k{display:inline-block;width:9px;height:9px;border-radius:50%;background:#8da0c0;margin-right:5px;vertical-align:-1px}
+.legend .k.s{width:6px;height:6px;margin-right:6px}
+.legend .k.h{background:none;border:2px solid #f2b134;width:12px;height:12px;margin-right:5px;vertical-align:-3px}
+.legend .k.e{border-radius:2px;background:#fff;transform:rotate(45deg);width:8px;height:8px}
+/* ===== Arc cards and their branch chips (--c = arc colour, set inline) ===== */
+.arcs{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;margin-bottom:20px}
+.arc{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px 16px 14px 20px;transition:.15s;position:relative;overflow:hidden}
+.arc:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--c)}
+.arc:hover,.arc.on{border-color:var(--c);background:var(--panel2)}
+.arc h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.arc h3 em{font-style:normal;font-size:12px;color:var(--c);font-weight:700;letter-spacing:.08em}
+.arc .route{font-size:13px;color:var(--muted);margin:6px 0 10px}
+.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar div{height:100%;background:var(--c)}
+.arc .meta{font-size:12px;color:var(--dim);margin:6px 0 8px}
+.brs{display:flex;flex-wrap:wrap;gap:5px}
+.br{font-size:11.5px;border:1px dashed var(--c);color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer;background:transparent}
+.br:hover,.br.on{background:var(--c);color:#0b0f17;border-style:solid}
+.br.tr{border-style:solid}
+/* ===== Filters: buttons and search ===== */
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:999px;padding:6px 13px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn:hover{color:var(--text)}
+.btn.on{background:var(--text);color:var(--bg);border-color:var(--text)}
+.sep{width:10px}
+input[type=search]{flex:1;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:999px;color:var(--text);padding:8px 14px;font-size:14px;outline:none;font-family:inherit}
+input[type=search]:focus{border-color:#4f9dff}
+/* ===== Stage list: arc group > trunk/branch heading > stage cards ===== */
+.group{margin:24px 0 8px}
+.ghead{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 12px;margin-bottom:4px}
+.ghead h3{font-size:19px;color:var(--c)}
+.ghead span{font-size:13px;color:var(--muted)}
+.sub2{margin:14px 0 8px;font-size:13px;font-weight:700;letter-spacing:.04em;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sub2:before{content:"";width:22px;border-top:3px var(--bs,solid) var(--c)}
+.sub2 small{font-weight:400;color:var(--dim);letter-spacing:0}
+.stages{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px;border-top:3px solid var(--c)}
+.stage.flash{box-shadow:0 0 0 2px var(--c),0 0 24px var(--c)}
+.stage .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.code{font-size:12px;font-weight:700;color:var(--c);letter-spacing:.06em}
+.pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
+.p-next{color:var(--next)}.p-done{color:var(--done)}.p-check{color:var(--check)}.p-planned{color:var(--planned)}
+.stage h4{font-size:16px;margin-bottom:2px}
+.bd{font-size:11.5px;color:var(--c);margin-bottom:6px}
+.bd.trunk{color:var(--muted)}
+.stage .note{font-size:13px;color:var(--muted);margin-bottom:8px}
+.stops{font-size:12.5px;color:var(--dim);line-height:1.65}
+.stops b{color:var(--text);font-weight:600}
+.stops i{font-style:normal;color:#b9a56a}
+.stage .on2{font-size:12px;color:var(--dim);margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)}
+.hubtag{display:inline-block;font-size:10.5px;border:1px solid #f2b134;color:#f2b134;border-radius:999px;padding:0 7px;margin-left:6px;vertical-align:1px}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+/* ===== Shared cards: how it gets done, before every leg, lens, ways between pages ===== */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;margin-bottom:16px}
+ol,ul{padding-left:20px;color:var(--muted);font-size:14px}
+li{margin:6px 0}
+li b{color:var(--text)}
+.warn{margin-top:14px;border:1px solid var(--check);background:rgba(255,159,67,.08);border-radius:12px;padding:12px 14px;font-size:13px;color:#ffd2a6}
+.tandem{display:grid;gap:10px}
+.tandem div{background:var(--panel2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--muted)}
+.tandem b{color:var(--text);display:block;margin-bottom:2px}
+.tandem a{color:inherit;text-decoration:none;display:block}
+.tandem a:hover b{color:#7db4ff}
+.links a{display:block;font-size:14px;margin:6px 0;text-decoration:none}
+.links span{color:var(--dim);font-size:12px}
+.shared{margin-top:36px;padding-top:12px;border-top:1px solid var(--line)}
+.shared>h2{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:14px 0 14px;font-weight:600}
+/* ===== Footer ===== */
+footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
+/* ===== Phones ===== */
+@media (max-width:640px){
+  .wrap{padding:0 14px 48px}.nav .in{padding:8px 12px;gap:10px}.brand{display:none}
+  .tab{padding:7px 13px}.stages{grid-template-columns:1fr}.card{padding:16px;border-radius:16px}
+  .grid2{grid-template-columns:1fr}
+  .mapctl{flex-direction:row;top:auto;bottom:8px;right:8px;gap:5px}
+  .mapctl button{min-width:34px;height:34px}
+}
