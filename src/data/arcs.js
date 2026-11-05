@@ -1,0 +1,17 @@
+/**
+ * Arcs: the long routes. Each arc belongs to one tab and has a trunk (its spine) plus branches.
+ * Depends on: shared.js.  Exposes: GEP.data.arcs.
+ */
+GEP.data.arcs = {
+  upper:{tab:"eurasia",code:"U",name:"Upper arc",color:"#4f9dff",route:"Japan, Korea, north China, Mongolia, the Trans-Siberian across Russia, on to Europe. Branches: Hokkaido, Jeju, the Gobi, Baikal, the Far East, Murmansk and more."},
+  silk: {tab:"eurasia",code:"S",name:"Modern Silk Road arc",color:"#f2b134",route:"Today's corridors: Xi'an and Xinjiang, Khorgos into Kazakhstan, Central Asia's hubs, the Middle Corridor across the Caspian, Baku to Tbilisi to Kars, Marmaray into Istanbul. Branches: Karakoram Highway, Pamir, Turkmenistan, Armenia, Black Sea and more."},
+  lower:{tab:"eurasia",code:"L",name:"Lower arc",color:"#2fd0b5",route:"Singapore up through SE Asia and the Laos–China railway, then India, Pakistan, Iran and the Gulf. Branches: Borneo, Indonesia, Philippines, Nepal, Sri Lanka, Rajasthan, Jordan and more."},
+  europe:{tab:"eurasia",code:"E",name:"Europe: where the arcs meet",color:"#b48cff",from:"St Petersburg",route:"The upper arc comes in through Finland and the Baltics, the Silk Road arc through Istanbul and the Balkans. A trunk runs west to the Atlantic at Lisbon, with branches to the Nordics, Britain and Ireland, Italy, Greece and the Balkans."},
+  an:{tab:"africa",code:"AN",name:"North Africa arc",color:"#ff8a5b",route:"Spain across to Morocco, then Algeria, Tunisia and Egypt. Branches: Atlas and Sahara, the Western Desert oases."},
+  ae:{tab:"africa",code:"AE",name:"Nile and East Africa arc",color:"#8bd450",from:"Cairo",route:"Up the Nile from Egypt, through Sudan or by air to Ethiopia, Kenya, Tanzania, Malawi and Zambia. Branches: Sinai and the Red Sea, Rift Valley and Omo, Uganda and Rwanda, the Swahili coast, the northern safari circuit."},
+  as:{tab:"africa",code:"AS",name:"Southern Africa loop",color:"#5ad1ff",from:"Livingstone",route:"Victoria Falls, Botswana, Namibia, then South Africa from Cape Town to Kruger. Branches: Zimbabwe, Lesotho, Eswatini, Mozambique, Angola, Madagascar and Mauritius."},
+  aw:{tab:"africa",code:"AW",name:"West Africa Atlantic arc",color:"#ff6fae",from:"Marrakech",route:"Down the Atlantic coast from Morocco through Western Sahara and Mauritania to Senegal, then the Gulf of Guinea to Cameroon and Gabon. Branches: the Sahel, Cabo Verde."},
+  na:{tab:"americas",code:"NA",name:"North America arc",color:"#4f9dff",route:"Alaska, the Yukon, the Rockies and Vancouver, then down the Pacific coast to San Diego. Branches: across Canada, Rockies and Midwest, Southwest and Deep South, the East Coast."},
+  ca:{tab:"americas",code:"CA",name:"Central America arc",color:"#ff7a59",from:"Tijuana",route:"Mexico from Tijuana to the Yucatán, then Belize to Panama. Branches: Baja, Copper Canyon, the Caribbean islands."},
+  sa:{tab:"americas",code:"SA",name:"South America arc",color:"#3ccf9a",from:"Panama City",route:"Colombia down the Andes through Ecuador, Peru, Bolivia and Chile to Patagonia and Ushuaia. Branches: Argentina and Uruguay, Brazil and the Atlantic coast, the Amazon river, Venezuela and the Guianas."}
+};
