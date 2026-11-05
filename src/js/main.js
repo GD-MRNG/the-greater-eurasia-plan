@@ -1,7 +1,7 @@
 /**
  * main.js: owns the UI state, hash routing and all event handlers. Loaded last.
  *
- * Routes:  #eurasia  #africa  #americas        (default: eurasia)
+ * Routes:  #eurasia  #africa  #americas  #oceania   (default: eurasia)
  *          #<tab>/<n>                           opens zoom view n of that tab
  *
  * Exposes: nothing (starts the app).

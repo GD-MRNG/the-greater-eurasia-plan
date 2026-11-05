@@ -129,13 +129,16 @@ GEP.model = (function () {
       ? [].concat(...stagesOfArc(selection.arc).map(s => s.pts.filter(p => !p.side).map(p => [p.lon, p.lat])))
       : pathOf(selection.arc, selection.branch);
     if (points.length < 2) return 0;
-    const lons = points.map(p => p[0]), lats = points.map(p => p[1]);
-    const box = {w: Math.min(...lons), e: Math.max(...lons), s: Math.min(...lats), n: Math.max(...lats)};
+    const lats = points.map(p => p[1]);
+    const south = Math.min(...lats), north = Math.max(...lats);
     const slack = 0.5;
     let best = 0, bestArea = Infinity;
     tabs[tabId].views.forEach((view, i) => {
       const [w, e, s, n] = view.b;
-      const fits = box.w >= w - slack && box.e <= e + slack && box.s >= s - slack && box.n <= n + slack;
+      // Shift longitudes into this view, so a Pacific box past 180° can contain Hawaii.
+      const lons = points.map(p => GEP.lonInView(p[0], view.b));
+      const west = Math.min(...lons), east = Math.max(...lons);
+      const fits = west >= w - slack && east <= e + slack && south >= s - slack && north <= n + slack;
       if (fits && (e - w) * (n - s) < bestArea) { best = i; bestArea = (e - w) * (n - s); }
     });
     return best;

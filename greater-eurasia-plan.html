@@ -142,7 +142,8 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
 /* ===== Phones ===== */
 @media (max-width:640px){
   .wrap{padding:0 14px 48px}.nav .in{padding:8px 12px;gap:10px}.brand{display:none}
-  .tab{padding:7px 13px}.stages{grid-template-columns:1fr}.card{padding:16px;border-radius:16px}
+  .tabs{gap:4px}
+  .tab{padding:6px 8px;font-size:13px}.stages{grid-template-columns:1fr}.card{padding:16px;border-radius:16px}
   .grid2{grid-template-columns:1fr}
   .mapctl{flex-direction:row;top:auto;bottom:8px;right:8px;gap:5px}
   .mapctl button{min-width:34px;height:34px}
@@ -242,14 +243,14 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
  *   GEP.map      the SVG map renderer              (js/map.js)
  *   GEP.views    HTML renderers for the page       (js/views.js)
  *
- * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl().
+ * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl(), GEP.lonInView().
  * Depends on: nothing.
  *
  * ---------------------------------------------------------------------------
  * DATA SCHEMA (the one place it is documented; README.md mirrors it)
  * ---------------------------------------------------------------------------
  *
- * TAB      GEP.data.tabs[tabId]            tabId: "eurasia" | "africa" | "americas"
+ * TAB      GEP.data.tabs[tabId]            tabId: "eurasia" | "africa" | "americas" | "oceania"
  *   label      text in the top nav
  *   blurb      one line shown when other pages link here
  *   g          [c1, c2, c3] gradient colours for the page title
@@ -270,7 +271,10 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
  *
  * ENTRY    GEP.data.entries[]              ways between pages, drawn as white diamonds
  *   at         [lon, lat]
- *   eurasia | africa | americas   label text; the diamond shows on every tab that has a label
+ *   eurasia | africa | americas | oceania   label text; the diamond shows on every tab that has a label
+ *
+ * A view box may run past longitude 180 so the Pacific sits in one piece (see GEP.lonInView).
+ * Stop coordinates themselves stay ordinary degrees: west of Greenwich is negative.
  *
  * STAGE    one call per stage, in route order, in src/data/stages/*.js:
  *   s(arc, branch, name, note, stops, onward)
@@ -335,6 +339,30 @@ const GEP = {
     for (const key in attrs || {}) node.setAttribute(key, attrs[key]);
     if (parent) parent.appendChild(node);
     return node;
+  },
+
+  /**
+   * Longitude to draw for a view that may cross the 180° meridian.
+   * If adding or subtracting 360 brings `lon` inside the view box (plus a small margin, so a
+   * point just outside still pans with the map), that value is used. Otherwise `lon` is left
+   * as written, so continents outside the box are not dragged across the date line.
+   * Stop coordinates stay ordinary degrees; only the view box (tabs.js) runs past ±180.
+   * @param {number} lon
+   * @param {number[]} bounds  [lonMin, lonMax, latMin, latMax]
+   * @returns {number}
+   */
+  lonInView(lon, bounds) {
+    const lonMin = bounds[0], lonMax = bounds[1];
+    const margin = 8;
+    const lo = lonMin - margin, hi = lonMax + margin;
+    const mid = (lonMin + lonMax) / 2;
+    let best = lon, bestDist = Math.abs(lon - mid);
+    [lon + 360, lon - 360].forEach(cand => {
+      if (cand < lo || cand > hi) return;
+      const dist = Math.abs(cand - mid);
+      if (dist < bestDist) { best = cand; bestDist = dist; }
+    });
+    return best;
   }
 };
 </script>
@@ -344,13 +372,15 @@ const GEP = {
  * Site-wide metadata. Change `updated` whenever the content changes.
  * Depends on: shared.js.  Exposes: GEP.data.updated.
  */
-GEP.data.updated = "4 Nov 2026";
+GEP.data.updated = "5 Nov 2026";
 </script>
 <script>
 /* ---- src/data/tabs.js ---- */
 /**
  * Page (tab) definitions: hero text, zoom views and faint region names.
  * `blurb` is the one-liner shown when other pages link here. Edit this file to change a tab's wording or add a zoom view.
+ * A view box is [lonMin, lonMax, latMin, latMax]. Oceania's boxes run past longitude 180 so the
+ * Pacific is one continuous sketch; stop coordinates stay ordinary degrees (see shared.js).
  * Depends on: shared.js.  Exposes: GEP.data.tabs.
  */
 GEP.data.tabs = {
@@ -400,6 +430,24 @@ GEP.data.tabs = {
       {n:"South America", b:[-84,-32,-56,14]}
     ],
     regions:[["NORTH AMERICA",-100,50],["MEXICO",-102,24],["SOUTH AMERICA",-60,-12],["PACIFIC",-150,38],["ATLANTIC",-42,25]]
+  },
+  oceania:{label:"Oceania", g:["#4cc9f0","#f4a261","#c77dff"], blurb:"Four arcs across the islands east of Bali, Australia, New Zealand and the Pacific.",
+    eyebrow:"Route overview",
+    title:'The <span>Oceania</span> arcs',
+    sub:"Four arcs cover the islands east of Bali, Australia, New Zealand and the Pacific to Hawaii. The sketch continues across the date line, so Polynesia stays in one piece.",
+    chips:[["4","arcs"],["Span:","Bali to Hawaii"]],
+    mapHint:"Solid lines are each arc's trunk, dashed lines are branches. The view crosses the date line, so Samoa and Hawaii are not split. Hollow dots are side trips, big dots are labelled. Small islands stay visible as a marker when zoomed out. Use the view buttons to zoom.",
+    views:[
+      {n:"Whole of Oceania", b:[92,238,-50,28]},
+      {n:"Eastern Indonesia and New Guinea", b:[114,156,-12,6]},
+      {n:"Australia", b:[112,154,-45,-9]},
+      {n:"New Zealand", b:[165,186,-48,-28]},
+      {n:"Melanesia", b:[156,180,-24,-4]},
+      {n:"Polynesia", b:[174,228,-28,-4]},
+      {n:"Micronesia", b:[130,192,-5,18]},
+      {n:"Hawaii", b:[198,208,18.2,23.6]}
+    ],
+    regions:[["AUSTRALIA",125,-27],["NEW GUINEA",138,-5.2],["NEW ZEALAND",162,-40],["MELANESIA",162,-14],["MICRONESIA",150,4],["POLYNESIA",196,-10],["HAWAII",214,26]]
   }
 };
 </script>
@@ -420,7 +468,11 @@ GEP.data.arcs = {
   aw:{tab:"africa",code:"AW",name:"West Africa Atlantic arc",color:"#ff6fae",from:"Marrakech",route:"Down the Atlantic coast from Morocco through Western Sahara and Mauritania to Senegal, then the Gulf of Guinea to Cameroon and Gabon. Branches: the Sahel, Cabo Verde."},
   na:{tab:"americas",code:"NA",name:"North America arc",color:"#4f9dff",route:"Alaska, the Yukon, the Rockies and Vancouver, then down the Pacific coast to San Diego. Branches: across Canada, Rockies and Midwest, Southwest and Deep South, the East Coast."},
   ca:{tab:"americas",code:"CA",name:"Central America arc",color:"#ff7a59",from:"Tijuana",route:"Mexico from Tijuana to the Yucatán, then Belize to Panama. Branches: Baja, Copper Canyon, the Caribbean islands."},
-  sa:{tab:"americas",code:"SA",name:"South America arc",color:"#3ccf9a",from:"Panama City",route:"Colombia down the Andes through Ecuador, Peru, Bolivia and Chile to Patagonia and Ushuaia. Branches: Argentina and Uruguay, Brazil and the Atlantic coast, the Amazon river, Venezuela and the Guianas."}
+  sa:{tab:"americas",code:"SA",name:"South America arc",color:"#3ccf9a",from:"Panama City",route:"Colombia down the Andes through Ecuador, Peru, Bolivia and Chile to Patagonia and Ushuaia. Branches: Argentina and Uruguay, Brazil and the Atlantic coast, the Amazon river, Venezuela and the Guianas."},
+  oi:{tab:"oceania",code:"OI",name:"Eastern islands arc",color:"#4cc9f0",route:"East from Bali through the Lesser Sundas and Timor-Leste, the Maluku islands and New Guinea. Branches: Sumba, the Kei and Tanimbar islands, New Britain and Bougainville."},
+  au:{tab:"oceania",code:"AU",name:"Australia loop",color:"#f4a261",route:"A loop from the Top End through the Kimberley and the west coast, the south coast and the east coast up to Cape York. Branches: the Red Centre, Tasmania."},
+  nz:{tab:"oceania",code:"NZ",name:"New Zealand arc",color:"#90be6d",route:"The North Island from Auckland to Wellington, then the South Island to Dunedin, with Milford Sound off Te Anau. Branches: Northland, the East Cape, the West Coast, Stewart Island, Norfolk Island."},
+  pa:{tab:"oceania",code:"PA",name:"Pacific arc",color:"#c77dff",from:"Port Moresby",route:"From New Guinea across Melanesia and Polynesia to Hawaii, in one piece across the date line. Branches: New Caledonia, Micronesia through Kiribati, and the smaller islands around Samoa."}
 };
 </script>
 <script>
@@ -512,14 +564,29 @@ GEP.data.branches = {
   "sa-argentina":{arc:"sa",name:"Argentina and Uruguay",from:"Tupiza"},
   "sa-brazil":{arc:"sa",name:"Brazil and the Atlantic coast",from:"Buenos Aires"},
   "sa-amazon":{arc:"sa",name:"Amazon river route",from:"Quito",to:"Belém"},
-  "sa-venezuela":{arc:"sa",name:"Venezuela and the Guianas",from:"Santa Marta",to:"Belém"}
+  "sa-venezuela":{arc:"sa",name:"Venezuela and the Guianas",from:"Santa Marta",to:"Belém"},
+  /* oceania */
+  "oi-sumba":{arc:"oi",name:"Sumba",from:"Labuan Bajo"},
+  "oi-kei":{arc:"oi",name:"Kei and Tanimbar",from:"Ambon"},
+  "oi-png-isles":{arc:"oi",name:"New Britain and Bougainville",from:"Lae"},
+  "au-centre":{arc:"au",name:"Red Centre",from:"Katherine",to:"Adelaide"},
+  "au-tasmania":{arc:"au",name:"Tasmania",from:"Melbourne"},
+  "nz-northland":{arc:"nz",name:"Northland",from:"Auckland"},
+  "nz-east":{arc:"nz",name:"East Cape",from:"Taupo"},
+  "nz-west":{arc:"nz",name:"West Coast",from:"Nelson",to:"Queenstown"},
+  "nz-stewart":{arc:"nz",name:"Stewart Island",from:"Te Anau"},
+  "nz-norfolk":{arc:"nz",name:"Norfolk Island",from:"Auckland"},
+  "pa-newcal":{arc:"pa",name:"New Caledonia",from:"Port Vila",to:"Nadi"},
+  "pa-micro":{arc:"pa",name:"Micronesia",from:"Sorong",to:"Honolulu"},
+  "pa-isles":{arc:"pa",name:"Wallis, Niue and Tokelau",from:"Apia"}
 };
 </script>
 <script>
 /* ---- src/data/entries.js ---- */
 /**
  * Ways between the pages, drawn as white diamonds. `at` is [lon, lat].
- * Add a label under the tab key (eurasia, africa, americas) to show it on that tab.
+ * Add a label under the tab key (eurasia, africa, americas, oceania) to show it on that tab.
+ * A coordinate west of the date line is an ordinary negative longitude; the Oceania view shifts it.
  * Depends on: shared.js.  Exposes: GEP.data.entries.
  */
 GEP.data.entries = [
@@ -531,7 +598,9 @@ GEP.data.entries = [
   {at:[143.5,37.5], eurasia:"Pacific to the Americas"},
   {at:[-12.5,39.5], eurasia:"Atlantic to the Americas"},
   {at:[-168,50], americas:"In from Japan or Korea across the Pacific"},
-  {at:[-38,40], americas:"In from Europe across the Atlantic"}
+  {at:[-38,40], americas:"In from Europe across the Atlantic"},
+  {at:[111.6,-5.4], eurasia:"to Oceania", oceania:"From SE Asia"},
+  {at:[-154.2,26.2], americas:"In from Oceania", oceania:"Toward the Americas"}
 ];
 </script>
 <script>
@@ -677,7 +746,8 @@ s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. The Strait of
 s("lower","l-borneo","Borneo","Mountains and rainforest.",
  "Kuching 110.35 1.55 *; Brunei 114.94 4.89; Mount Kinabalu 116.56 6.08 ~; Kota Kinabalu 116.07 5.98 *");
 s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, optional.",
- "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~");
+ "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~",
+ "East of Bali continues on the Oceania page");
 s("lower","l-phil","Philippines island branch","Optional island hopping.",
  "Palawan El Nido 119.4 11.18 ~; Cebu 123.9 10.3; Manila 120.98 14.6 *; Banaue 121.06 16.92 ~");
 s("lower","l-andaman","Andaman coast","Thailand's west coast islands.",
@@ -943,10 +1013,122 @@ s("sa","sa-venezuela","The Guianas","Guyana, Suriname and French Guiana.",
 })(GEP.stage);
 </script>
 <script>
+/* ---- src/data/stages/oceania.js ---- */
+/**
+ * Stages: Oceania and the Pacific (eastern Indonesia and New Guinea, Australia, New Zealand, the Pacific).
+ * One s(...) call per stage, along the route. See the schema in shared.js.
+ * Longitudes stay ordinary degrees (west of Greenwich is negative). The Oceania view box runs
+ * past 180° so Samoa, the Cook Islands, French Polynesia and Hawaii are drawn in one piece.
+ * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
+ */
+(function (s) {
+/* ============ OCEANIA: EASTERN ISLANDS ARC ============ */
+s("oi","","Lombok and Sumbawa","Across the Lombok Strait from Bali, then along Sumbawa.",
+ "Ubud 115.26 -8.5 *; Senggigi 116.04 -8.49 ~; Gili Trawangan 116.03 -8.35 ~; Mataram 116.1 -8.58 +; Kuta Lombok 116.28 -8.89 ~; Mount Rinjani 116.46 -8.41 ~; Sumbawa Besar 117.42 -8.49; Mount Tambora 118.0 -8.25 ~; Bima 118.73 -8.46 +");
+s("oi","","Flores and Komodo","Dragon country, highland towns and the crater lakes.",
+ "Komodo 119.5 -8.55; Labuan Bajo 119.89 -8.5 *; Ruteng 120.47 -8.61; Bajawa 120.96 -8.79; Ende 121.66 -8.84; Kelimutu 121.79 -8.77 ~; Maumere 122.21 -8.62 +","On to Timor by road and ferry");
+s("oi","oi-sumba","Sumba","Megalithic villages and the west-coast beaches, south of Flores.",
+ "Waikabubak 119.41 -9.63 *; Waingapu 120.26 -9.66 +");
+s("oi","","Timor and Timor-Leste","West Timor, then Dili and the eastern districts.",
+ "Kalabahi 124.52 -8.22; Kupang 123.61 -10.17 +; Soe 124.28 -9.86 ~; Atambua 124.9 -9.11; Dili 125.58 -8.56 *; Atauro 125.58 -8.24 ~; Maubisse 125.6 -8.84 ~; Baucau 126.46 -8.46 +; Lospalos 126.99 -8.52; Jaco 127.32 -8.42 ~","Air or sea to Ambon");
+s("oi","","Maluku","Ambon, the Banda Islands and the twin islands of Ternate and Tidore.",
+ "Ambon 128.18 -3.7 *; Banda Neira 129.9 -4.52 +; Ternate 127.37 0.79; Tidore 127.44 0.68 ~","East to the Bird's Head");
+s("oi","oi-kei","Kei and Tanimbar","The southern Maluku islands, by sea from Ambon.",
+ "Tual 132.75 -5.63 *; Saumlaki 131.3 -7.98 +");
+s("oi","","West Papua","Raja Ampat, the north coast and the Baliem Valley.",
+ "Sorong 131.25 -0.88 *; Waisai 130.82 -0.43 +; Misool 130.08 -1.89 ~; Manokwari 134.08 -0.86; Biak 136.08 -1.18 ~; Wamena 138.95 -4.1 +; Merauke 140.4 -8.49 ~; Jayapura 140.72 -2.53 *","Across the border to Vanimo, or by air to Port Moresby");
+s("oi","","Papua New Guinea: north coast and highlands","The north coast, then the highland towns.",
+ "Vanimo 141.3 -2.67; Wewak 143.64 -3.55; Lorengau 147.27 -2.02 ~; Madang 145.79 -5.22 +; Mount Wilhelm 145.03 -5.78 ~; Goroka 145.39 -6.08; Mount Hagen 144.3 -5.86 +; Tari 142.95 -5.85 ~; Lae 147.0 -6.73 +");
+s("oi","","Papua New Guinea: south coast","The capital on the Gulf of Papua, then Milne Bay.",
+ "Port Moresby 147.19 -9.48 *; Alotau 150.46 -10.31 +; Losuia 151.08 -8.54 ~","Sea or air on to the Solomon Islands");
+s("oi","oi-png-isles","New Britain and Bougainville","The Bismarck archipelago, east from Lae.",
+ "Kimbe 150.14 -5.55; Rabaul 152.17 -4.2 +; Kokopo 152.26 -4.35; Kavieng 150.81 -2.58 ~; Buka 154.67 -5.42; Arawa 155.57 -6.23");
+
+/* ============ OCEANIA: AUSTRALIA LOOP ============ */
+s("au","","The Top End","Darwin, the plateau waterfalls and Kakadu.",
+ "Darwin 130.84 -12.46 *; Litchfield 130.8 -13.16 ~; Kakadu 132.84 -12.67 +; Ubirr 132.96 -12.41 ~; Katherine 132.26 -14.47 +; Nitmiluk 132.42 -14.32 ~; Nhulunbuy 136.78 -12.18 ~");
+s("au","au-centre","The Red Centre","South from Katherine through the ranges and the rock to the south coast.",
+ "Daly Waters 133.38 -16.25; Tennant Creek 134.23 -19.65; Alice Springs 133.88 -23.7 +; West MacDonnell 132.73 -23.63 ~; Kings Canyon 131.57 -24.25 +; Uluru 131.04 -25.34 *; Kata Tjuta 130.73 -25.3 ~; Coober Pedy 134.75 -29.01");
+s("au","","The Kimberley","Gorges, the Bungle Bungles and the west Kimberley coast.",
+ "Kununurra 128.74 -15.77; Purnululu 128.3 -17.5 *; Derby 123.63 -17.3; Horizontal Falls 123.59 -16.38 ~; Broome 122.24 -17.96 *");
+s("au","","The coral coast","North West Cape, the reef and the gorges inland.",
+ "Exmouth 114.13 -21.93 +; Ningaloo 113.9 -22.57 ~; Coral Bay 113.77 -23.14; Karijini 118.3 -22.5 ~; Monkey Mia 113.72 -25.79 +; Kalbarri 114.16 -27.71");
+s("au","","Perth and the southwest","The Swan River, then the forests and the south coast.",
+ "Perth 115.86 -31.95 *; Rottnest 115.5 -32.0 ~; Fremantle 115.75 -32.06; Margaret River 115.07 -33.95 +; Albany 117.88 -35.02; Esperance 121.89 -33.86 ~; Kalgoorlie 121.47 -30.75 ~");
+s("au","","South Australia","Across the Bight to Adelaide, with the ranges and the island.",
+ "Ceduna 133.68 -32.13; Port Lincoln 135.86 -34.73; Kangaroo Island 137.4 -35.78 ~; Adelaide 138.6 -34.93 *; Barossa 138.96 -34.53 ~; Wilpena 138.55 -31.54 +");
+s("au","","Victoria","Melbourne, the ranges and the southern ocean road.",
+ "Melbourne 144.96 -37.81 *; Grampians 142.52 -37.14 ~; Twelve Apostles 143.1 -38.66 +; Apollo Bay 143.67 -38.76; Phillip Island 145.23 -38.48 ~; Wilsons Prom 146.4 -39.0 ~");
+s("au","au-tasmania","Tasmania","Across Bass Strait. Mountains, the west coast and Hobart.",
+ "Launceston 147.14 -41.44; Cradle Mountain 145.96 -41.68 +; Strahan 145.33 -42.15; Hobart 147.33 -42.88 *; Port Arthur 147.85 -43.15 ~; Freycinet 148.29 -42.12 +; Bay of Fires 148.29 -41.25 ~");
+s("au","","New South Wales","The capital, the harbour and the north coast.",
+ "Canberra 149.13 -35.28 +; Katoomba 150.31 -33.72 ~; Sydney 151.21 -33.87 *; Hunter Valley 151.3 -32.77 ~; Byron Bay 153.61 -28.64 +");
+s("au","","Queensland: the south-east","Brisbane, the islands and the reef coast north.",
+ "Brisbane 153.03 -27.47 +; Gold Coast 153.43 -28.02 ~; Noosa 153.09 -26.39; K'gari 153.13 -25.24 ~; Airlie Beach 148.72 -20.27; Whitsundays 148.95 -20.35 +");
+s("au","","Queensland: the far north","Cairns, the reef and the track to Cape York.",
+ "Cairns 145.77 -16.92 *; Kuranda 145.64 -16.82 ~; Port Douglas 145.47 -16.48 +; Daintree 145.38 -16.25 ~; Cape Tribulation 145.46 -16.09 ~; Cooktown 145.25 -15.47; Thursday Island 142.22 -10.58 +; Cape York 142.39 -10.89","Across the Torres Strait, or by air back to Darwin");
+
+/* ============ OCEANIA: NEW ZEALAND ARC ============ */
+s("nz","","North Island","Across the Tasman. Auckland, the volcanic centre and Wellington.",
+ "Auckland 174.76 -36.85 *; Coromandel 175.5 -36.76 ~; Tauranga 176.17 -37.69; Rotorua 176.25 -38.14; Taupo 176.07 -38.69; Tongariro 175.58 -39.13 ~; New Plymouth 174.08 -39.06 ~; Wellington 174.78 -41.29 +");
+s("nz","nz-northland","Northland","The Bay of Islands and the northern cape.",
+ "Paihia 174.09 -35.28; Russell 174.12 -35.26 ~; Cape Reinga 172.68 -34.43 +");
+s("nz","nz-east","East Cape","Hawke's Bay and the east-coast road.",
+ "Napier 176.91 -39.49 +; Gisborne 178.0 -38.66; Te Araroa 178.37 -37.63 ~");
+s("nz","","South Island: Marlborough to the lakes","The ferry, the east coast and the southern lakes.",
+ "Picton 174.01 -41.29; Nelson 173.28 -41.27 +; Kaikoura 173.68 -42.4; Christchurch 172.64 -43.53 +; Akaroa 172.97 -43.8 ~; Lake Tekapo 170.48 -44.0; Aoraki 170.14 -43.73 +; Wanaka 169.13 -44.7; Queenstown 168.66 -45.03 *");
+s("nz","nz-west","The West Coast","From Nelson down the wet coast to the glaciers, rejoining at Queenstown.",
+ "Abel Tasman 172.97 -40.95; Punakaiki 171.33 -42.11; Greymouth 171.21 -42.45; Hokitika 170.97 -42.72; Franz Josef 170.19 -43.39 +; Fox Glacier 170.02 -43.46 ~; Haast 169.04 -43.88");
+s("nz","","South Island: Te Anau to Dunedin","Fiordland, the south coast and the east.",
+ "Te Anau 167.72 -45.41; Milford Sound 167.93 -44.67 ~; Invercargill 168.35 -46.41; Dunedin 170.5 -45.87 +; Oamaru 170.97 -45.1 ~; Waitangi (Chatham) -176.56 -43.95");
+s("nz","nz-stewart","Stewart Island","The short crossing from the South Island.",
+ "Oban 168.13 -46.9 +");
+s("nz","nz-norfolk","Norfolk Island","The small island between New Caledonia and New Zealand.",
+ "Kingston (Norfolk) 167.96 -29.05 +");
+
+/* ============ OCEANIA: PACIFIC ARC ============ */
+s("pa","","Solomon Islands","West to east through the New Georgia islands to Guadalcanal and Temotu.",
+ "Gizo 156.84 -8.1 +; Munda 157.26 -8.33; Honiara 159.95 -9.43 *; Tulagi 160.15 -9.1 ~; Auki 160.7 -8.77; Lata 165.86 -10.73");
+s("pa","","Vanuatu","Espiritu Santo, the central islands and Tanna.",
+ "Luganville 167.16 -15.52 +; Champagne Beach 167.12 -15.14 ~; Pentecost 168.17 -15.76; Ambrym 168.12 -16.25 ~; Port Vila 168.32 -17.73 *; Lenakel 169.27 -19.53; Mount Yasur 169.45 -19.53 ~");
+s("pa","pa-newcal","New Caledonia","The Grande Terre and the Loyalty Islands, between Vanuatu and Fiji.",
+ "Lifou 167.24 -20.92; Hienghène 164.94 -20.69 ~; Bourail 165.5 -21.57; Nouméa 166.46 -22.28 *; Isle of Pines 167.45 -22.62 ~; Ouvéa 166.57 -20.65 ~");
+s("pa","","Fiji","The Mamanucas and Yasawas, then Viti Levu, Ovalau and the north.",
+ "Nadi 177.44 -17.78 *; Mamanuca Islands 177.1 -17.67 ~; Yasawa Islands 177.45 -16.8 ~; Lautoka 177.45 -17.62; Suva 178.44 -18.14 +; Levuka 178.83 -17.68 ~; Kadavu 178.2 -19.05 ~; Savusavu 179.34 -16.78; Taveuni 179.87 -16.82 +");
+s("pa","","Tonga","Tongatapu, then the middle islands and Vava'u.",
+ "Nuku'alofa -175.2 -21.13 *; Eua -174.95 -21.38 ~; Pangai -174.35 -19.81; Neiafu -173.98 -18.65 +");
+s("pa","","Samoa","Upolu and Savai'i, then Tutuila.",
+ "Apia -171.77 -13.83 *; Lalomanu -171.44 -14.05 ~; Salelologa -172.4 -13.74 +; Pago Pago -170.7 -14.28 +; Ofu -169.68 -14.17 ~");
+s("pa","pa-isles","Wallis, Futuna, Niue and Tokelau","The smaller islands around Samoa, by ship or air.",
+ "Atafu -172.52 -8.54; Mata-Utu -176.17 -13.28 +; Leava -178.13 -14.31; Alofi -169.92 -19.05 *");
+s("pa","","Cook Islands","Rarotonga and the northern atoll of Aitutaki.",
+ "Rarotonga -159.78 -21.23 *; Aitutaki -159.79 -18.86 +; Atiu -158.12 -20.0 ~");
+s("pa","","Society Islands","Tahiti and the Leeward Islands.",
+ "Papeete -149.57 -17.54 *; Moorea -149.83 -17.53 +; Huahine -151.03 -16.74; Raiatea -151.44 -16.83; Bora Bora -151.74 -16.5 +");
+s("pa","","Tuamotu and the Marquesas","The atolls, then the high islands to the north-east.",
+ "Rangiroa -147.66 -15.12 +; Fakarava -145.62 -16.05 ~; Nuku Hiva -140.1 -8.91 *; Hiva Oa -139.03 -9.8 +");
+s("pa","","Hawaii","Oahu, Hawai'i, Maui and Kaua'i.",
+ "Honolulu -157.86 21.31 *; Pearl Harbor -157.95 21.36 ~; Haleiwa -158.1 21.59 ~; Kailua-Kona -155.99 19.64; Hawaii Volcanoes -155.29 19.42 ~; Hilo -155.09 19.73; Kahului -156.47 20.89; Haleakala -156.25 20.71 ~; Lihue -159.37 21.98; Napali Coast -159.58 22.17 ~","On across the Pacific to North America");
+s("pa","pa-micro","Palau","Rock islands and the reef, north of West Papua.",
+ "Koror 134.48 7.34 *; Rock Islands 134.36 7.25 ~; Peleliu 134.25 7.01; Ngerulmud 134.62 7.5 ~");
+s("pa","pa-micro","Yap, Guam and the Northern Marianas","West to east along the Marianas.",
+ "Colonia (Yap) 138.12 9.51 +; Hagåtña 144.75 13.48 *; Tumon 144.79 13.51 ~; Rota 145.21 14.15; Saipan 145.75 15.19 +; Tinian 145.63 15.0 ~");
+s("pa","pa-micro","The Federated States of Micronesia","Chuuk, Pohnpei and Kosrae.",
+ "Weno 151.85 7.45; Kolonia 158.21 6.96 +; Nan Madol 158.33 6.84 ~; Tofol 162.96 5.33");
+s("pa","pa-micro","Marshall Islands and Nauru","Atolls west of the date line, and Nauru to the south.",
+ "Yaren 166.93 -0.55; Kwajalein 167.73 8.72; Jaluit 169.64 5.92; Majuro 171.38 7.12 *; Arno 171.7 7.1 ~");
+s("pa","pa-micro","Kiribati","The Gilberts, then the Phoenix and Line Islands across the date line.",
+ "Banaba 169.54 -0.86 ~; Tarawa 172.98 1.33 +; Kanton -171.72 -2.81; Tabuaeran -159.33 3.86; Kiritimati -157.36 1.86 +");
+})(GEP.stage);
+</script>
+<script>
 /* ---- src/data/land.js ---- */
 /**
  * Coarse hand-made landmass outlines and inland seas for the sketch map. Not survey data.
  * Each polygon is a string of "lon,lat" pairs. `water` polygons are painted over the land.
+ * Islands west of the date line use ordinary negative longitudes. A view that runs past 180°
+ * (the Oceania tab) shifts a whole polygon together so Hawaii and Polynesia stay in one piece.
+ * A polygon only a couple of degrees across is drawn as a dot when it would be smaller than a few pixels.
  * Depends on: shared.js.  Exposes: GEP.data.land, GEP.data.water.
  */
 GEP.data.land = [
@@ -973,7 +1155,8 @@ GEP.data.land = [
 "119.3,-5.5 120.5,-5 120.3,-2.8 121.5,-4.5 122.8,-5 123,-4 121.5,-1.5 123.3,0.9 125,1.6 120.8,1.2 119.8,0.3 118.8,-2.5 119.4,-3.5",
 "120.5,18.5 122.2,18.5 122.5,16.5 121.6,14.2 124,13 122,13.5 120.6,14.2 119.8,16",
 "122,7 123.5,8.5 125.5,9.8 126.5,7.5 125.5,6 124,6.8 122,6.8",
-"131,-0.8 134,-0.8 138,-1.7 141,-2.6 141,-9 138,-8.3 135,-4.5 132.5,-3.3",
+/* New Guinea, Bird's Head to the Papuan peninsula */
+"130.6,-0.9 131.5,-0.4 132.8,-0.6 134.1,-0.8 135.4,-1.6 136.8,-1.1 138.2,-1.6 140.2,-2.5 141.2,-2.6 143.2,-3.4 145.2,-5.0 146.6,-6.4 147.2,-7.2 148.0,-8.6 149.2,-9.6 150.5,-10.2 149.4,-10.1 147.8,-10.2 147.1,-9.2 146.0,-8.0 144.6,-8.1 142.8,-7.8 141.0,-8.0 140.2,-7.2 138.6,-7.6 137.2,-5.6 135.6,-4.6 134.2,-3.4 132.6,-2.8 131.4,-1.8 130.4,-1.3",
 "-5.7,50.1 -3,50.7 1.4,51.1 1.7,52.7 0.2,53.5 -0.2,54.5 -1.6,55.6 -2.5,56 -1.8,57.5 -3.5,58.6 -5,58.6 -6,57.5 -5.6,56 -4.9,55 -3,54.9 -3.2,53.5 -4.6,52.8 -4.2,52 -5.2,51.7 -3,51.4 -4.2,51",
 "-10,51.8 -6.2,52.2 -6,53.7 -5.5,54.5 -7.2,55.3 -8.5,54.5 -10,53.8 -9.8,52.5",
 "-24,65.5 -22,66.4 -16,66.5 -13.5,65 -18,63.4 -22.5,63.8 -22,64.5",
@@ -988,7 +1171,70 @@ GEP.data.land = [
 "-74.4,18.4 -72.8,19.9 -70,19.8 -68.4,18.6 -71,17.8 -73.8,18.1",
 "-78.3,18.4 -76.3,18.2 -77.5,17.7",
 "-59.3,47.6 -56,51.5 -55.5,49.5 -53,46.7 -55.5,47",
-"-128.3,50.8 -124.7,48.4 -123.4,48.5 -125.2,50.1"
+"-128.3,50.8 -124.7,48.4 -123.4,48.5 -125.2,50.1",
+/* Oceania. Australia, New Zealand and the larger islands are outlines; the rest are small shapes that read as markers when zoomed out. */
+"142.5,-10.7 144.0,-14.2 145.4,-16.8 146.9,-19.3 148.8,-21.0 150.6,-23.2 153.1,-25.4 153.6,-27.5 153.5,-28.8 153.1,-30.4 151.8,-32.5 151.2,-33.9 150.2,-35.6 148.8,-37.6 147.5,-38.7 146.2,-38.8 144.7,-38.3 143.4,-38.8 142.2,-38.3 140.9,-38.1 139.6,-37.2 138.4,-35.7 137.2,-35.2 135.8,-35.6 134.2,-33.0 132.0,-32.1 129.0,-31.6 126.2,-32.4 124.2,-33.6 121.2,-34.2 118.8,-35.0 116.2,-35.0 115.0,-33.6 114.9,-31.5 114.5,-28.2 113.6,-25.5 113.5,-22.4 114.2,-21.7 116.2,-20.4 119.2,-19.9 121.6,-18.3 122.3,-17.8 123.8,-16.2 125.6,-14.8 127.6,-14.0 129.2,-14.7 130.6,-12.4 131.8,-11.3 133.4,-12.1 135.0,-12.4 136.4,-11.9 136.9,-13.8 137.8,-15.8 139.0,-16.8 140.7,-17.2 141.4,-15.2 141.8,-12.8 142.3,-11.2",
+"144.6,-40.8 145.8,-41.0 147.2,-40.9 148.0,-41.2 148.3,-42.2 147.9,-43.2 146.8,-43.6 145.3,-43.5 144.7,-42.8 144.6,-41.8 145.0,-41.0",
+"173.0,-34.4 172.6,-35.4 173.9,-36.9 174.5,-36.7 175.0,-36.4 175.7,-37.1 176.3,-37.7 177.3,-37.5 178.2,-37.7 178.1,-38.3 177.2,-38.8 177.0,-39.3 176.7,-39.8 175.4,-41.3 174.7,-41.3 175.0,-39.9 174.0,-39.0 173.7,-39.2 174.6,-37.6 173.1,-36.2 172.8,-34.9",
+"174.1,-41.4 173.8,-42.5 173.0,-43.6 172.7,-43.9 171.5,-44.3 170.6,-45.4 169.2,-46.4 167.8,-46.6 166.5,-45.8 167.3,-44.6 168.7,-43.8 170.3,-43.0 171.5,-41.9 172.7,-40.8 173.7,-40.6 174.3,-41.2",
+"114.9,-8.1 115.2,-8.1 115.6,-8.4 115.7,-8.8 115.1,-8.8 114.5,-8.5",
+"116.0,-8.3 116.7,-8.2 117.0,-8.5 118.9,-8.2 119.2,-8.7 118.0,-8.9 116.6,-9.0 116.0,-8.7",
+"119.2,-9.4 120.0,-9.6 120.7,-9.7 120.6,-10.2 119.4,-10.2 119.0,-9.7",
+"119.9,-8.3 121.2,-8.4 122.3,-8.4 122.8,-8.6 122.2,-8.9 121.0,-8.9 120.2,-8.7",
+"123.5,-9.4 124.2,-9.2 125.2,-8.4 126.4,-8.3 127.3,-8.4 127.0,-8.7 125.6,-9.2 124.4,-10.3 123.6,-10.2 123.4,-9.8",
+"127.5,1.7 128.0,1.2 128.5,0.4 128.1,-0.4 127.5,0.0 127.2,0.7 127.4,1.3",
+"127.9,-2.7 129.0,-2.8 130.4,-3.1 130.0,-3.6 128.6,-3.5 127.8,-3.1",
+"130.4,-0.1 130.9,-0.05 131.1,-0.35 130.5,-0.45",
+"148.3,-5.6 149.6,-5.5 150.8,-5.7 152.0,-5.3 152.4,-4.6 151.6,-4.2 150.2,-4.7 149.0,-5.3 148.2,-5.3",
+"150.7,-2.5 151.2,-2.7 152.4,-3.4 153.2,-4.3 153.0,-4.6 151.8,-3.6 150.9,-2.8",
+"154.5,-5.0 155.0,-5.4 155.8,-6.2 155.9,-6.7 155.0,-6.5 154.5,-5.6",
+"159.6,-9.3 160.2,-9.4 160.7,-9.7 160.5,-9.9 159.8,-9.6 159.5,-9.4",
+"160.7,-8.4 161.0,-8.7 161.3,-9.4 161.0,-9.5 160.7,-8.8",
+"163.9,-20.1 164.8,-20.5 165.6,-21.2 166.5,-22.0 167.0,-22.4 167.5,-22.0 166.6,-21.2 165.4,-20.4 164.4,-20.0",
+"177.1,-17.4 177.7,-17.5 178.3,-17.9 178.6,-18.2 178.1,-18.3 177.4,-18.1 177.1,-17.8",
+"178.8,-16.25 179.5,-16.2 180.15,-16.55 179.6,-16.9 178.9,-16.7",
+"-155.7,20.05 -155.0,19.85 -154.85,19.35 -155.05,18.95 -155.7,19.05 -156.05,19.45 -155.95,19.85",
+"-156.7,21.02 -156.05,20.92 -155.98,20.58 -156.35,20.55 -156.7,20.78",
+"-158.28,21.71 -157.68,21.58 -157.65,21.28 -158.05,21.26 -158.28,21.55",
+"-159.78,22.22 -159.3,22.15 -159.28,21.88 -159.58,21.87 -159.8,22.05",
+/* Smaller islands. Ordinary negative longitudes west of the date line; the Oceania view shifts them. */
+"168.0,-46.7 168.3,-46.75 168.25,-47.05 167.8,-47.0 167.7,-46.8",
+"-176.7,-43.8 -176.3,-43.9 -176.4,-44.2 -176.8,-44.1",
+"167.9,-28.9 168.1,-29.0 168.05,-29.15 167.85,-29.1",
+"137.1,-35.7 137.6,-35.6 137.9,-36.0 137.3,-36.1",
+"130.3,-11.3 131.4,-11.2 131.5,-11.7 130.4,-11.8",
+"167.1,-15.2 167.3,-15.3 167.25,-15.7 166.9,-15.6",
+"168.2,-17.6 168.45,-17.65 168.4,-17.85 168.15,-17.8",
+"169.2,-19.45 169.45,-19.5 169.4,-19.7 169.15,-19.6",
+"179.7,-16.7 179.95,-16.65 180.05,-16.95 179.75,-16.95",
+"-175.3,-21.05 -175.05,-21.1 -175.1,-21.25 -175.35,-21.2",
+"-174.05,-18.55 -173.85,-18.6 -173.9,-18.8 -174.1,-18.75",
+"-172.2,-13.5 -171.9,-13.55 -172.0,-13.85 -172.35,-13.75",
+"-171.85,-13.85 -171.6,-13.9 -171.7,-14.05 -171.95,-14.0",
+"-149.6,-17.45 -149.3,-17.55 -149.25,-17.85 -149.55,-17.8 -149.65,-17.6",
+"-149.9,-17.48 -149.75,-17.5 -149.8,-17.6 -149.95,-17.58",
+"-151.8,-16.45 -151.65,-16.48 -151.7,-16.58 -151.85,-16.55",
+"-159.85,-21.2 -159.7,-21.15 -159.7,-21.3 -159.85,-21.28",
+"-140.15,-8.8 -139.95,-8.85 -140.0,-9.05 -140.2,-9.0",
+"-147.8,-15.0 -147.4,-15.05 -147.45,-15.25 -147.85,-15.2",
+"134.45,7.65 134.7,7.55 134.6,7.3 134.4,7.4",
+"144.65,13.65 144.95,13.55 144.9,13.25 144.62,13.35",
+"145.7,15.25 145.85,15.2 145.8,15.05 145.65,15.1",
+"138.05,9.6 138.2,9.55 138.15,9.4 138.0,9.45",
+"151.7,7.55 152.0,7.5 151.95,7.3 151.65,7.35",
+"158.1,7.05 158.35,7.0 158.3,6.8 158.05,6.85",
+"162.9,5.4 163.1,5.35 163.05,5.2 162.85,5.25",
+"171.2,7.15 171.55,7.1 171.5,6.95 171.15,7.0",
+"172.9,1.45 173.15,1.4 173.1,1.2 172.85,1.25",
+"-157.45,1.95 -157.2,2.0 -157.25,1.75 -157.5,1.7",
+"166.9,-0.5 167.0,-0.48 166.98,-0.58 166.88,-0.56",
+"179.15,-8.45 179.3,-8.48 179.25,-8.6 179.1,-8.55",
+"-169.95,-19.0 -169.8,-18.98 -169.85,-19.12 -170.0,-19.1",
+"-176.2,-13.25 -176.05,-13.22 -176.1,-13.35 -176.25,-13.32",
+"167.4,-22.55 167.55,-22.5 167.5,-22.7 167.35,-22.68",
+"167.15,-20.85 167.35,-20.8 167.3,-21.0 167.1,-20.98",
+"156.7,-8.05 156.95,-8.0 156.9,-8.2 156.65,-8.18",
+"157.0,-7.9 157.5,-7.7 157.4,-8.1 156.9,-8.2"
 ];
 /* inland seas and lakes, painted in the sea colour over the land */
 GEP.data.water = [
@@ -1140,13 +1386,16 @@ GEP.model = (function () {
       ? [].concat(...stagesOfArc(selection.arc).map(s => s.pts.filter(p => !p.side).map(p => [p.lon, p.lat])))
       : pathOf(selection.arc, selection.branch);
     if (points.length < 2) return 0;
-    const lons = points.map(p => p[0]), lats = points.map(p => p[1]);
-    const box = {w: Math.min(...lons), e: Math.max(...lons), s: Math.min(...lats), n: Math.max(...lats)};
+    const lats = points.map(p => p[1]);
+    const south = Math.min(...lats), north = Math.max(...lats);
     const slack = 0.5;
     let best = 0, bestArea = Infinity;
     tabs[tabId].views.forEach((view, i) => {
       const [w, e, s, n] = view.b;
-      const fits = box.w >= w - slack && box.e <= e + slack && box.s >= s - slack && box.n <= n + slack;
+      // Shift longitudes into this view, so a Pacific box past 180° can contain Hawaii.
+      const lons = points.map(p => GEP.lonInView(p[0], view.b));
+      const west = Math.min(...lons), east = Math.max(...lons);
+      const fits = west >= w - slack && east <= e + slack && south >= s - slack && north <= n + slack;
       if (fits && (e - w) * (n - s) < bestArea) { best = i; bestArea = (e - w) * (n - s); }
     });
     return best;
@@ -1170,6 +1419,11 @@ GEP.model = (function () {
  * a readable pixel size, and a higher zoom reveals more labels (see LABEL_MIN_SCALE). Labels are placed
  * greedily, biggest first, and anything that would overlap is dropped (the dot keeps its hover title).
  *
+ * A tab whose default view runs past longitude 180 (Oceania) is drawn in that continuous frame.
+ * Stops, lines, land and diamonds are shifted with GEP.lonInView so the date line is not a seam.
+ * A land polygon smaller than a few pixels, and smaller than a couple of degrees, is drawn as a
+ * dot of fixed size so atolls stay visible when the whole Pacific is on screen.
+ *
  * Exposes: GEP.map = { viewportFor, fitCamera, projector, draw }
  * Depends on: shared.js, model.js, data/land.js, data/tabs.js, data/arcs.js, data/entries.js.
  */
@@ -1184,6 +1438,9 @@ GEP.map = (function () {
   const LABEL_MIN_SCALE = 8;     // px per degree of longitude from which plain (unflagged) stops may be labelled
   const GRID_STEPS = [30, 20, 10, 5, 2, 1];   // candidate graticule spacings in degrees
   const GRID_MIN_PX = 60;        // keep graticule lines at least this far apart
+  const ISLAND_MIN_PX = 8;       // a land shape smaller than this on screen (and geographically small) becomes a marker
+  const ISLAND_MARK_R = 4;       // radius of that marker, in px
+  const ISLAND_MAX_DEG = 2;      // only shapes spanning fewer degrees than this are eligible, so a continent is never replaced
 
   /* ---------- viewport, camera and projection ---------- */
 
@@ -1232,12 +1489,56 @@ GEP.map = (function () {
 
   /* ---------- background: land, graticule, region names ---------- */
 
-  function polygon(svg, proj, text, fill) {
-    const points = text.trim().split(/\s+/).map(pair => {
-      const [lon, lat] = pair.split(",").map(Number);
-      return proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1);
-    }).join(" ");
-    svgEl("polygon", {points, fill, stroke: COAST, "stroke-width": 1, "stroke-linejoin": "round"}, svg);
+  /**
+   * Parse a "lon,lat lon,lat" ring, unwrap it so neighbours stay within 180° of each other,
+   * then shift the whole ring into the tab's default view when that crosses the date line.
+   * One shift for the ring (not per point) keeps a continent in one piece.
+   * @returns {number[][]} [lon, lat] pairs in the view's frame
+   */
+  function ringForView(text, bounds) {
+    const pairs = text.trim().split(/\s+/).map(pair => pair.split(",").map(Number));
+    if (!pairs.length) return [];
+    const ring = [[pairs[0][0], pairs[0][1]]];
+    for (let i = 1; i < pairs.length; i++) {
+      let lon = pairs[i][0];
+      const prev = ring[i - 1][0];
+      while (lon - prev > 180) lon -= 360;
+      while (prev - lon > 180) lon += 360;
+      ring.push([lon, pairs[i][1]]);
+    }
+    const mean = ring.reduce((sum, p) => sum + p[0], 0) / ring.length;
+    const shift = GEP.lonInView(mean, bounds) - mean;
+    return shift ? ring.map(([lon, lat]) => [lon + shift, lat]) : ring;
+  }
+
+  /** Draw one land or water ring. Tiny islands become a fixed-size marker so they survive the overview. */
+  function drawPolygon(svg, proj, ring, fill, markSmall) {
+    if (ring.length < 3) return;
+    const pts = ring.map(([lon, lat]) => [proj.x(lon), proj.y(lat)]);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    ring.forEach(([lon, lat], i) => {
+      const [x, y] = pts[i];
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+      if (lon < minLon) minLon = lon; if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+    });
+    const smallOnScreen = maxX - minX < ISLAND_MIN_PX && maxY - minY < ISLAND_MIN_PX;
+    const smallOnEarth = maxLon - minLon < ISLAND_MAX_DEG && maxLat - minLat < ISLAND_MAX_DEG;
+    if (markSmall && smallOnScreen && smallOnEarth) {
+      const cx = pts.reduce((sum, p) => sum + p[0], 0) / pts.length;
+      const cy = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
+      svgEl("circle", {
+        cx: cx.toFixed(1), cy: cy.toFixed(1), r: ISLAND_MARK_R,
+        fill, stroke: COAST, "stroke-width": 1
+      }, svg);
+      return;
+    }
+    svgEl("polygon", {
+      points: pts.map(([x, y]) => x.toFixed(1) + "," + y.toFixed(1)).join(" "),
+      fill, stroke: COAST, "stroke-width": 1, "stroke-linejoin": "round"
+    }, svg);
   }
 
   /** Graticule lines every N degrees, with N picked so the lines are never crowded. */
@@ -1253,9 +1554,9 @@ GEP.map = (function () {
     }
   }
 
-  function drawRegionNames(svg, proj, camera, viewport, tab) {
+  function drawRegionNames(svg, proj, camera, viewport, tab, mapLon) {
     (tab.regions || []).forEach(([text, lon, lat]) => {
-      const px = proj.x(lon), py = proj.y(lat);
+      const px = proj.x(mapLon(lon)), py = proj.y(lat);
       if (px < 0 || px > viewport.width || py < 0 || py > viewport.height) return;
       const node = svgEl("text", {
         x: px, y: py, "text-anchor": "middle", fill: "#8da0c0", "fill-opacity": 0.2,
@@ -1266,11 +1567,11 @@ GEP.map = (function () {
     });
   }
 
-  function drawBackground(svg, proj, camera, viewport, tab) {
-    land.forEach(p => polygon(svg, proj, p, "#1c2b47"));
-    water.forEach(p => polygon(svg, proj, p, SEA));
+  function drawBackground(svg, proj, camera, viewport, tab, bounds, mapLon) {
+    land.forEach(p => drawPolygon(svg, proj, ringForView(p, bounds), "#1c2b47", true));
+    water.forEach(p => drawPolygon(svg, proj, ringForView(p, bounds), SEA, false));
     drawGraticule(svg, proj, camera, viewport);
-    drawRegionNames(svg, proj, camera, viewport, tab);
+    drawRegionNames(svg, proj, camera, viewport, tab, mapLon);
   }
 
   /* ---------- selection dimming ---------- */
@@ -1288,14 +1589,14 @@ GEP.map = (function () {
 
   /* ---------- lines ---------- */
 
-  function drawRoute(svg, proj, selection, arcId, branchId) {
+  function drawRoute(svg, proj, mapLon, selection, arcId, branchId) {
     const points = GEP.model.pathOf(arcId, branchId);
     if (points.length < 2) return;
     const isBranch = branchId !== "";
     const emphasised = selection && selection.arc === arcId && selection.branch === branchId && isBranch;
     const opacity = opacityFor(selection, arcId, branchId);
     svgEl("polyline", {
-      points: points.map(([lon, lat]) => proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1)).join(" "),
+      points: points.map(([lon, lat]) => proj.x(mapLon(lon)).toFixed(1) + "," + proj.y(lat).toFixed(1)).join(" "),
       fill: "none", stroke: arcs[arcId].color,
       "stroke-width": isBranch ? (emphasised ? 3.4 : 2) : 3.6,
       "stroke-dasharray": isBranch ? "6 4" : "none",
@@ -1305,10 +1606,10 @@ GEP.map = (function () {
   }
 
   /** Branches first, then trunks on top. */
-  function drawRoutes(svg, proj, tabId, selection) {
+  function drawRoutes(svg, proj, mapLon, tabId, selection) {
     const arcList = GEP.model.arcIds(tabId);
-    arcList.forEach(arcId => GEP.model.branchIds(arcId).forEach(branchId => drawRoute(svg, proj, selection, arcId, branchId)));
-    arcList.forEach(arcId => drawRoute(svg, proj, selection, arcId, ""));
+    arcList.forEach(arcId => GEP.model.branchIds(arcId).forEach(branchId => drawRoute(svg, proj, mapLon, selection, arcId, branchId)));
+    arcList.forEach(arcId => drawRoute(svg, proj, mapLon, selection, arcId, ""));
   }
 
   /* ---------- stops ---------- */
@@ -1317,12 +1618,12 @@ GEP.map = (function () {
    * The unique stops (by name) that fall inside the box, each annotated with pixel position,
    * label tier (3 key/hub, 2 plus, 1 plain), dot radius and opacity.
    */
-  function visibleStops(proj, viewport, tabId, selection) {
+  function visibleStops(proj, mapLon, viewport, tabId, selection) {
     const seen = {}, result = [];
     GEP.model.stagesOfTab(tabId).forEach(stage => stage.pts.forEach(stop => {
       if (seen[stop.name]) return;
       seen[stop.name] = true;
-      const px = proj.x(stop.lon), py = proj.y(stop.lat);
+      const px = proj.x(mapLon(stop.lon)), py = proj.y(stop.lat);
       if (px < -4 || px > viewport.width + 4 || py < -4 || py > viewport.height + 4) return;
       const tier = (stop.key || stop.hub) ? 3 : stop.plus ? 2 : 1;
       result.push({
@@ -1352,10 +1653,10 @@ GEP.map = (function () {
   }
 
   /** Entries (ways between pages) that have a label on this tab and lie inside the box. */
-  function visibleEntries(proj, viewport, tabId) {
+  function visibleEntries(proj, mapLon, viewport, tabId) {
     return entries
       .filter(e => e[tabId])
-      .map(e => ({label: e[tabId], px: proj.x(e.at[0]), py: proj.y(e.at[1])}))
+      .map(e => ({label: e[tabId], px: proj.x(mapLon(e.at[0])), py: proj.y(e.at[1])}))
       .filter(e => e.px >= 0 && e.px <= viewport.width && e.py >= 0 && e.py <= viewport.height);
   }
 
@@ -1433,6 +1734,8 @@ GEP.map = (function () {
   function draw(container, tabId, camera, viewport, selection) {
     const tab = tabs[tabId];
     const proj = projector(camera, viewport);
+    const bounds = tab.views[0].b;
+    const mapLon = lon => GEP.lonInView(lon, bounds);
     const svg = svgEl("svg", {
       viewBox: `0 0 ${viewport.width} ${viewport.height}`, width: viewport.width, height: viewport.height,
       role: "img", "aria-label": tab.label + " map"
@@ -1441,10 +1744,10 @@ GEP.map = (function () {
     // Exposed for debugging and tests: the camera this render was drawn from.
     Object.assign(svg.dataset, {cx: camera.cx.toFixed(3), cy: camera.cy.toFixed(3), scale: camera.scale.toFixed(3)});
 
-    drawBackground(svg, proj, camera, viewport, tab);
-    drawRoutes(svg, proj, tabId, selection);
-    const shown = visibleStops(proj, viewport, tabId, selection);
-    const entryList = visibleEntries(proj, viewport, tabId);
+    drawBackground(svg, proj, camera, viewport, tab, bounds, mapLon);
+    drawRoutes(svg, proj, mapLon, tabId, selection);
+    const shown = visibleStops(proj, mapLon, viewport, tabId, selection);
+    const entryList = visibleEntries(proj, mapLon, viewport, tabId);
     drawStops(svg, shown);
     drawEntries(svg, entryList);
     drawLabels(svg, viewport, camera, shown, entryList);
@@ -1982,7 +2285,7 @@ GEP.views = (function () {
 /**
  * main.js: owns the UI state, hash routing and all event handlers. Loaded last.
  *
- * Routes:  #eurasia  #africa  #americas        (default: eurasia)
+ * Routes:  #eurasia  #africa  #americas  #oceania   (default: eurasia)
  *          #<tab>/<n>                           opens zoom view n of that tab
  *
  * Exposes: nothing (starts the app).
