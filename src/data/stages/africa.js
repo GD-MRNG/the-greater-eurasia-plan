@@ -6,13 +6,15 @@
 (function (s) {
 /* ============ AFRICA: NORTH AFRICA ARC ============ */
 s("an","","Morocco: Tangier to Casablanca","In from Spain by the Tarifa ferry. Blue town, imperial cities, the coast.",
- "Tangier -5.8 35.76 *; Tetouan -5.37 35.57 ~; Chefchaouen -5.26 35.17 *; Volubilis -5.55 34.07 ~; Meknes -5.55 33.9 ~; Fes -5.0 34.03 *; Rabat -6.84 34.02 *; Casablanca -7.59 33.57 *","Fly or sail on: the Morocco–Algeria land border has been closed for decades");
+ "Tangier -5.8 35.76 *; Tetouan -5.37 35.57 ~; Chefchaouen -5.26 35.17 *; Volubilis -5.55 34.07 ~; Meknes -5.55 33.9 ~; Fes -5.0 34.03 *; Rabat -6.84 34.02 *; Casablanca -7.59 33.57 *","On by air or sea to Algeria");
 s("an","an-atlas","Atlas and Sahara","Marrakech, the High Atlas and the dunes.",
  "Marrakech -8.0 31.63 *; Aït Benhaddou -7.13 31.05 ~; Ouarzazate -6.9 30.92; Todra Gorge -5.58 31.58 ~; Dades Gorge -5.9 31.5 ~; Merzouga -4.0 31.1 *");
 s("an","","Algeria","Roman ruins, the Casbah and the east.",
  "Oran -0.64 35.7; Tipaza 2.44 36.59 ~; Algiers 3.06 36.75 *; Djemila 5.74 36.32 ~; Constantine 6.61 36.37 *; Timgad 6.47 35.48 ~; Ghardaïa 3.67 32.49 ~","Ferries link Spain and France with Algeria");
 s("an","","Tunisia","Ferries from Italy, Carthage and the desert south.",
- "Tunis 10.18 36.8 *; Carthage 10.33 36.85 ~; Dougga 9.22 36.42 ~; Sousse 10.64 35.83; Kairouan 10.1 35.68 *; El Djem 10.71 35.3 ~; Tozeur 8.13 33.92 *; Douz 9.02 33.46; Matmata 9.97 33.54 ~; Djerba 10.86 33.8 *","Fly Tunis to Cairo");
+ "Tunis 10.18 36.8 *; Carthage 10.33 36.85 ~; Dougga 9.22 36.42 ~; Sousse 10.64 35.83; Kairouan 10.1 35.68 *; El Djem 10.71 35.3 ~; Tozeur 8.13 33.92 *; Douz 9.02 33.46; Matmata 9.97 33.54 ~; Djerba 10.86 33.8 *","East along the coast");
+s("an","","Libya","The Mediterranean coast between Tunisia and Egypt.",
+ "Tripoli 13.18 32.9 *; Sabratha 12.49 32.79 ~; Leptis Magna 14.29 32.64 *; Benghazi 20.07 32.12 *; Cyrene 21.86 32.82 ~; Tobruk 23.96 32.08","On to Alexandria");
 s("an","","Egypt: Alexandria and Cairo","The Mediterranean coast and the capital.",
  "Alexandria 29.92 31.2 *; Siwa Oasis 25.52 29.2 ~+; Port Said 32.3 31.26 ~; Cairo 31.24 30.04 *; Giza Pyramids 31.13 29.98 ~; Saqqara 31.22 29.87 ~; Fayoum 30.84 29.31 ~");
 s("an","an-western-desert","Western Desert oases","The White Desert loop from Cairo to Luxor.",
@@ -25,6 +27,14 @@ s("ae","ae-sinai","Sinai and the Red Sea","Mountains and reefs. The Aqaba–Nuwe
  "St Catherine 33.95 28.56 +; Mount Sinai 33.98 28.54 ~; Nuweiba 34.67 29.03 ~+; Dahab 34.5 28.5 *; Sharm el-Sheikh 34.33 27.91; Hurghada 33.8 27.26 *; Marsa Alam 34.9 25.06");
 s("ae","","Sudan","Pyramids of Meroë and the confluence of the Niles. Overland through Sudan, or fly Cairo to Addis.",
  "Wadi Halfa 31.33 21.8; Dongola 30.48 19.17; Jebel Barkal 31.85 18.55 ~; Meroë 33.75 16.94 *; Khartoum 32.53 15.5 *; Kassala 36.4 15.45 ~");
+s("ae","ae-south-sudan","South Sudan","Up the White Nile toward the lakes.",
+ "Malakal 31.66 9.54; Juba 31.58 4.85 *; Wau 28.0 7.7 ~");
+s("ae","ae-eritrea","Eritrea","The highland capital and the Red Sea coast.",
+ "Asmara 38.93 15.34 *; Keren 38.45 15.78 ~; Massawa 39.45 15.61 *; Assab 42.74 13.01");
+s("ae","ae-horn","Djibouti","The capital and the Gulf of Tadjoura.",
+ "Djibouti 43.15 11.59 *; Tadjoura 42.88 11.79 ~; Lake Assal 42.4 11.65 ~");
+s("ae","ae-horn","Somalia","The Gulf of Aden coast and the capital.",
+ "Hargeisa 44.06 9.56 *; Berbera 45.01 10.44; Garowe 48.48 8.41; Mogadishu 45.32 2.05 *");
 s("ae","","Ethiopia: the northern historic circuit","Addis, Lake Tana, Gondar, Axum and the rock churches of Lalibela.",
  "Addis Ababa 38.76 9.03 *; Bahir Dar 37.39 11.6 *; Gondar 37.47 12.6 *; Simien Mountains 38.0 13.2 ~; Axum 38.72 14.12 *; Mekele 39.47 13.5; Lalibela 39.04 12.03 *; Erta Ale 40.67 13.6 ~; Harar 42.12 9.31 ~");
 s("ae","ae-omo","Rift Valley and Omo","Lakes, Konso villages and the Omo tribes.",
@@ -35,6 +45,8 @@ s("ae","ae-swahili","Swahili coast","Mombasa down through Zanzibar to Mozambique
  "Mombasa 39.67 -4.04 *; Lamu 40.9 -2.27 ~+; Diani Beach 39.57 -4.3 ~; Tanga 39.1 -5.07; Zanzibar Stone Town 39.19 -6.16 *; Dar es Salaam 39.28 -6.79 *; Kilwa Kisiwani 39.5 -8.96 ~; Mtwara 40.19 -10.27; Pemba (Mozambique) 40.52 -12.97 ~; Mozambique Island 40.73 -15.03 *");
 s("ae","ae-gorillas","Uganda and Rwanda","The source of the Nile and the mountain gorillas.",
  "Jinja 33.2 0.44 ~; Kampala 32.58 0.35 *; Murchison Falls 31.7 2.28 ~; Queen Elizabeth NP 30.0 -0.2 ~; Bwindi 29.7 -1.05 *; Volcanoes NP 29.5 -1.47 ~; Lake Kivu 29.26 -1.7 ~; Kigali 30.06 -1.95 *");
+s("ae","ae-gorillas","Burundi","South of Rwanda, between the lake and the highlands.",
+ "Bujumbura 29.36 -3.38 *; Gitega 29.93 -3.43");
 s("ae","","Tanzania: Kilimanjaro to the south","Kilimanjaro, then south along the Tazara corridor.",
  "Moshi 37.34 -3.35; Kilimanjaro 37.35 -3.07 ~+; Arusha 36.68 -3.37 *; Dodoma 35.74 -6.16; Iringa 35.7 -7.77; Ruaha 34.9 -7.6 ~; Mbeya 33.46 -8.9");
 s("ae","ae-safari","Northern safari circuit","The classic Tanzania parks.",
@@ -58,11 +70,15 @@ s("as","","South Africa: Johannesburg and Kruger","The big city, then the park."
 s("as","as-zimbabwe","Zimbabwe","Falls to Great Zimbabwe, then south to Johannesburg.",
  "Hwange 26.5 -18.9 ~; Bulawayo 28.58 -20.15; Matobo Hills 28.5 -20.5 ~; Great Zimbabwe 30.93 -20.27 *; Harare 31.05 -17.83 ~");
 s("as","as-angola","Angola link","Up the Atlantic side from Namibia.",
- "Ruacana 14.2 -17.4 ~; Lubango 13.5 -14.9; Benguela 13.4 -12.58; Luanda 13.23 -8.84 *");
+ "Ruacana 14.2 -17.4 ~; Lubango 13.5 -14.9; Benguela 13.4 -12.58; Luanda 13.23 -8.84 *; Jamestown (Saint Helena) -5.72 -15.93 ~");
 s("as","as-mozambique","Eswatini and the Mozambique coast","Out of Johannesburg to the Indian Ocean.",
  "Mbabane (Eswatini) 31.13 -26.32 *; Maputo 32.57 -25.97 *; Tofo Beach 35.55 -23.85 *; Vilankulo 35.3 -22.0 ~; Gorongosa 34.4 -18.8 ~; Beira 34.84 -19.84");
-s("as","as-islands","Madagascar and Mauritius","Optional island branch, by air.",
- "Antananarivo 47.5 -18.9 *; Andasibe 48.4 -18.95 ~; Antsirabe 47.03 -19.87; Ranomafana 47.45 -21.25 ~; Isalo 45.4 -22.55 ~; Morondava Baobab Avenue 44.42 -20.25 ~; Nosy Be 48.27 -13.3 ~; Port Louis (Mauritius) 57.5 -20.16 ~");
+s("as","as-islands","Madagascar","The highlands, the rainforests and the west coast.",
+ "Antananarivo 47.5 -18.9 *; Andasibe 48.4 -18.95 ~; Antsirabe 47.03 -19.87; Ranomafana 47.45 -21.25 ~; Isalo 45.4 -22.55 ~; Morondava Baobab Avenue 44.42 -20.25 ~; Nosy Be 48.27 -13.3 ~");
+s("as","as-islands","Comoros and Mayotte","The islands in the Mozambique Channel.",
+ "Moroni 43.25 -11.7 *; Mutsamudu 44.39 -12.17 ~; Mamoudzou 45.23 -12.78 *");
+s("as","as-islands","Réunion, Mauritius and Seychelles","The islands east of Madagascar.",
+ "Saint-Denis (Réunion) 55.45 -20.88 *; Port Louis (Mauritius) 57.5 -20.16 *; Victoria (Seychelles) 55.45 -4.62 *; Praslin 55.74 -4.32 ~");
 
 /* ============ AFRICA: WEST AFRICA ATLANTIC ARC ============ */
 s("aw","","Morocco's Atlantic coast and Western Sahara","South from Marrakech to the Sahara coast.",
@@ -81,6 +97,18 @@ s("aw","","Cameroon and Gabon","The Gulf of Guinea's far corner.",
  "Douala 9.7 4.05 *; Limbe 9.2 4.02 ~; Yaoundé 11.5 3.85 ~; Libreville 9.45 0.39 *");
 s("aw","aw-sahel","The Sahel","Bamako, Timbuktu, Dogon country and Niamey.",
  "Bamako -8.0 12.64 *; Djenné -4.55 13.9 ~; Mopti -4.2 14.5; Bandiagara (Dogon) -3.6 14.35 ~; Timbuktu -3.0 16.77 ~+; Ouagadougou -1.52 12.37 *; Niamey 2.11 13.51 *; Agadez 7.99 16.97 ~");
+s("aw","aw-sahel","Chad","East from Niger to Lake Chad.",
+ "N'Djamena 15.04 12.11 *; Abéché 20.83 13.83; Zakouma 19.82 10.73 ~; Faya-Largeau 19.12 17.93 ~");
+s("aw","aw-sahel","Central African Republic","South from Chad to the Ubangi.",
+ "Bangui 18.56 4.36 *; Boali 18.05 4.8 ~");
+s("aw","aw-central","Equatorial Guinea","The island capital and the mainland coast.",
+ "Malabo 8.78 3.75 *; Bata 9.77 1.86");
+s("aw","aw-central","São Tomé and Príncipe","The two islands in the Gulf of Guinea.",
+ "São Tomé 6.73 0.34 *; Santo António 7.42 1.64 ~");
+s("aw","aw-central","Republic of the Congo","The coast and the capital on the river.",
+ "Pointe-Noire 11.85 -4.78; Brazzaville 15.24 -4.27 *");
+s("aw","aw-central","DR Congo","Kinshasa, the river and the east.",
+ "Kinshasa 15.31 -4.32 *; Kisangani 25.19 0.51 *; Goma 29.22 -1.68 *; Lubumbashi 27.48 -11.66 ~");
 s("aw","aw-capeverde","Cabo Verde","Optional island branch, by air.",
  "Praia -23.51 14.92 *; Mindelo -24.99 16.89; Santo Antão -25.1 17.05 ~");
 })(GEP.stage);

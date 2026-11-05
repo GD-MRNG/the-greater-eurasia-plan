@@ -13,6 +13,8 @@ s("oi","","Flores and Komodo","Dragon country, highland towns and the crater lak
  "Komodo 119.5 -8.55; Labuan Bajo 119.89 -8.5 *; Ruteng 120.47 -8.61; Bajawa 120.96 -8.79; Ende 121.66 -8.84; Kelimutu 121.79 -8.77 ~; Maumere 122.21 -8.62 +","On to Timor by road and ferry");
 s("oi","oi-sumba","Sumba","Megalithic villages and the west-coast beaches, south of Flores.",
  "Waikabubak 119.41 -9.63 *; Waingapu 120.26 -9.66 +");
+s("oi","oi-indian","Christmas Island and the Cocos (Keeling) Islands","The Australian islands in the Indian Ocean.",
+ "Flying Fish Cove 105.63 -10.42 *; West Island (Cocos) 96.83 -12.19 *");
 s("oi","","Timor and Timor-Leste","West Timor, then Dili and the eastern districts.",
  "Kalabahi 124.52 -8.22; Kupang 123.61 -10.17 +; Soe 124.28 -9.86 ~; Atambua 124.9 -9.11; Dili 125.58 -8.56 *; Atauro 125.58 -8.24 ~; Maubisse 125.6 -8.84 ~; Baucau 126.46 -8.46 +; Lospalos 126.99 -8.52; Jaco 127.32 -8.42 ~","Air or sea to Ambon");
 s("oi","","Maluku","Ambon, the Banda Islands and the twin islands of Ternate and Tidore.",
@@ -83,6 +85,10 @@ s("pa","","Tonga","Tongatapu, then the middle islands and Vava'u.",
  "Nuku'alofa -175.2 -21.13 *; Eua -174.95 -21.38 ~; Pangai -174.35 -19.81; Neiafu -173.98 -18.65 +");
 s("pa","","Samoa","Upolu and Savai'i, then Tutuila.",
  "Apia -171.77 -13.83 *; Lalomanu -171.44 -14.05 ~; Salelologa -172.4 -13.74 +; Pago Pago -170.7 -14.28 +; Ofu -169.68 -14.17 ~");
+s("pa","pa-tuvalu","Tuvalu","The atolls north of Fiji.",
+ "Funafuti 179.2 -8.52 *; Nanumea 176.13 -5.67 ~");
+s("pa","pa-pitcairn","Pitcairn Islands","The islands south-east of the Tuamotus.",
+ "Adamstown -130.1 -25.07 *");
 s("pa","pa-isles","Wallis, Futuna, Niue and Tokelau","The smaller islands around Samoa, by ship or air.",
  "Atafu -172.52 -8.54; Mata-Utu -176.17 -13.28 +; Leava -178.13 -14.31; Alofi -169.92 -19.05 *");
 s("pa","","Cook Islands","Rarotonga and the northern atoll of Aitutaki.",

@@ -5,7 +5,7 @@
  */
 (function (s) {
 s("europe","","Finland and the Baltics","Where the upper arc arrives, by Helsinki and the ferry across.",
- "Helsinki 24.94 60.17 *; Tallinn 24.75 59.44 *; Pärnu 24.5 58.38 ~; Riga 24.1 56.95 *; Vilnius 25.28 54.69 *; Trakai 24.93 54.65 ~; Kaunas 23.9 54.9 ~; Curonian Spit 21.0 55.3 ~");
+ "Helsinki 24.94 60.17 *; Tallinn 24.75 59.44 *; Pärnu 24.5 58.38 ~; Riga 24.1 56.95 *; Vilnius 25.28 54.69 *; Trakai 24.93 54.65 ~; Kaunas 23.9 54.9 ~; Curonian Spit 21.0 55.3 ~; Kaliningrad 20.51 54.71 ~");
 s("europe","","Poland","Warsaw and the old Hanseatic and royal cities.",
  "Białowieża 23.87 52.7 ~; Warsaw 21.01 52.23 *; Gdańsk 18.65 54.35 ~+; Poznań 16.93 52.41; Wrocław 17.04 51.11 ~; Kraków 19.94 50.06 ~+; Zakopane 19.95 49.3 ~");
 s("europe","","Germany","Berlin west to the Rhine.",
@@ -17,15 +17,15 @@ s("europe","","France: Paris to Bordeaux","The big one in the middle, then the A
 s("europe","","Basque Country, Galicia and Portugal","Along the Atlantic edge to the westernmost point of mainland Europe.",
  "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","The Atlantic end of the line");
 s("europe","e-andalusia","Madrid and Andalusia","From the capital to the south coast, with Tarifa the way to Morocco.",
- "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","Ferry to Tangier");
+ "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *; Gibraltar -5.35 36.14 ~*","Ferry to Tangier");
 s("europe","e-med","Rhône, Provence and the Spanish Mediterranean","South from Paris to the sea and on to Barcelona and Valencia.",
  "Lyon 4.83 45.76 *; Avignon 4.81 43.95 ~; Marseille 5.37 43.3 *; Barcelona 2.17 41.39 *; Valencia -0.38 39.47");
 s("europe","e-it-north","Riviera and northern Italy","The coast, Milan and the lakes, then Venice and Trieste.",
- "Nice 7.27 43.7; Genoa 8.93 44.41 *; Milan 9.19 45.46 *; Lake Como 9.26 46.0 ~; Verona 10.99 45.44; Venice 12.33 45.44 *; Dolomites 12.14 46.54 ~; Trieste 13.77 45.65 +");
+ "Nice 7.27 43.7; Monaco 7.42 43.73 *; Genoa 8.93 44.41 *; Milan 9.19 45.46 *; Lake Como 9.26 46.0 ~; Verona 10.99 45.44; Venice 12.33 45.44 *; San Marino 12.45 43.94 ~*; Dolomites 12.14 46.54 ~; Trieste 13.77 45.65 +");
 s("europe","e-it-south","Tuscany, Rome and the south","The classic Italian line, then across to Sicily.",
- "Cinque Terre 9.7 44.13 ~; Pisa 10.4 43.72 ~; Florence 11.25 43.77 *; Siena 11.33 43.32 ~; Rome 12.5 41.9 *; Naples 14.27 40.85 *; Pompeii 14.49 40.75 ~; Amalfi 14.6 40.63 ~; Palermo 13.36 38.12 *; Mount Etna 15.0 37.75 ~; Syracuse 15.29 37.08 ~");
+ "Cinque Terre 9.7 44.13 ~; Pisa 10.4 43.72 ~; Florence 11.25 43.77 *; Siena 11.33 43.32 ~; Rome 12.5 41.9 *; Vatican City 12.45 41.9 ~*; Naples 14.27 40.85 *; Pompeii 14.49 40.75 ~; Amalfi 14.6 40.63 ~; Palermo 13.36 38.12 *; Mount Etna 15.0 37.75 ~; Syracuse 15.29 37.08 ~");
 s("europe","e-swiss","Switzerland and the Alps","Lakes, trains and big peaks.",
- "Geneva 6.14 46.2 *; Lausanne 6.63 46.52 ~; Zermatt 7.75 46.02 ~; Bern 7.45 46.95; Interlaken 7.86 46.69 ~; Lucerne 8.31 47.05 *; Lugano 8.95 46.0 ~; Zurich 8.54 47.38 *");
+ "Geneva 6.14 46.2 *; Lausanne 6.63 46.52 ~; Zermatt 7.75 46.02 ~; Bern 7.45 46.95; Interlaken 7.86 46.69 ~; Lucerne 8.31 47.05 *; Lugano 8.95 46.0 ~; Zurich 8.54 47.38 *; Vaduz 9.52 47.14 *");
 s("europe","e-bavaria","Bavaria and Austria","Munich, the Salzkammergut and Vienna.",
  "Munich 11.58 48.14 *; Innsbruck 11.39 47.26 ~; Salzburg 13.04 47.8 *; Hallstatt 13.65 47.56 ~; Vienna 16.37 48.21 *");
 s("europe","e-central","Czechia, Slovakia and Hungary","Central Europe's cities.",
@@ -45,11 +45,26 @@ s("europe","e-greece","Greece: Athens and the Peloponnese","Ancient Greece, in o
 s("europe","e-isles","Greek islands","Cyclades to Crete, plus Rhodes.",
  "Mykonos 25.33 37.45; Naxos 25.38 37.1 ~; Santorini 25.43 36.39 *; Heraklion 25.14 35.34 *; Rhodes 28.23 36.43 ~");
 s("europe","e-uk","England and Wales","By Eurostar from Brussels or Paris.",
- "London -0.13 51.51 *; Canterbury 1.08 51.28 ~; Oxford -1.26 51.75; Bath -2.36 51.38 ~; St Ives -5.48 50.21 ~; Cardiff -3.18 51.48; Snowdonia -4.0 53.07 ~; Liverpool -2.98 53.4; Lake District -2.9 54.38 ~; York -1.08 53.96 *");
+ "London -0.13 51.51 *; Canterbury 1.08 51.28 ~; Oxford -1.26 51.75; Bath -2.36 51.38 ~; St Ives -5.48 50.21 ~; Cardiff -3.18 51.48; Snowdonia -4.0 53.07 ~; Liverpool -2.98 53.4; Lake District -2.9 54.38 ~; York -1.08 53.96 *; Douglas -4.48 54.15 ~; Saint Helier -2.11 49.18 ~; Saint Peter Port -2.54 49.46 ~");
 s("europe","e-uk","Scotland and Ireland","Up to the Highlands, then by ferry to Ireland.",
  "Edinburgh -3.19 55.95 *; Inverness -4.22 57.48 ~; Isle of Skye -6.2 57.3 ~; Belfast -5.93 54.6; Dublin -6.26 53.35 *; Galway -9.05 53.27; Killarney -9.5 52.06 ~; Cork -8.47 51.9");
 s("europe","e-nordics","Sweden, Norway and Lapland","Ferry from Helsinki to Stockholm, then the fjords and the Arctic.",
  "Stockholm 18.07 59.33 *; Oslo 10.75 59.91 *; Bergen 5.32 60.39 *; Flåm 7.11 60.86 ~; Geirangerfjord 7.2 62.1 ~; Trondheim 10.4 63.43; Bodø 14.4 67.28; Lofoten 14.57 68.23 *; Tromsø 18.96 69.65 *; North Cape 25.78 71.17 ~; Rovaniemi 25.73 66.5 *");
 s("europe","e-denmark","Denmark and Gothenburg","Over the Øresund to the Swedish west coast.",
  "Odense 10.39 55.4 ~; Copenhagen 12.57 55.68 *; Aarhus 10.2 56.16 ~; Malmö 13.0 55.6; Gothenburg 11.97 57.71 *");
+/* Eastern Europe, the north Atlantic, and the smaller states. */
+s("europe","e-belarus","Belarus","Cities between Poland and Russia.",
+ "Brest (Belarus) 23.69 52.1 *; Grodno 23.83 53.68; Mir 26.47 53.45 ~; Minsk 27.56 53.9 *; Polotsk 28.79 55.49 ~; Vitebsk 30.2 55.19; Gomel 31.0 52.43 ~");
+s("europe","e-east","Ukraine","From the Polish border across to the Black Sea.",
+ "Lviv 24.03 49.84 *; Ivano-Frankivsk 24.71 48.92 ~; Kamianets-Podilskyi 26.58 48.68 ~; Kyiv 30.52 50.45 *; Chernihiv 31.29 51.49 ~; Kharkiv 36.23 49.99 +; Dnipro 35.05 48.46; Odesa 30.73 46.48 *; Simferopol 34.1 44.95 ~; Sevastopol 33.52 44.62 ~");
+s("europe","e-east","Moldova","Cities between the Prut and the Dniester.",
+ "Chișinău 28.86 47.01 *; Orhei 28.82 47.38 ~; Soroca 28.63 48.16 ~; Bender 29.48 46.83; Tiraspol 29.64 46.84");
+s("europe","e-iceland","Faroe Islands","The islands between Norway and Iceland.",
+ "Tórshavn -6.77 62.01 *");
+s("europe","e-iceland","Iceland","Reykjavík and a loop around the island.",
+ "Reykjavík -21.94 64.15 *; Blue Lagoon -22.45 63.88 ~; Vík -19.01 63.42 ~; Húsavík -17.34 66.04 ~; Akureyri -18.09 65.68 *; Höfn -15.21 64.25 ~");
+s("europe","e-malta","Malta","The islands south of Sicily.",
+ "Valletta 14.51 35.9 *; Mdina 14.4 35.89 ~; Victoria (Gozo) 14.24 36.04");
+s("europe","e-andorra","Andorra","The valleys between France and Spain.",
+ "Andorra la Vella 1.52 42.51 *");
 })(GEP.stage);

@@ -61,7 +61,8 @@
  *   Rules: stop names are looked up across all tabs and the first one wins, so two different places
  *   must not share a name (use "La Paz (Baja)"). The same name in two stages draws one dot;
  *   `from` / `to` of arcs and branches refer to stop names; every branch needs at least one stage.
- *   Run `node tools/check-data.js` to verify all of this.
+ *   Run `node tools/check-data.js` to verify all of this. That script also checks that every
+ *   country and territory in its coverage list has a stop.
  */
 
 /** The single global namespace. */
