@@ -1,6 +1,6 @@
 /**
  * Stages: the three Americas arcs (North, Central, South).
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
@@ -12,7 +12,7 @@ s("na","","Yukon, Alberta and British Columbia","The Alaska Highway south, the R
 s("na","","Pacific Northwest","Seattle, the Olympic coast and Oregon.",
  "Seattle -122.33 47.61 *; Olympic NP -123.6 47.8 ~; Mount Rainier -121.76 46.85 ~; Portland -122.68 45.52 *; Cannon Beach -123.96 45.89 ~; Crater Lake -122.1 42.94 ~");
 s("na","","California","The coast road to the border.",
- "Redwood NP -124.0 41.3 *; San Francisco -122.42 37.77 *; Yosemite -119.54 37.85 ~; Monterey -121.89 36.6 ~; Big Sur -121.8 36.27 ~; Santa Barbara -119.7 34.42 ~; Los Angeles -118.24 34.05 *; Death Valley -116.9 36.5 ~; Joshua Tree -115.9 33.9 ~; San Diego -117.16 32.72 *","","Cross into Mexico at Tijuana");
+ "Redwood NP -124.0 41.3 *; San Francisco -122.42 37.77 *; Yosemite -119.54 37.85 ~; Monterey -121.89 36.6 ~; Big Sur -121.8 36.27 ~; Santa Barbara -119.7 34.42 ~; Los Angeles -118.24 34.05 *; Death Valley -116.9 36.5 ~; Joshua Tree -115.9 33.9 ~; San Diego -117.16 32.72 *","Cross into Mexico at Tijuana");
 s("na","na-canada","Across Canada: prairies to the Great Lakes","By road or The Canadian rail line, east from the Rockies.",
  "Saskatoon -106.67 52.13; Winnipeg -97.14 49.9 *; Churchill -94.17 58.77 ~; Thunder Bay -89.25 48.38");
 s("na","na-canada","Ontario, Quebec and the Maritimes","From Toronto to the Atlantic.",
@@ -48,13 +48,13 @@ s("ca","","Nicaragua","Colonial cities and the volcano island.",
 s("ca","","Costa Rica","Cloud forest, volcanoes and two coasts.",
  "Arenal -84.7 10.46 ~; Monteverde -84.8 10.3 *; San José -84.08 9.93 *; Tortuguero -83.5 10.54 ~; Manuel Antonio -84.15 9.39 ~; Puerto Viejo -82.8 9.65 ~");
 s("ca","","Panama","The canal, islands and the end of the road at the Darién Gap.",
- "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","","No road across the Darién Gap: fly or sail to Colombia");
+ "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","No road across the Darién Gap: fly or sail to Colombia");
 s("ca","ca-caribbean","Cuba","From Cancún across to the island.",
  "Havana -82.37 23.14 *; Viñales -83.7 22.62 ~; Trinidad -80.0 21.8 *; Santiago de Cuba -75.83 20.02 *");
 s("ca","ca-caribbean","Jamaica","Reggae and the Blue Mountains.",
  "Kingston -76.8 17.97 *; Blue Mountains -76.6 18.05 ~");
-s("ca","ca-caribbean","Haiti","Needs a fresh check before anything is planned.",
- "Port-au-Prince -72.34 18.54 *","check");
+s("ca","ca-caribbean","Haiti","Port-au-Prince, on the western side of Hispaniola.",
+ "Port-au-Prince -72.34 18.54 *");
 s("ca","ca-caribbean","Dominican Republic and Puerto Rico","Colonial Santo Domingo and the island chain.",
  "Santo Domingo -69.9 18.48 *; Samaná -69.3 19.2 ~; Punta Cana -68.4 18.58 ~; San Juan -66.1 18.47 *");
 
@@ -72,7 +72,7 @@ s("sa","","Chile: north and central","Atacama, then the wine valleys and Santiag
 s("sa","","Chile: lakes, Chiloé and the Carretera Austral","Volcanoes, islands and Chile's southern road.",
  "Pucón -71.95 -39.28 *; Valdivia -73.25 -39.82 ~; Puerto Varas -72.98 -41.32; Chiloé (Castro) -73.76 -42.48 *; Coyhaique -72.07 -45.57 *; Puerto Río Tranquilo -72.6 -46.6 ~; Villa O'Higgins -72.56 -48.47");
 s("sa","","Patagonia to the end of the world","Glaciers, granite and Ushuaia.",
- "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","","The southern end");
+ "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","The southern end");
 s("sa","sa-argentina","Argentina and Uruguay","The northwest, Mendoza, Buenos Aires and the river across to Uruguay.",
  "Purmamarca -65.5 -23.74 ~; Salta -65.41 -24.79 *; Cafayate -65.97 -26.07 ~; Mendoza -68.84 -32.89 *; Córdoba -64.18 -31.42; Buenos Aires -58.38 -34.6 *; Colonia -57.84 -34.47 ~; Montevideo -56.19 -34.9 *; Punta del Este -54.95 -34.96 ~; Bariloche -71.31 -41.13 ~");
 s("sa","sa-brazil","Brazil: Iguazú to Rio","Waterfalls, then the southern coast and Rio.",
@@ -81,8 +81,8 @@ s("sa","sa-brazil","Brazil: the northeast coast","Salvador to Fortaleza and the 
  "Salvador -38.5 -12.97 *; Chapada Diamantina -41.4 -12.6 ~; Recife -34.88 -8.05 *; Fortaleza -38.54 -3.73 *; Jericoacoara -40.5 -2.8 ~; Lençóis Maranhenses -43.0 -2.5 ~; São Luís -44.3 -2.53");
 s("sa","sa-amazon","Amazon river route","By boat from Iquitos to Belém.",
  "Tena -77.8 -0.99 ~; Iquitos -73.25 -3.75 *; Leticia -69.94 -4.2; Manaus -60.02 -3.12 *; Santarém -54.7 -2.44 ~; Belém -48.5 -1.46 *");
-s("sa","sa-venezuela","Venezuela","Angel Falls and the Caribbean coast. Needs a fresh check.",
- "Mérida (Venezuela) -71.14 8.6 ~; Caracas -66.9 10.48 *; Los Roques -66.75 11.85 ~; Angel Falls -62.5 5.97 *; Roraima -60.76 5.14 ~","check");
+s("sa","sa-venezuela","Venezuela","Angel Falls and the Caribbean coast.",
+ "Mérida (Venezuela) -71.14 8.6 ~; Caracas -66.9 10.48 *; Los Roques -66.75 11.85 ~; Angel Falls -62.5 5.97 *; Roraima -60.76 5.14 ~");
 s("sa","sa-venezuela","The Guianas","Guyana, Suriname and French Guiana.",
  "Georgetown -58.16 6.8; Paramaribo -55.2 5.85; Cayenne -52.33 4.94");
 })(GEP.stage);

@@ -6,7 +6,7 @@
  *
  * UI state shape:
  *   { tab: "eurasia", view: 0 (preset on screen, -1 after free pan or zoom), selection: null | {arc, branch|null},
- *     filterArc: "all" | arcId, filterStatus: "all" | status, query: "" }
+ *     filterArc: "all" | arcId, query: "" }
  *
  * Exposes: GEP.views = { renderAll, renderNav, renderHero, renderStats, renderMapChrome, renderViewButtons,
  *                        renderArcs, renderFilters, renderStages, renderWays }
@@ -41,10 +41,9 @@ GEP.views = (function () {
     stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
     const arcList = model.arcIds(state.tab);
     const branchCount = arcList.reduce((sum, id) => sum + model.branchIds(id).length, 0);
-    const count = status => stages.filter(s => s.status === status).length;
     const items = [
       [stages.length, "stages"], [stopNames.size, "stops"], [arcList.length, "arcs"],
-      [branchCount, "branches"], [count("next"), "next up"], [count("check"), "check first"]
+      [branchCount, "branches"]
     ];
     $("stats").innerHTML = items.map(([n, label]) => `<div class="stat"><div class="n">${n}</div><div class="l">${label}</div></div>`).join("");
   }
@@ -85,7 +84,6 @@ GEP.views = (function () {
     const selection = state.selection;
     $("arcs").innerHTML = model.arcIds(state.tab).map(arcId => {
       const arc = arcs[arcId], stages = model.stagesOfArc(arcId);
-      const done = stages.filter(s => s.status === "done").length;
       const stopNames = new Set();
       stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
       const branchList = model.branchIds(arcId);
@@ -95,8 +93,7 @@ GEP.views = (function () {
       return `<div class="arc${arcSelected && selection.branch === null ? " on" : ""}" style="--c:${arc.color}" data-arc="${arcId}">
         <h3>${esc(arc.name)} <em>${esc(arc.code)}</em></h3>
         <div class="route">${esc(arc.route)}</div>
-        <div class="meta">${stages.length} stages · ${stopNames.size} stops · ${branchList.length} branches · ${done} done</div>
-        <div class="bar"><div style="width:${stages.length ? Math.round(done / stages.length * 100) : 0}%"></div></div>
+        <div class="meta">${stages.length} stages · ${stopNames.size} stops · ${branchList.length} branches</div>
         <div class="meta" style="margin-top:8px">Trunk and branches, tap to show on the map</div>
         <div class="brs">${chip("", "Trunk", " tr")}${branchList.map(id => chip(id, branches[id].name, "")).join("")}</div>
       </div>`;
@@ -109,16 +106,12 @@ GEP.views = (function () {
     const button = (attr, value, text, on) => `<button class="btn${on ? " on" : ""}" data-${attr}="${value}">${esc(text)}</button>`;
     const arcButtons = model.arcIds(state.tab).map(id =>
       button("filter-arc", id, arcs[id].code + " · " + arcs[id].name.replace(/ arc$/, ""), state.filterArc === id));
-    const statusButtons = ["all", "next", "planned", "check", "done"].map(status =>
-      button("filter-status", status, status === "all" ? "Any status" : GEP.STATUS_LABEL[status], state.filterStatus === status));
-    $("filters").innerHTML = button("filter-arc", "all", "All arcs", state.filterArc === "all") + arcButtons.join("") +
-      `<span class="sep"></span>` + statusButtons.join("");
+    $("filters").innerHTML = button("filter-arc", "all", "All arcs", state.filterArc === "all") + arcButtons.join("");
   }
 
-  /** Does a stage pass the arc, status and search filters? */
+  /** Does a stage pass the arc filter and the search query? */
   function matchesFilters(stage, state) {
     if (state.filterArc !== "all" && stage.arc !== state.filterArc) return false;
-    if (state.filterStatus !== "all" && stage.status !== state.filterStatus) return false;
     return state.query.toLowerCase().split(/\s+/).filter(Boolean).every(word => stage.searchText.includes(word));
   }
 
@@ -138,7 +131,7 @@ GEP.views = (function () {
     const hasHub = stage.pts.some(p => p.hub);
     const where = stage.branch ? "Branch: " + branches[stage.branch].name : "Trunk of " + arc.name;
     return `<div class="stage" id="${stage.id}" style="--c:${arc.color}">
-      <div class="top"><span class="code">${esc(stage.code)}</span><span class="pill p-${stage.status}">${GEP.STATUS_LABEL[stage.status]}</span></div>
+      <div class="top"><span class="code">${esc(stage.code)}</span></div>
       <h4>${esc(stage.name)}${hasHub ? '<span class="hubtag">modern hub</span>' : ""}</h4>
       <div class="bd${stage.branch ? "" : " trunk"}">${esc(where)}</div>
       <div class="note">${esc(stage.note)}</div>
@@ -163,7 +156,7 @@ GEP.views = (function () {
       if (!matching.length) return;
       shown += matching.length;
       html += `<section class="group" style="--c:${arc.color}"><div class="ghead"><h3>${esc(arc.code)} · ${esc(arc.name)}</h3><span>${esc(arc.route)}</span></div>`;
-      html += stageGroup("Trunk", "the spine of the arc, in travel order", false, matching.filter(s => !s.branch));
+      html += stageGroup("Trunk", "the spine of the arc, in route order", false, matching.filter(s => !s.branch));
       model.branchIds(arcId).forEach(branchId => {
         const b = branches[branchId];
         html += stageGroup("Branch: " + b.name, "leaves at " + b.from + (b.to ? ", rejoins at " + b.to : ""), true, matching.filter(s => s.branch === branchId));

@@ -7,7 +7,7 @@
  *   GEP.map      the SVG map renderer              (js/map.js)
  *   GEP.views    HTML renderers for the page       (js/views.js)
  *
- * Exposes: GEP, GEP.stage(), GEP.STATUS_LABEL, GEP.$(), GEP.esc(), GEP.svgEl().
+ * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl().
  * Depends on: nothing.
  *
  * ---------------------------------------------------------------------------
@@ -37,14 +37,13 @@
  *   at         [lon, lat]
  *   eurasia | africa | americas   label text; the diamond shows on every tab that has a label
  *
- * STAGE    one call per stage, in travel order, in src/data/stages/*.js:
- *   s(arc, branch, name, note, stops, status, onward)
+ * STAGE    one call per stage, in route order, in src/data/stages/*.js:
+ *   s(arc, branch, name, note, stops, onward)
  *     arc      arc id
  *     branch   branch id, or "" for the arc's trunk
  *     name     card heading
  *     note     one sentence under the heading
- *     stops    "Name lon lat flags; Name lon lat flags; ..." in travel order
- *     status   "" (= planned) | "next" | "done" | "check"      ("check" = needs a fresh safety check)
+ *     stops    "Name lon lat flags; Name lon lat flags; ..." along the route
  *     onward   optional text for the "Onward:" line
  *
  *   Stop flags (any combination, after the latitude):
@@ -67,9 +66,6 @@ const GEP = {
   /** All editable content. Filled by the files in src/data/. */
   data: {stages: []},
 
-  /** Status id -> label shown on the pill and filter buttons. */
-  STATUS_LABEL: {next: "Next up", done: "Done", check: "Check first", planned: "Planned"},
-
   /**
    * Register one stage (see the schema above). Used by the files in src/data/stages/.
    * @param {string} arc      arc id
@@ -77,13 +73,12 @@ const GEP = {
    * @param {string} name     card heading
    * @param {string} note     one-sentence description
    * @param {string} stops    stop DSL string
-   * @param {string} [status] "" | "next" | "done" | "check"
    * @param {string} [onward] text for the "Onward" line
    */
-  stage(arc, branch, name, note, stops, status, onward) {
+  stage(arc, branch, name, note, stops, onward) {
     GEP.data.stages.push({
       arc, branch: branch || "", name, note: note || "", stops,
-      status: status || "planned", onward: onward || ""
+      onward: onward || ""
     });
   },
 

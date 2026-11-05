@@ -8,7 +8,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The Greater <span>Eurasia</span> Plan',
     sub:"Four arcs connect East Asia, Central Asia, South Asia and Europe. The Modern Silk Road follows today's rail, road and sea corridors alongside historic highlights.",
-    chips:[["4","arcs"],["Start:","Japan and Korea"]],
+    chips:[["4","arcs"],["Span:","Japan to the Atlantic"]],
     mapHint:"A rough sketch, not to scale. Solid lines are each arc's trunk, dashed lines are branches. Big dots are labelled, small dots are other stops (hover for the name), hollow dots are side trips, gold rings are modern corridor hubs. Use the view buttons to zoom.",
     views:[
       {n:"Whole route", b:[-14,146,-9,72]},
@@ -26,7 +26,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The <span>Africa</span> arcs',
     sub:"Four arcs cover North Africa, the Nile and East Africa, Southern Africa and the West African Atlantic coast.",
-    chips:[["4","arcs"],["Start:","Spain, Italy, Jordan or Gulf"]],
+    chips:[["4","arcs"],["Linked from:","Europe and the Gulf"]],
     mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds are ways in from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
     views:[
       {n:"Whole of Africa", b:[-28,58,-36,42]},
@@ -41,7 +41,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The <span>Americas</span> arcs',
     sub:"Three arcs cover North, Central and South America, with entry points across the Pacific or Atlantic.",
-    chips:[["3","arcs"],["Start:","Pacific or Atlantic"]],
+    chips:[["3","arcs"],["Linked from:","Pacific and Atlantic"]],
     mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds mark where you arrive from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
     views:[
       {n:"Whole of the Americas", b:[-170,-30,-56,72]},

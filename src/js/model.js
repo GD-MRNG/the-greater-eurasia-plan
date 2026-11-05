@@ -80,7 +80,6 @@ GEP.model = (function () {
     stages.forEach(s => {
       if (s.branch && !branches[s.branch]) out.push("Stage '" + s.name + "' uses unknown branch " + s.branch);
       if (s.branch && branches[s.branch] && branches[s.branch].arc !== s.arc) out.push("Stage '" + s.name + "' branch belongs to another arc");
-      if (!GEP.STATUS_LABEL[s.status]) out.push("Stage '" + s.name + "' has unknown status " + s.status);
       if (!s.pts || !s.pts.length) out.push("Stage '" + s.name + "' has no stops");
     });
     return out;

@@ -12,7 +12,7 @@
   const {tabs} = GEP.data;
 
   /** The one mutable object. views.js and map.js only read it. */
-  const state = {tab: "eurasia", view: 0, selection: null, filterArc: "all", filterStatus: "all", query: ""};
+  const state = {tab: "eurasia", view: 0, selection: null, filterArc: "all", query: ""};
 
   /** Pan/zoom controller. It calls render() whenever the map needs drawing, and onChange() after it did. */
   const mapView = GEP.panzoom.create({
@@ -26,7 +26,7 @@
 
   /** Reset everything that belongs to one page, then show the requested zoom view. */
   function openTab(tabId, viewIndex) {
-    Object.assign(state, {tab: tabId, view: viewIndex, selection: null, filterArc: "all", filterStatus: "all", query: ""});
+    Object.assign(state, {tab: tabId, view: viewIndex, selection: null, filterArc: "all", query: ""});
     $("q").value = "";
     GEP.views.renderAll(state);
     mapView.load(tabs[tabId].views, viewIndex);
@@ -48,7 +48,7 @@
 
   /** Clear filters, show the stage card for a map dot, scroll to it and flash it. */
   function jumpToStage(stageId) {
-    Object.assign(state, {filterArc: "all", filterStatus: "all", query: ""});
+    Object.assign(state, {filterArc: "all", query: ""});
     $("q").value = "";
     GEP.views.renderFilters(state);
     GEP.views.renderStages(state);
@@ -81,7 +81,6 @@
     const target = event.target;
     const viewButton = target.closest("[data-view]");
     const arcFilter = target.closest("[data-filter-arc]");
-    const statusFilter = target.closest("[data-filter-status]");
     const chip = target.closest(".br");
     const arcCard = target.closest(".arc");
     const dot = target.closest(".dot");
@@ -89,10 +88,6 @@
       mapView.fitView(Number(viewButton.dataset.view));
     } else if (arcFilter) {
       state.filterArc = arcFilter.dataset.filterArc;
-      GEP.views.renderFilters(state);
-      GEP.views.renderStages(state);
-    } else if (statusFilter) {
-      state.filterStatus = statusFilter.dataset.filterStatus;
       GEP.views.renderFilters(state);
       GEP.views.renderStages(state);
     } else if (chip) {

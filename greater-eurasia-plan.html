@@ -11,13 +11,12 @@
  *
  * Colours come from the variables in :root. Arc colours and the hero gradient (--g1..--g3)
  * are set at runtime from the data (see js/views.js), so there are no per-arc rules here.
- * Status pills: .p-next .p-planned .p-check .p-done (the status ids in data/stages).
  */
 
 /* ===== Theme variables and base elements ===== */
 :root{
   --bg:#0b0f17;--panel:#121826;--panel2:#182033;--line:#243049;--text:#e8edf6;--muted:#93a0b8;--dim:#6b7790;
-  --next:#4f9dff;--done:#3ccf7a;--check:#ff9f43;--planned:#7d8aa3;--sea-map:#0d1422;
+  --sea-map:#0d1422;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -87,8 +86,6 @@ svg text{font-family:inherit}
 .arc h3{font-size:17px;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .arc h3 em{font-style:normal;font-size:12px;color:var(--c);font-weight:700;letter-spacing:.08em}
 .arc .route{font-size:13px;color:var(--muted);margin:6px 0 10px}
-.bar{height:6px;background:var(--line);border-radius:6px;overflow:hidden}
-.bar div{height:100%;background:var(--c)}
 .arc .meta{font-size:12px;color:var(--dim);margin:6px 0 8px}
 .brs{display:flex;flex-wrap:wrap;gap:5px}
 .br{font-size:11.5px;border:1px dashed var(--c);color:var(--muted);border-radius:999px;padding:2px 9px;cursor:pointer;background:transparent}
@@ -115,8 +112,6 @@ input[type=search]:focus{border-color:#4f9dff}
 .stage.flash{box-shadow:0 0 0 2px var(--c),0 0 24px var(--c)}
 .stage .top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
 .code{font-size:12px;font-weight:700;color:var(--c);letter-spacing:.06em}
-.pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;border:1px solid currentColor;white-space:nowrap}
-.p-next{color:var(--next)}.p-done{color:var(--done)}.p-check{color:var(--check)}.p-planned{color:var(--planned)}
 .stage h4{font-size:16px;margin-bottom:2px}
 .bd{font-size:11.5px;color:var(--c);margin-bottom:6px}
 .bd.trunk{color:var(--muted)}
@@ -132,7 +127,7 @@ input[type=search]:focus{border-color:#4f9dff}
 ol,ul{padding-left:20px;color:var(--muted);font-size:14px}
 li{margin:6px 0}
 li b{color:var(--text)}
-.warn{margin-top:14px;border:1px solid var(--check);background:rgba(255,159,67,.08);border-radius:12px;padding:12px 14px;font-size:13px;color:#ffd2a6}
+.warn{margin-top:14px;border:1px solid #c9a36a;background:rgba(201,163,106,.08);border-radius:12px;padding:12px 14px;font-size:13px;color:#e6d3b0}
 .tandem{display:grid;gap:10px}
 .tandem div{background:var(--panel2);border-radius:12px;padding:12px 14px;font-size:14px;color:var(--muted)}
 .tandem b{color:var(--text);display:block;margin-bottom:2px}
@@ -182,7 +177,7 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
 <div class="arcs" id="arcs"></div>
 <div class="card" style="margin-bottom:8px">
   <h2>Stages</h2>
-  <p class="hint">Every stage, arc by arc, trunk first then its branches. Filter by arc or status, or search any place. Tap a dot on the map to jump to its stage.</p>
+  <p class="hint">Every stage, arc by arc, trunk first then its branches. Filter by arc, or search any place. Tap a dot on the map to jump to its stage.</p>
   <div class="controls" id="filters"></div>
   <div class="controls"><input type="search" id="q" placeholder="Search a country, city or sight"></div>
 </div>
@@ -212,7 +207,7 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
       <li>Confirm a payment method that works there.</li>
       <li>Know the nearest bail-out hub, ideally within a day's travel.</li>
     </ol>
-    <div class="warn">As of 3 Nov 2026, the Iran war is unresolved and the Strait of Hormuz is closed. Russia, Iran and the Gulf stay in the plan but need a fresh check right before booking. Other stages marked <b>Check first</b> (for example Sudan, the Sahel, Venezuela, Haiti) need the same.</div>
+    <div class="warn">As of 3 Nov 2026, the Iran war is unresolved and the Strait of Hormuz is closed. Routes through that region are drawn as corridors; conditions on the ground change.</div>
   </div>
   <div class="card">
     <h2>A lens to carry along</h2>
@@ -247,7 +242,7 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
  *   GEP.map      the SVG map renderer              (js/map.js)
  *   GEP.views    HTML renderers for the page       (js/views.js)
  *
- * Exposes: GEP, GEP.stage(), GEP.STATUS_LABEL, GEP.$(), GEP.esc(), GEP.svgEl().
+ * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl().
  * Depends on: nothing.
  *
  * ---------------------------------------------------------------------------
@@ -277,14 +272,13 @@ footer{color:var(--dim);font-size:12px;margin-top:28px;text-align:center}
  *   at         [lon, lat]
  *   eurasia | africa | americas   label text; the diamond shows on every tab that has a label
  *
- * STAGE    one call per stage, in travel order, in src/data/stages/*.js:
- *   s(arc, branch, name, note, stops, status, onward)
+ * STAGE    one call per stage, in route order, in src/data/stages/*.js:
+ *   s(arc, branch, name, note, stops, onward)
  *     arc      arc id
  *     branch   branch id, or "" for the arc's trunk
  *     name     card heading
  *     note     one sentence under the heading
- *     stops    "Name lon lat flags; Name lon lat flags; ..." in travel order
- *     status   "" (= planned) | "next" | "done" | "check"      ("check" = needs a fresh safety check)
+ *     stops    "Name lon lat flags; Name lon lat flags; ..." along the route
  *     onward   optional text for the "Onward:" line
  *
  *   Stop flags (any combination, after the latitude):
@@ -307,9 +301,6 @@ const GEP = {
   /** All editable content. Filled by the files in src/data/. */
   data: {stages: []},
 
-  /** Status id -> label shown on the pill and filter buttons. */
-  STATUS_LABEL: {next: "Next up", done: "Done", check: "Check first", planned: "Planned"},
-
   /**
    * Register one stage (see the schema above). Used by the files in src/data/stages/.
    * @param {string} arc      arc id
@@ -317,13 +308,12 @@ const GEP = {
    * @param {string} name     card heading
    * @param {string} note     one-sentence description
    * @param {string} stops    stop DSL string
-   * @param {string} [status] "" | "next" | "done" | "check"
    * @param {string} [onward] text for the "Onward" line
    */
-  stage(arc, branch, name, note, stops, status, onward) {
+  stage(arc, branch, name, note, stops, onward) {
     GEP.data.stages.push({
       arc, branch: branch || "", name, note: note || "", stops,
-      status: status || "planned", onward: onward || ""
+      onward: onward || ""
     });
   },
 
@@ -368,7 +358,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The Greater <span>Eurasia</span> Plan',
     sub:"Four arcs connect East Asia, Central Asia, South Asia and Europe. The Modern Silk Road follows today's rail, road and sea corridors alongside historic highlights.",
-    chips:[["4","arcs"],["Start:","Japan and Korea"]],
+    chips:[["4","arcs"],["Span:","Japan to the Atlantic"]],
     mapHint:"A rough sketch, not to scale. Solid lines are each arc's trunk, dashed lines are branches. Big dots are labelled, small dots are other stops (hover for the name), hollow dots are side trips, gold rings are modern corridor hubs. Use the view buttons to zoom.",
     views:[
       {n:"Whole route", b:[-14,146,-9,72]},
@@ -386,7 +376,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The <span>Africa</span> arcs',
     sub:"Four arcs cover North Africa, the Nile and East Africa, Southern Africa and the West African Atlantic coast.",
-    chips:[["4","arcs"],["Start:","Spain, Italy, Jordan or Gulf"]],
+    chips:[["4","arcs"],["Linked from:","Europe and the Gulf"]],
     mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds are ways in from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
     views:[
       {n:"Whole of Africa", b:[-28,58,-36,42]},
@@ -401,7 +391,7 @@ GEP.data.tabs = {
     eyebrow:"Route overview",
     title:'The <span>Americas</span> arcs',
     sub:"Three arcs cover North, Central and South America, with entry points across the Pacific or Atlantic.",
-    chips:[["3","arcs"],["Start:","Pacific or Atlantic"]],
+    chips:[["3","arcs"],["Linked from:","Pacific and Atlantic"]],
     mapHint:"Solid lines are each arc's trunk, dashed lines are branches. Diamonds mark where you arrive from Eurasia. Hollow dots are side trips, big dots are labelled. Use the view buttons to zoom.",
     views:[
       {n:"Whole of the Americas", b:[-170,-30,-56,72]},
@@ -548,14 +538,14 @@ GEP.data.entries = [
 /* ---- src/data/stages/upper.js ---- */
 /**
  * Stages: the Upper arc (Japan, Korea, China, Mongolia, Russia).
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
-s("upper","","Japan: Tokyo to Hiroshima","The start of everything. Rail south through the old capitals.",
- "Tokyo 139.7 35.7 *; Nikko 139.6 36.75 ~; Kamakura 139.55 35.32 ~; Hakone 139.02 35.23 ~; Mount Fuji 138.73 35.36 ~; Nagoya 136.9 35.18 +; Kyoto 135.77 35.01 *; Nara 135.8 34.69 ~; Osaka 135.5 34.69 +; Himeji 134.69 34.82; Okayama 133.92 34.66; Hiroshima 132.46 34.39 *; Miyajima 132.32 34.3 ~","next","Continue to Kyushu");
+s("upper","","Japan: Tokyo to Hiroshima","Rail south through the old capitals.",
+ "Tokyo 139.7 35.7 *; Nikko 139.6 36.75 ~; Kamakura 139.55 35.32 ~; Hakone 139.02 35.23 ~; Mount Fuji 138.73 35.36 ~; Nagoya 136.9 35.18 +; Kyoto 135.77 35.01 *; Nara 135.8 34.69 ~; Osaka 135.5 34.69 +; Himeji 134.69 34.82; Okayama 133.92 34.66; Hiroshima 132.46 34.39 *; Miyajima 132.32 34.3 ~","Continue to Kyushu");
 s("upper","","Japan: Kyushu and the ferry out","Down to Fukuoka, then the ferry to Busan.",
- "Fukuoka 130.4 33.59 *; Nagasaki 129.88 32.75 ~; Kumamoto 130.74 32.8 ~; Mount Aso 131.1 32.88 ~; Beppu 131.5 33.28 ~; Kagoshima 130.56 31.6 ~; Naha (Okinawa) 127.68 26.21 ~","next","Ferry from Fukuoka to Busan");
+ "Fukuoka 130.4 33.59 *; Nagasaki 129.88 32.75 ~; Kumamoto 130.74 32.8 ~; Mount Aso 131.1 32.88 ~; Beppu 131.5 33.28 ~; Kagoshima 130.56 31.6 ~; Naha (Okinawa) 127.68 26.21 ~","Ferry from Fukuoka to Busan");
 s("upper","u-hokkaido","Tohoku and Hokkaido","Temples, volcanoes and the north.",
  "Sendai 140.87 38.27; Matsushima 141.06 38.37 ~; Hiraizumi 141.1 39.0 ~; Aomori 140.74 40.82; Hakodate 140.73 41.77 +; Sapporo 141.35 43.06 *; Otaru 141.0 43.19 ~; Asahikawa 142.37 43.77; Shiretoko 145.2 44.1 ~");
 s("upper","u-alps","Japan Alps and Kanazawa","The mountain route between Nagoya and Kyoto.",
@@ -563,17 +553,17 @@ s("upper","u-alps","Japan Alps and Kanazawa","The mountain route between Nagoya 
 s("upper","u-shikoku","Shikoku and the Seto Inland Sea","Art islands and pilgrimage country.",
  "Takamatsu 134.05 34.34; Naoshima 133.99 34.46 ~; Matsuyama 132.77 33.84 +; Shimanami Kaido 133.1 34.25 ~");
 s("upper","","South Korea: Busan to Seoul","Land at Busan, then north through the old kingdom of Silla.",
- "Busan 129.07 35.18 *; Gyeongju 129.21 35.84 *; Andong 128.73 36.57 ~; Daegu 128.6 35.87; Haeinsa 128.1 35.8 ~; Daejeon 127.38 36.35; Suwon 127.0 37.26 ~; Seoul 126.98 37.57 *; DMZ 126.68 37.96 ~; Incheon 126.7 37.46 ~","next","Fly or ferry to China");
+ "Busan 129.07 35.18 *; Gyeongju 129.21 35.84 *; Andong 128.73 36.57 ~; Daegu 128.6 35.87; Haeinsa 128.1 35.8 ~; Daejeon 127.38 36.35; Suwon 127.0 37.26 ~; Seoul 126.98 37.57 *; DMZ 126.68 37.96 ~; Incheon 126.7 37.46 ~","Fly or ferry to China");
 s("upper","u-korea-east","Korea's east coast","Mountains and sea between Seoul and Gyeongju.",
  "Sokcho 128.59 38.2 +; Seoraksan 128.47 38.12 ~; Gangneung 128.9 37.75; Samcheok 129.17 37.45; Pohang 129.37 36.03");
 s("upper","u-korea-sw","Southwest Korea and Jeju","Food capital, tea fields and the island.",
  "Jeonju 127.15 35.82; Gwangju 126.85 35.16; Suncheon 127.49 34.95 ~; Mokpo 126.39 34.81; Jeju 126.53 33.5 *; Seogwipo 126.56 33.25 ~");
 s("upper","","Northern China: Beijing and the Great Wall","Over to Beijing, then the Trans-Mongolian line north.",
- "Tianjin 117.2 39.1 ~; Beijing 116.4 39.9 *; Mutianyu Great Wall 116.57 40.43 ~; Chengde 117.94 40.97 ~; Datong 113.3 40.08 +; Yungang Grottoes 113.13 40.11 ~; Hohhot 111.67 40.84 ~; Erenhot 111.98 43.65","","Train to Ulaanbaatar");
+ "Tianjin 117.2 39.1 ~; Beijing 116.4 39.9 *; Mutianyu Great Wall 116.57 40.43 ~; Chengde 117.94 40.97 ~; Datong 113.3 40.08 +; Yungang Grottoes 113.13 40.11 ~; Hohhot 111.67 40.84 ~; Erenhot 111.98 43.65","Train to Ulaanbaatar");
 s("upper","u-northeast","Northeast China","Old Manchuria, ice and Russian echoes.",
  "Shenyang 123.43 41.8; Dalian 121.6 38.9 ~; Changchun 125.3 43.88; Harbin 126.64 45.75 *");
 s("upper","","Mongolia: Ulaanbaatar and the north line","Steppe, gers and the rail line to Russia.",
- "Sainshand 110.1 44.89; Ulaanbaatar 106.9 47.92 *; Terelj 107.5 47.98 ~; Darkhan 105.97 49.49; Sükhbaatar 106.2 50.23","","Rail on to Ulan-Ude in Russia");
+ "Sainshand 110.1 44.89; Ulaanbaatar 106.9 47.92 *; Terelj 107.5 47.98 ~; Darkhan 105.97 49.49; Sükhbaatar 106.2 50.23","Rail on to Ulan-Ude in Russia");
 s("upper","u-gobi","Gobi and central Mongolia","Karakorum, dunes and flaming cliffs.",
  "Kharkhorin 102.84 47.2 +; Dalanzadgad 104.42 43.57; Yolyn Am 104.1 43.5 ~; Bayanzag 103.7 44.14 ~; Khongoryn Els 102.3 43.77 ~");
 s("upper","u-khovsgol","Khövsgöl and the north","Mongolia's great blue lake.",
@@ -581,37 +571,37 @@ s("upper","u-khovsgol","Khövsgöl and the north","Mongolia's great blue lake.",
 s("upper","u-mn-west","Western Mongolia and the Altai","Eagle hunters and the far west.",
  "Ölgii 89.97 48.97 *; Khovd 91.64 48.0; Tavan Bogd 87.8 49.1 ~");
 s("upper","","Russia: Buryatia and Lake Baikal","Into Siberia and the deepest lake on Earth.",
- "Ulan-Ude 107.6 51.83 *; Ivolginsky Datsan 107.2 51.7 ~; Listvyanka 104.87 51.87 ~; Irkutsk 104.28 52.29 *; Olkhon Island 107.34 53.2 ~","check");
+ "Ulan-Ude 107.6 51.83 *; Ivolginsky Datsan 107.2 51.7 ~; Listvyanka 104.87 51.87 ~; Irkutsk 104.28 52.29 *; Olkhon Island 107.34 53.2 ~");
 s("upper","","Russia: Krasnoyarsk to Omsk","The long Siberian middle.",
- "Krasnoyarsk 92.87 56.01 *; Stolby Reserve 92.77 55.9 ~; Tomsk 84.95 56.5 ~; Novosibirsk 82.92 55.03 *; Omsk 73.37 54.99","check");
+ "Krasnoyarsk 92.87 56.01 *; Stolby Reserve 92.77 55.9 ~; Tomsk 84.95 56.5 ~; Novosibirsk 82.92 55.03 *; Omsk 73.37 54.99");
 s("upper","","Russia: the Urals and the Volga","Across the Europe–Asia line to Kazan.",
- "Tyumen 65.53 57.15; Yekaterinburg 60.6 56.84 *; Europe-Asia obelisk 60.0 56.9 ~; Perm 56.25 58.01; Kazan 49.1 55.8 *; Nizhny Novgorod 44.0 56.33 +","check");
+ "Tyumen 65.53 57.15; Yekaterinburg 60.6 56.84 *; Europe-Asia obelisk 60.0 56.9 ~; Perm 56.25 58.01; Kazan 49.1 55.8 *; Nizhny Novgorod 44.0 56.33 +");
 s("upper","","Russia: Moscow and the Golden Ring","The capital and the old towns around it.",
- "Vladimir 40.4 56.13 ~; Suzdal 40.43 56.42 ~; Sergiev Posad 38.13 56.3 ~; Moscow 37.62 55.75 *","check");
+ "Vladimir 40.4 56.13 ~; Suzdal 40.43 56.42 ~; Sergiev Posad 38.13 56.3 ~; Moscow 37.62 55.75 *");
 s("upper","","Russia: Tver, Novgorod and St Petersburg","The imperial end of the line.",
- "Tver 35.9 56.86; Veliky Novgorod 31.27 58.52 ~; St Petersburg 30.32 59.94 *; Vyborg 28.75 60.7 ~","check","Overland to Finland or the Baltics, border rules permitting");
+ "Tver 35.9 56.86; Veliky Novgorod 31.27 58.52 ~; St Petersburg 30.32 59.94 *; Vyborg 28.75 60.7 ~","Overland to Finland or the Baltics, border rules permitting");
 s("upper","u-far-east","Russian Far East","The east end of the Trans-Siberian and the Pacific side.",
- "Suifenhe 131.15 44.4 ~; Vladivostok 131.9 43.12 *; Ussuriysk 131.95 43.8 ~; Khabarovsk 135.08 48.48 *; Birobidzhan 132.9 48.8; Chita 113.5 52.03","check");
+ "Suifenhe 131.15 44.4 ~; Vladivostok 131.9 43.12 *; Ussuriysk 131.95 43.8 ~; Khabarovsk 135.08 48.48 *; Birobidzhan 132.9 48.8; Chita 113.5 52.03");
 s("upper","u-karelia","Karelia, Kola and Murmansk","Wooden churches, White Sea and the Arctic.",
- "Petrozavodsk 34.35 61.79; Kizhi Island 35.22 62.07 ~; Solovetsky Islands 35.7 65.0 ~; Murmansk 33.08 68.97 *; Teriberka 35.12 69.2 ~","check");
+ "Petrozavodsk 34.35 61.79; Kizhi Island 35.22 62.07 ~; Solovetsky Islands 35.7 65.0 ~; Murmansk 33.08 68.97 *; Teriberka 35.12 69.2 ~");
 s("upper","u-altai","Altai and Sayan","Mountains in southern Siberia.",
- "Barnaul 83.77 53.35; Gorno-Altaysk 85.96 51.96; Chemal 86.0 51.4 ~; Belukha 86.6 49.8 ~","check");
+ "Barnaul 83.77 53.35; Gorno-Altaysk 85.96 51.96; Chemal 86.0 51.4 ~; Belukha 86.6 49.8 ~");
 s("upper","u-volga","Volga and the south","Down the river to the Caspian.",
- "Ulyanovsk 48.4 54.3 ~; Samara 50.1 53.2; Saratov 46.0 51.5; Volgograd 44.5 48.7 *; Astrakhan 48.05 46.35","check");
+ "Ulyanovsk 48.4 54.3 ~; Samara 50.1 53.2; Saratov 46.0 51.5; Volgograd 44.5 48.7 *; Astrakhan 48.05 46.35");
 })(GEP.stage);
 </script>
 <script>
 /* ---- src/data/stages/silk.js ---- */
 /**
  * Stages: the Modern Silk Road arc (Xi'an to Istanbul) and its branches.
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
 s("silk","","China: Xi'an to Lanzhou","The eastern anchor of the modern corridor, and the old capital.",
  "Xi'an 108.94 34.34 *^; Terracotta Army 109.27 34.38 ~; Tianshui 105.7 34.58 ~; Lanzhou 103.83 36.06 +; Labrang Monastery 102.5 35.2 ~; Zhangye 100.45 38.93; Danxia Landform 100.1 38.9 ~");
 s("silk","","China: the Hexi Corridor to Xinjiang","Gansu's desert corridor, then Xinjiang, where the rail and road links to Central Asia begin.",
- "Jiayuguan 98.28 39.77 +; Dunhuang 94.66 40.14 *; Mogao Caves 94.8 40.04 ~; Turpan 89.19 42.95; Urumqi 87.6 43.82 *^; Heavenly Lake 88.13 43.88 ~; Alashankou 82.57 45.17 ~+^; Khorgos 80.4 44.2 *^","","Rail dry port at Khorgos, then into Kazakhstan");
+ "Jiayuguan 98.28 39.77 +; Dunhuang 94.66 40.14 *; Mogao Caves 94.8 40.04 ~; Turpan 89.19 42.95; Urumqi 87.6 43.82 *^; Heavenly Lake 88.13 43.88 ~; Alashankou 82.57 45.17 ~+^; Khorgos 80.4 44.2 *^","Rail dry port at Khorgos, then into Kazakhstan");
 s("silk","","Kazakhstan: Almaty and the southeast","The modern hub of Central Asia, with canyons and lakes nearby.",
  "Almaty 76.95 43.24 *^; Charyn Canyon 79.1 43.35 ~; Kolsay Lakes 78.3 42.9 ~; Medeu 77.06 43.16 ~");
 s("silk","","Kyrgyzstan: Bishkek to Osh","Mountains, lakes and yurts on the way to the Fergana side.",
@@ -621,18 +611,18 @@ s("silk","","Uzbekistan: Fergana and Tashkent","Down the Fergana Valley into Cen
 s("silk","","Uzbekistan: Samarkand, Bukhara and Khiva","The old Silk Road cities, linked today by high-speed rail.",
  "Samarkand 66.96 39.65 *; Shakhrisabz 66.83 39.05 ~; Bukhara 64.42 39.77 *; Khiva 60.36 41.38 *; Nukus 59.6 42.46 +");
 s("silk","","Aral Sea and Aktau: the Caspian gateway","Across the western Kazakh desert to the Middle Corridor port.",
- "Moynaq 59.0 43.77 ~; Beyneu 55.2 45.3; Aktau 51.2 43.65 *^","","Cross the Caspian to Baku (cargo ferries, check passenger rules, or fly)");
+ "Moynaq 59.0 43.77 ~; Beyneu 55.2 45.3; Aktau 51.2 43.65 *^","Cross the Caspian to Baku (cargo ferry or fly)");
 s("silk","","Azerbaijan: Baku","The Caspian port at the other end of the Middle Corridor.",
  "Baku 49.87 40.41 *^; Gobustan 49.4 40.1 ~; Sheki 47.19 41.19 ~; Ganja 46.36 40.68 +");
 s("silk","","Georgia: Tbilisi to Batumi","Wine, mountains and the Black Sea.",
- "Tbilisi 44.8 41.72 *^; Mtskheta 44.72 41.84 ~; Kazbegi 44.64 42.66 ~; Sighnaghi 45.92 41.62 ~; Kutaisi 42.7 42.25; Mestia 42.73 43.05 ~; Batumi 41.64 41.65 +","","On to Kars on the Baku–Tbilisi–Kars rail corridor, by train where it runs or by road");
+ "Tbilisi 44.8 41.72 *^; Mtskheta 44.72 41.84 ~; Kazbegi 44.64 42.66 ~; Sighnaghi 45.92 41.62 ~; Kutaisi 42.7 42.25; Mestia 42.73 43.05 ~; Batumi 41.64 41.65 +","On to Kars on the Baku–Tbilisi–Kars rail corridor, by train where it runs or by road");
 s("silk","","Türkiye: Kars to Cappadocia","Eastern Anatolia and the heart of the plateau.",
  "Kars 43.1 40.6 *^; Ani 43.57 40.51 ~; Doğubayazıt 44.08 39.55 ~; Erzurum 41.27 39.9; Sivas 37.02 39.75; Göreme 34.83 38.64 *");
 s("silk","","Türkiye: Ankara and Istanbul","Through the capital to Istanbul, where Marmaray crosses under the Bosphorus into Europe.",
- "Ankara 32.85 39.93 +; Istanbul 28.98 41.01 *^","","Marmaray rail tunnel to Europe, then the Balkans or Greece");
-s("silk","s-kkh","Karakoram Highway and the CPEC link","From Kashgar over the Khunjerab Pass to Pakistan. The pass is seasonal, so check.",
- "Korla 86.15 41.77; Kuqa 82.96 41.72; Aksu 80.26 41.17; Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Khunjerab Pass 75.42 36.85 *; Sost 74.8 36.7 ~; Karimabad 74.66 36.32 *; Gilgit 74.3 35.92","");
-s("silk","s-irkeshtam","Kashgar to Osh via Irkeshtam","A road crossing into Kyrgyzstan. A rail link between the three countries has been in the works, but for now it is road, so check.",
+ "Ankara 32.85 39.93 +; Istanbul 28.98 41.01 *^","Marmaray rail tunnel to Europe, then the Balkans or Greece");
+s("silk","s-kkh","Karakoram Highway and the CPEC link","From Kashgar over the Khunjerab Pass to Pakistan. The pass is seasonal.",
+ "Korla 86.15 41.77; Kuqa 82.96 41.72; Aksu 80.26 41.17; Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Khunjerab Pass 75.42 36.85 *; Sost 74.8 36.7 ~; Karimabad 74.66 36.32 *; Gilgit 74.3 35.92");
+s("silk","s-irkeshtam","Kashgar to Osh via Irkeshtam","A road crossing into Kyrgyzstan. A rail link between the three countries has been in the works; until then it is road.",
  "Irkeshtam Pass 73.9 39.7 *; Sary-Tash 73.3 39.73 +");
 s("silk","s-pamir","Pamir Highway","One of the great road journeys: Sary-Tash to Dushanbe.",
  "Karakul 73.55 39.0 ~; Murghab 73.96 38.17 *; Wakhan Valley 72.7 37.0 ~; Khorog 71.55 37.49 *; Kalaikhum 70.8 38.45; Dushanbe 68.78 38.56 *; Iskanderkul 68.37 39.07 ~; Penjikent 67.6 39.5 +");
@@ -642,7 +632,7 @@ s("silk","s-astana","Kazakh heartland: Astana","The new capital and the steppe."
  "Karaganda 73.1 49.8; Astana 71.43 51.17 *^; Burabay 70.3 53.1 ~");
 s("silk","s-turkmen","Turkmenistan branch","Desert gate, Merv and the Turkmenbashi port on the Caspian.",
  "Konye-Urgench 59.15 42.32; Darvaza 58.4 40.25 *; Ashgabat 58.38 37.95 *; Nisa 58.2 37.97 ~; Merv 62.18 37.66 ~; Turkmenbashi 52.97 40.02 *^");
-s("silk","s-armenia","Armenia loop","A loop out of Tbilisi. The Armenia–Türkiye land border is a question mark, so check.",
+s("silk","s-armenia","Armenia loop","A loop out of Tbilisi. The Armenia–Türkiye land border is not an open crossing.",
  "Dilijan 44.86 40.74 ~; Lake Sevan 45.0 40.55 ~; Yerevan 44.51 40.18 *; Garni and Geghard 44.73 40.11 ~; Echmiadzin 44.29 40.16 ~; Tatev 46.25 39.38 ~; Gyumri 43.85 40.79");
 s("silk","s-black-sea","Black Sea Türkiye","Mountain monasteries and the northern coast.",
  "Trabzon 39.72 41.0 *; Sumela Monastery 39.66 40.69 ~; Amasya 35.83 40.65; Safranbolu 32.69 41.25 +; Amasra 32.39 41.75 ~");
@@ -656,37 +646,37 @@ s("silk","s-aegean","Aegean and Mediterranean Türkiye","Troy, Ephesus and the t
 /* ---- src/data/stages/lower.js ---- */
 /**
  * Stages: the Lower arc (Singapore to the Gulf) and its branches.
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
-s("lower","","Singapore and Malaysia","Home base. North by rail and road.",
+s("lower","","Singapore and Malaysia","North by rail and road.",
  "Singapore 103.82 1.35 *; Johor Bahru 103.74 1.49 ~; Melaka 102.25 2.19; Kuala Lumpur 101.69 3.14 *; Cameron Highlands 101.37 4.47 ~; Ipoh 101.09 4.6; Penang 100.33 5.41 *; Langkawi 99.8 6.35 ~; Hat Yai 100.47 7.0");
 s("lower","","Thailand: south to Bangkok","Islands, then the capital.",
- "Surat Thani 99.33 9.14; Koh Samui 100.06 9.5 ~; Hua Hin 99.96 12.57; Bangkok 100.5 13.75 *; Ayutthaya 100.57 14.35 ~; Nong Khai 102.74 17.88","","Rail to Vientiane");
+ "Surat Thani 99.33 9.14; Koh Samui 100.06 9.5 ~; Hua Hin 99.96 12.57; Bangkok 100.5 13.75 *; Ayutthaya 100.57 14.35 ~; Nong Khai 102.74 17.88","Rail to Vientiane");
 s("lower","","Laos: Vientiane to the China border","Down the Mekong and up the Laos–China railway.",
- "Vientiane 102.6 17.97 *; Vang Vieng 102.45 18.92; Luang Prabang 102.14 19.89 *; Kuang Si Falls 102.2 19.75 ~; Boten 101.69 21.17; Pakse 105.78 15.12 ~; Bolaven Plateau 106.2 15.1 ~; Si Phan Don 105.9 14.1 ~","","Laos–China railway to Kunming");
+ "Vientiane 102.6 17.97 *; Vang Vieng 102.45 18.92; Luang Prabang 102.14 19.89 *; Kuang Si Falls 102.2 19.75 ~; Boten 101.69 21.17; Pakse 105.78 15.12 ~; Bolaven Plateau 106.2 15.1 ~; Si Phan Don 105.9 14.1 ~","Laos–China railway to Kunming");
 s("lower","","Southern China: Kunming and southern Yunnan","The Yunnan capital and the way down to Vietnam.",
- "Jinghong 100.8 22.0 ~; Kunming 102.83 25.04 *; Stone Forest 103.3 24.8 ~; Yuanyang Terraces 102.75 23.1 ~; Hekou 103.97 22.5","","Border crossing at Hekou to Lao Cai");
+ "Jinghong 100.8 22.0 ~; Kunming 102.83 25.04 *; Stone Forest 103.3 24.8 ~; Yuanyang Terraces 102.75 23.1 ~; Hekou 103.97 22.5","Border crossing at Hekou to Lao Cai");
 s("lower","","Vietnam: Hanoi to Saigon","The length of the country by the Reunification line.",
  "Hanoi 105.85 21.03 *; Ha Long Bay 107.07 20.95 ~; Sapa 103.84 22.34 ~; Ninh Binh 105.97 20.25 ~; Phong Nha 106.28 17.59 ~; Hue 107.59 16.46 *; Hoi An 108.33 15.88 *; Da Nang 108.2 16.05; Nha Trang 109.19 12.24; Da Lat 108.44 11.94; Saigon 106.7 10.78 *; Can Tho 105.78 10.04 ~");
 s("lower","","Cambodia","Phnom Penh and Angkor.",
- "Phnom Penh 104.92 11.56 *; Kampot 104.18 10.61 ~; Battambang 103.2 13.1 ~; Siem Reap 103.86 13.36 *; Angkor Wat 103.87 13.41 ~","","Fly west");
+ "Phnom Penh 104.92 11.56 *; Kampot 104.18 10.61 ~; Battambang 103.2 13.1 ~; Siem Reap 103.86 13.36 *; Angkor Wat 103.87 13.41 ~","Fly west");
 s("lower","","Myanmar","Pagodas and plains.",
- "Yangon 96.15 16.8 *; Bago 96.48 17.34 ~; Kyaiktiyo 97.1 17.48 ~; Bagan 94.86 21.17 *; Inle Lake 96.9 20.55 ~; Mandalay 96.08 21.97 +","check","Fly to India");
+ "Yangon 96.15 16.8 *; Bago 96.48 17.34 ~; Kyaiktiyo 97.1 17.48 ~; Bagan 94.86 21.17 *; Inle Lake 96.9 20.55 ~; Mandalay 96.08 21.97 +","Fly to India");
 s("lower","","Bangladesh and Kolkata","Dhaka and the old capital of the Raj.",
  "Dhaka 90.41 23.81 *; Sundarbans 89.0 22.0 ~; Kolkata 88.36 22.57 *; Darjeeling 88.26 27.04 ~; Puri 85.83 19.8 ~");
 s("lower","","India: Varanasi, Agra and Delhi","The Ganges plain and the Golden Triangle.",
- "Bodh Gaya 84.99 24.7 ~; Varanasi 83.0 25.32 *; Lucknow 80.95 26.85 ~; Agra 78.01 27.18 *; Delhi 77.2 28.6 *; Amritsar 74.87 31.63 *","","Wagah crossing to Lahore. Its status can change, so check");
+ "Bodh Gaya 84.99 24.7 ~; Varanasi 83.0 25.32 *; Lucknow 80.95 26.85 ~; Agra 78.01 27.18 *; Delhi 77.2 28.6 *; Amritsar 74.87 31.63 *","Wagah crossing to Lahore");
 s("lower","","Pakistan","Lahore, Islamabad and the hills.",
- "Wagah 74.57 31.6 ~; Lahore 74.34 31.55 *; Multan 71.47 30.2 ~; Karachi 67.0 24.86 ~; Taxila 72.83 33.75 ~; Islamabad 73.05 33.68 *","check","Iran, by air or a checked land route");
+ "Wagah 74.57 31.6 ~; Lahore 74.34 31.55 *; Multan 71.47 30.2 ~; Karachi 67.0 24.86 ~; Taxila 72.83 33.75 ~; Islamabad 73.05 33.68 *","Iran, by air or overland");
 s("lower","","Iran","Persian cities, gardens and ruins.",
- "Tehran 51.39 35.69 *; Kashan 51.45 33.98 ~; Isfahan 51.68 32.65 *; Yazd 54.37 31.9 *; Shiraz 52.53 29.59 *; Persepolis 52.89 29.93 ~; Bandar Abbas 56.27 27.19","check","Gulf side, with the Hormuz situation checked first");
-s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. Hormuz is closed as of 3 Nov 2026, so check.",
- "Dubai 55.3 25.2 *; Abu Dhabi 54.37 24.45; Doha 51.53 25.29 ~; Al Ain 55.76 24.2 ~; Muscat 58.4 23.59 *; Nizwa 57.53 22.93 ~; Wahiba Sands 58.8 22.4 ~; Salalah 54.1 17.02 ~","check","Jordan by air, or back to Istanbul");
+ "Tehran 51.39 35.69 *; Kashan 51.45 33.98 ~; Isfahan 51.68 32.65 *; Yazd 54.37 31.9 *; Shiraz 52.53 29.59 *; Persepolis 52.89 29.93 ~; Bandar Abbas 56.27 27.19","On to the Gulf");
+s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. The Strait of Hormuz was closed as of 3 Nov 2026.",
+ "Dubai 55.3 25.2 *; Abu Dhabi 54.37 24.45; Doha 51.53 25.29 ~; Al Ain 55.76 24.2 ~; Muscat 58.4 23.59 *; Nizwa 57.53 22.93 ~; Wahiba Sands 58.8 22.4 ~; Salalah 54.1 17.02 ~","Jordan by air, or back to Istanbul");
 s("lower","l-borneo","Borneo","Mountains and rainforest.",
  "Kuching 110.35 1.55 *; Brunei 114.94 4.89; Mount Kinabalu 116.56 6.08 ~; Kota Kinabalu 116.07 5.98 *");
-s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, if the plan stretches.",
+s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, optional.",
  "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~");
 s("lower","l-phil","Philippines island branch","Optional island hopping.",
  "Palawan El Nido 119.4 11.18 ~; Cebu 123.9 10.3; Manila 120.98 14.6 *; Banaue 121.06 16.92 ~");
@@ -709,16 +699,16 @@ s("lower","l-srilanka","Sri Lanka","The teardrop island.",
 s("lower","l-nepal","Nepal","Kathmandu, Pokhara and the Himalaya.",
  "Lumbini 83.28 27.47 ~; Chitwan 84.4 27.5 ~; Pokhara 83.99 28.21 *; Kathmandu 85.32 27.72 *; Everest Base Camp trek 86.85 28.0 ~");
 s("lower","l-nw-iran","Northwest Iran and the Caucasus link","Tabriz and the road to the Caucasus.",
- "Tabriz 46.29 38.08 *; Kandovan 46.2 37.8 ~; Jolfa 45.63 38.95","check");
-s("lower","l-levant","Levant branch: Jordan","Petra, Wadi Rum and the Dead Sea. The Gulf situation affects this one too, so check.",
- "Amman 35.93 31.95 *; Jerash 35.9 32.28 ~; Dead Sea 35.5 31.5 ~; Petra 35.44 30.33 *; Wadi Rum 35.42 29.58 ~; Aqaba 35.0 29.53 +","check","Aqaba to Nuweiba ferry into Egypt");
+ "Tabriz 46.29 38.08 *; Kandovan 46.2 37.8 ~; Jolfa 45.63 38.95");
+s("lower","l-levant","Levant branch: Jordan","Petra, Wadi Rum and the Dead Sea.",
+ "Amman 35.93 31.95 *; Jerash 35.9 32.28 ~; Dead Sea 35.5 31.5 ~; Petra 35.44 30.33 *; Wadi Rum 35.42 29.58 ~; Aqaba 35.0 29.53 +","Aqaba to Nuweiba ferry into Egypt");
 })(GEP.stage);
 </script>
 <script>
 /* ---- src/data/stages/europe.js ---- */
 /**
  * Stages: Europe, where the arcs meet (St Petersburg to Lisbon) and its branches.
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
@@ -733,9 +723,9 @@ s("europe","","Netherlands and Belgium","Canals, art cities and the rail hub of 
 s("europe","","France: Paris to Bordeaux","The big one in the middle, then the Atlantic side.",
  "Paris 2.35 48.86 *; Rouen 1.1 49.44 ~; Mont-Saint-Michel -1.51 48.64 ~; Tours 0.69 47.39; Bordeaux -0.58 44.84 *; Biarritz -1.56 43.48 ~; Strasbourg 7.75 48.57 ~; Chamonix 6.87 45.92 ~");
 s("europe","","Basque Country, Galicia and Portugal","Along the Atlantic edge to the westernmost point of mainland Europe.",
- "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","","The Atlantic end of the line");
+ "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","The Atlantic end of the line");
 s("europe","e-andalusia","Madrid and Andalusia","From the capital to the south coast, with Tarifa the way to Morocco.",
- "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","","Ferry to Tangier");
+ "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","Ferry to Tangier");
 s("europe","e-med","Rhône, Provence and the Spanish Mediterranean","South from Paris to the sea and on to Barcelona and Valencia.",
  "Lyon 4.83 45.76 *; Avignon 4.81 43.95 ~; Marseille 5.37 43.3 *; Barcelona 2.17 41.39 *; Valencia -0.38 39.47");
 s("europe","e-it-north","Riviera and northern Italy","The coast, Milan and the lakes, then Venice and Trieste.",
@@ -776,19 +766,19 @@ s("europe","e-denmark","Denmark and Gothenburg","Over the Øresund to the Swedis
 /* ---- src/data/stages/africa.js ---- */
 /**
  * Stages: the four Africa arcs (North Africa, Nile and East Africa, Southern Africa loop, West Africa Atlantic).
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
 /* ============ AFRICA: NORTH AFRICA ARC ============ */
 s("an","","Morocco: Tangier to Casablanca","In from Spain by the Tarifa ferry. Blue town, imperial cities, the coast.",
- "Tangier -5.8 35.76 *; Tetouan -5.37 35.57 ~; Chefchaouen -5.26 35.17 *; Volubilis -5.55 34.07 ~; Meknes -5.55 33.9 ~; Fes -5.0 34.03 *; Rabat -6.84 34.02 *; Casablanca -7.59 33.57 *","","Fly or sail on: the Morocco–Algeria land border has been closed for decades, so check");
+ "Tangier -5.8 35.76 *; Tetouan -5.37 35.57 ~; Chefchaouen -5.26 35.17 *; Volubilis -5.55 34.07 ~; Meknes -5.55 33.9 ~; Fes -5.0 34.03 *; Rabat -6.84 34.02 *; Casablanca -7.59 33.57 *","Fly or sail on: the Morocco–Algeria land border has been closed for decades");
 s("an","an-atlas","Atlas and Sahara","Marrakech, the High Atlas and the dunes.",
  "Marrakech -8.0 31.63 *; Aït Benhaddou -7.13 31.05 ~; Ouarzazate -6.9 30.92; Todra Gorge -5.58 31.58 ~; Dades Gorge -5.9 31.5 ~; Merzouga -4.0 31.1 *");
 s("an","","Algeria","Roman ruins, the Casbah and the east.",
- "Oran -0.64 35.7; Tipaza 2.44 36.59 ~; Algiers 3.06 36.75 *; Djemila 5.74 36.32 ~; Constantine 6.61 36.37 *; Timgad 6.47 35.48 ~; Ghardaïa 3.67 32.49 ~","","Ferries link Spain and France with Algeria");
-s("an","","Tunisia","Ferries from Italy, Carthage and the desert south. Libya is skipped for now.",
- "Tunis 10.18 36.8 *; Carthage 10.33 36.85 ~; Dougga 9.22 36.42 ~; Sousse 10.64 35.83; Kairouan 10.1 35.68 *; El Djem 10.71 35.3 ~; Tozeur 8.13 33.92 *; Douz 9.02 33.46; Matmata 9.97 33.54 ~; Djerba 10.86 33.8 *","","Fly Tunis to Cairo");
+ "Oran -0.64 35.7; Tipaza 2.44 36.59 ~; Algiers 3.06 36.75 *; Djemila 5.74 36.32 ~; Constantine 6.61 36.37 *; Timgad 6.47 35.48 ~; Ghardaïa 3.67 32.49 ~","Ferries link Spain and France with Algeria");
+s("an","","Tunisia","Ferries from Italy, Carthage and the desert south.",
+ "Tunis 10.18 36.8 *; Carthage 10.33 36.85 ~; Dougga 9.22 36.42 ~; Sousse 10.64 35.83; Kairouan 10.1 35.68 *; El Djem 10.71 35.3 ~; Tozeur 8.13 33.92 *; Douz 9.02 33.46; Matmata 9.97 33.54 ~; Djerba 10.86 33.8 *","Fly Tunis to Cairo");
 s("an","","Egypt: Alexandria and Cairo","The Mediterranean coast and the capital.",
  "Alexandria 29.92 31.2 *; Siwa Oasis 25.52 29.2 ~+; Port Said 32.3 31.26 ~; Cairo 31.24 30.04 *; Giza Pyramids 31.13 29.98 ~; Saqqara 31.22 29.87 ~; Fayoum 30.84 29.31 ~");
 s("an","an-western-desert","Western Desert oases","The White Desert loop from Cairo to Luxor.",
@@ -796,17 +786,17 @@ s("an","an-western-desert","Western Desert oases","The White Desert loop from Ca
 
 /* ============ AFRICA: NILE AND EAST AFRICA ARC ============ */
 s("ae","","Egypt: Luxor to Aswan","Temples along the Nile, then the Lake Nasser ferry to Sudan.",
- "Luxor 32.64 25.7 *; Valley of the Kings 32.6 25.74 ~; Edfu 32.87 24.98; Kom Ombo 32.93 24.45 ~; Aswan 32.9 24.09 *; Abu Simbel 31.62 22.34 ~+","","Lake Nasser ferry to Wadi Halfa, or fly to Addis");
+ "Luxor 32.64 25.7 *; Valley of the Kings 32.6 25.74 ~; Edfu 32.87 24.98; Kom Ombo 32.93 24.45 ~; Aswan 32.9 24.09 *; Abu Simbel 31.62 22.34 ~+","Lake Nasser ferry to Wadi Halfa, or fly to Addis");
 s("ae","ae-sinai","Sinai and the Red Sea","Mountains and reefs. The Aqaba–Nuweiba ferry is the way in from Jordan.",
  "St Catherine 33.95 28.56 +; Mount Sinai 33.98 28.54 ~; Nuweiba 34.67 29.03 ~+; Dahab 34.5 28.5 *; Sharm el-Sheikh 34.33 27.91; Hurghada 33.8 27.26 *; Marsa Alam 34.9 25.06");
-s("ae","","Sudan","Pyramids of Meroë and the confluence of the Niles. Overland through Sudan needs a fresh check, otherwise fly Cairo to Addis.",
- "Wadi Halfa 31.33 21.8; Dongola 30.48 19.17; Jebel Barkal 31.85 18.55 ~; Meroë 33.75 16.94 *; Khartoum 32.53 15.5 *; Kassala 36.4 15.45 ~","check");
-s("ae","","Ethiopia: the northern historic circuit","Addis, Lake Tana, Gondar, Axum and the rock churches of Lalibela. Regional conflict makes this one a check.",
- "Addis Ababa 38.76 9.03 *; Bahir Dar 37.39 11.6 *; Gondar 37.47 12.6 *; Simien Mountains 38.0 13.2 ~; Axum 38.72 14.12 *; Mekele 39.47 13.5; Lalibela 39.04 12.03 *; Erta Ale 40.67 13.6 ~; Harar 42.12 9.31 ~","check");
+s("ae","","Sudan","Pyramids of Meroë and the confluence of the Niles. Overland through Sudan, or fly Cairo to Addis.",
+ "Wadi Halfa 31.33 21.8; Dongola 30.48 19.17; Jebel Barkal 31.85 18.55 ~; Meroë 33.75 16.94 *; Khartoum 32.53 15.5 *; Kassala 36.4 15.45 ~");
+s("ae","","Ethiopia: the northern historic circuit","Addis, Lake Tana, Gondar, Axum and the rock churches of Lalibela.",
+ "Addis Ababa 38.76 9.03 *; Bahir Dar 37.39 11.6 *; Gondar 37.47 12.6 *; Simien Mountains 38.0 13.2 ~; Axum 38.72 14.12 *; Mekele 39.47 13.5; Lalibela 39.04 12.03 *; Erta Ale 40.67 13.6 ~; Harar 42.12 9.31 ~");
 s("ae","ae-omo","Rift Valley and Omo","Lakes, Konso villages and the Omo tribes.",
- "Hawassa 38.47 7.06; Arba Minch 37.55 6.04; Jinka 36.57 5.78; Turmi 36.5 4.9 ~; Moyale 39.05 3.52","","Northern Kenya road to Nairobi: check");
+ "Hawassa 38.47 7.06; Arba Minch 37.55 6.04; Jinka 36.57 5.78; Turmi 36.5 4.9 ~; Moyale 39.05 3.52","Northern Kenya road to Nairobi");
 s("ae","","Kenya: Nairobi and the Rift","Safari country. The SGR train runs Nairobi to Mombasa.",
- "Nairobi 36.82 -1.29 *; Lake Nakuru 36.08 -0.37 ~; Lake Naivasha 36.43 -0.77 ~; Mount Kenya 37.31 -0.15 ~; Maasai Mara 35.15 -1.5 *; Amboseli 37.26 -2.65 ~","","Overland south to Arusha");
+ "Nairobi 36.82 -1.29 *; Lake Nakuru 36.08 -0.37 ~; Lake Naivasha 36.43 -0.77 ~; Mount Kenya 37.31 -0.15 ~; Maasai Mara 35.15 -1.5 *; Amboseli 37.26 -2.65 ~","Overland south to Arusha");
 s("ae","ae-swahili","Swahili coast","Mombasa down through Zanzibar to Mozambique Island.",
  "Mombasa 39.67 -4.04 *; Lamu 40.9 -2.27 ~+; Diani Beach 39.57 -4.3 ~; Tanga 39.1 -5.07; Zanzibar Stone Town 39.19 -6.16 *; Dar es Salaam 39.28 -6.79 *; Kilwa Kisiwani 39.5 -8.96 ~; Mtwara 40.19 -10.27; Pemba (Mozambique) 40.52 -12.97 ~; Mozambique Island 40.73 -15.03 *");
 s("ae","ae-gorillas","Uganda and Rwanda","The source of the Nile and the mountain gorillas.",
@@ -841,7 +831,7 @@ s("as","as-islands","Madagascar and Mauritius","Optional island branch, by air."
  "Antananarivo 47.5 -18.9 *; Andasibe 48.4 -18.95 ~; Antsirabe 47.03 -19.87; Ranomafana 47.45 -21.25 ~; Isalo 45.4 -22.55 ~; Morondava Baobab Avenue 44.42 -20.25 ~; Nosy Be 48.27 -13.3 ~; Port Louis (Mauritius) 57.5 -20.16 ~");
 
 /* ============ AFRICA: WEST AFRICA ATLANTIC ARC ============ */
-s("aw","","Morocco's Atlantic coast and Western Sahara","South from Marrakech to the Sahara coast. The status of Western Sahara needs a check.",
+s("aw","","Morocco's Atlantic coast and Western Sahara","South from Marrakech to the Sahara coast.",
  "Essaouira -9.77 31.51 *; Agadir -9.6 30.43; Sidi Ifni -10.17 29.38 ~; Laâyoune -13.2 27.15; Dakhla -15.96 23.7 *");
 s("aw","","Mauritania","Desert coast, the ore train and the oases.",
  "Nouadhibou -17.0 20.93; Nouakchott -15.98 18.08 *; Atar -13.05 20.52 ~; Chinguetti -12.37 20.46 ~");
@@ -855,8 +845,8 @@ s("aw","","Togo, Benin and Nigeria","Lomé to Lagos.",
  "Lomé 1.22 6.13 *; Ouidah 2.09 6.37 ~; Cotonou 2.42 6.37; Abomey 1.99 7.18 ~; Lagos 3.38 6.52 *; Benin City 5.63 6.34 ~; Calabar 8.33 4.95 ~");
 s("aw","","Cameroon and Gabon","The Gulf of Guinea's far corner.",
  "Douala 9.7 4.05 *; Limbe 9.2 4.02 ~; Yaoundé 11.5 3.85 ~; Libreville 9.45 0.39 *");
-s("aw","aw-sahel","The Sahel","Bamako, Timbuktu, Dogon country and Niamey. The Sahel needs a fresh check before anything is booked.",
- "Bamako -8.0 12.64 *; Djenné -4.55 13.9 ~; Mopti -4.2 14.5; Bandiagara (Dogon) -3.6 14.35 ~; Timbuktu -3.0 16.77 ~+; Ouagadougou -1.52 12.37 *; Niamey 2.11 13.51 *; Agadez 7.99 16.97 ~","check");
+s("aw","aw-sahel","The Sahel","Bamako, Timbuktu, Dogon country and Niamey.",
+ "Bamako -8.0 12.64 *; Djenné -4.55 13.9 ~; Mopti -4.2 14.5; Bandiagara (Dogon) -3.6 14.35 ~; Timbuktu -3.0 16.77 ~+; Ouagadougou -1.52 12.37 *; Niamey 2.11 13.51 *; Agadez 7.99 16.97 ~");
 s("aw","aw-capeverde","Cabo Verde","Optional island branch, by air.",
  "Praia -23.51 14.92 *; Mindelo -24.99 16.89; Santo Antão -25.1 17.05 ~");
 })(GEP.stage);
@@ -865,7 +855,7 @@ s("aw","aw-capeverde","Cabo Verde","Optional island branch, by air.",
 /* ---- src/data/stages/americas.js ---- */
 /**
  * Stages: the three Americas arcs (North, Central, South).
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
@@ -877,7 +867,7 @@ s("na","","Yukon, Alberta and British Columbia","The Alaska Highway south, the R
 s("na","","Pacific Northwest","Seattle, the Olympic coast and Oregon.",
  "Seattle -122.33 47.61 *; Olympic NP -123.6 47.8 ~; Mount Rainier -121.76 46.85 ~; Portland -122.68 45.52 *; Cannon Beach -123.96 45.89 ~; Crater Lake -122.1 42.94 ~");
 s("na","","California","The coast road to the border.",
- "Redwood NP -124.0 41.3 *; San Francisco -122.42 37.77 *; Yosemite -119.54 37.85 ~; Monterey -121.89 36.6 ~; Big Sur -121.8 36.27 ~; Santa Barbara -119.7 34.42 ~; Los Angeles -118.24 34.05 *; Death Valley -116.9 36.5 ~; Joshua Tree -115.9 33.9 ~; San Diego -117.16 32.72 *","","Cross into Mexico at Tijuana");
+ "Redwood NP -124.0 41.3 *; San Francisco -122.42 37.77 *; Yosemite -119.54 37.85 ~; Monterey -121.89 36.6 ~; Big Sur -121.8 36.27 ~; Santa Barbara -119.7 34.42 ~; Los Angeles -118.24 34.05 *; Death Valley -116.9 36.5 ~; Joshua Tree -115.9 33.9 ~; San Diego -117.16 32.72 *","Cross into Mexico at Tijuana");
 s("na","na-canada","Across Canada: prairies to the Great Lakes","By road or The Canadian rail line, east from the Rockies.",
  "Saskatoon -106.67 52.13; Winnipeg -97.14 49.9 *; Churchill -94.17 58.77 ~; Thunder Bay -89.25 48.38");
 s("na","na-canada","Ontario, Quebec and the Maritimes","From Toronto to the Atlantic.",
@@ -913,13 +903,13 @@ s("ca","","Nicaragua","Colonial cities and the volcano island.",
 s("ca","","Costa Rica","Cloud forest, volcanoes and two coasts.",
  "Arenal -84.7 10.46 ~; Monteverde -84.8 10.3 *; San José -84.08 9.93 *; Tortuguero -83.5 10.54 ~; Manuel Antonio -84.15 9.39 ~; Puerto Viejo -82.8 9.65 ~");
 s("ca","","Panama","The canal, islands and the end of the road at the Darién Gap.",
- "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","","No road across the Darién Gap: fly or sail to Colombia");
+ "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","No road across the Darién Gap: fly or sail to Colombia");
 s("ca","ca-caribbean","Cuba","From Cancún across to the island.",
  "Havana -82.37 23.14 *; Viñales -83.7 22.62 ~; Trinidad -80.0 21.8 *; Santiago de Cuba -75.83 20.02 *");
 s("ca","ca-caribbean","Jamaica","Reggae and the Blue Mountains.",
  "Kingston -76.8 17.97 *; Blue Mountains -76.6 18.05 ~");
-s("ca","ca-caribbean","Haiti","Needs a fresh check before anything is planned.",
- "Port-au-Prince -72.34 18.54 *","check");
+s("ca","ca-caribbean","Haiti","Port-au-Prince, on the western side of Hispaniola.",
+ "Port-au-Prince -72.34 18.54 *");
 s("ca","ca-caribbean","Dominican Republic and Puerto Rico","Colonial Santo Domingo and the island chain.",
  "Santo Domingo -69.9 18.48 *; Samaná -69.3 19.2 ~; Punta Cana -68.4 18.58 ~; San Juan -66.1 18.47 *");
 
@@ -937,7 +927,7 @@ s("sa","","Chile: north and central","Atacama, then the wine valleys and Santiag
 s("sa","","Chile: lakes, Chiloé and the Carretera Austral","Volcanoes, islands and Chile's southern road.",
  "Pucón -71.95 -39.28 *; Valdivia -73.25 -39.82 ~; Puerto Varas -72.98 -41.32; Chiloé (Castro) -73.76 -42.48 *; Coyhaique -72.07 -45.57 *; Puerto Río Tranquilo -72.6 -46.6 ~; Villa O'Higgins -72.56 -48.47");
 s("sa","","Patagonia to the end of the world","Glaciers, granite and Ushuaia.",
- "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","","The southern end");
+ "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","The southern end");
 s("sa","sa-argentina","Argentina and Uruguay","The northwest, Mendoza, Buenos Aires and the river across to Uruguay.",
  "Purmamarca -65.5 -23.74 ~; Salta -65.41 -24.79 *; Cafayate -65.97 -26.07 ~; Mendoza -68.84 -32.89 *; Córdoba -64.18 -31.42; Buenos Aires -58.38 -34.6 *; Colonia -57.84 -34.47 ~; Montevideo -56.19 -34.9 *; Punta del Este -54.95 -34.96 ~; Bariloche -71.31 -41.13 ~");
 s("sa","sa-brazil","Brazil: Iguazú to Rio","Waterfalls, then the southern coast and Rio.",
@@ -946,8 +936,8 @@ s("sa","sa-brazil","Brazil: the northeast coast","Salvador to Fortaleza and the 
  "Salvador -38.5 -12.97 *; Chapada Diamantina -41.4 -12.6 ~; Recife -34.88 -8.05 *; Fortaleza -38.54 -3.73 *; Jericoacoara -40.5 -2.8 ~; Lençóis Maranhenses -43.0 -2.5 ~; São Luís -44.3 -2.53");
 s("sa","sa-amazon","Amazon river route","By boat from Iquitos to Belém.",
  "Tena -77.8 -0.99 ~; Iquitos -73.25 -3.75 *; Leticia -69.94 -4.2; Manaus -60.02 -3.12 *; Santarém -54.7 -2.44 ~; Belém -48.5 -1.46 *");
-s("sa","sa-venezuela","Venezuela","Angel Falls and the Caribbean coast. Needs a fresh check.",
- "Mérida (Venezuela) -71.14 8.6 ~; Caracas -66.9 10.48 *; Los Roques -66.75 11.85 ~; Angel Falls -62.5 5.97 *; Roraima -60.76 5.14 ~","check");
+s("sa","sa-venezuela","Venezuela","Angel Falls and the Caribbean coast.",
+ "Mérida (Venezuela) -71.14 8.6 ~; Caracas -66.9 10.48 *; Los Roques -66.75 11.85 ~; Angel Falls -62.5 5.97 *; Roraima -60.76 5.14 ~");
 s("sa","sa-venezuela","The Guianas","Guyana, Suriname and French Guiana.",
  "Georgetown -58.16 6.8; Paramaribo -55.2 5.85; Cayenne -52.33 4.94");
 })(GEP.stage);
@@ -1101,7 +1091,6 @@ GEP.model = (function () {
     stages.forEach(s => {
       if (s.branch && !branches[s.branch]) out.push("Stage '" + s.name + "' uses unknown branch " + s.branch);
       if (s.branch && branches[s.branch] && branches[s.branch].arc !== s.arc) out.push("Stage '" + s.name + "' branch belongs to another arc");
-      if (!GEP.STATUS_LABEL[s.status]) out.push("Stage '" + s.name + "' has unknown status " + s.status);
       if (!s.pts || !s.pts.length) out.push("Stage '" + s.name + "' has no stops");
     });
     return out;
@@ -1807,7 +1796,7 @@ GEP.panzoom = (function () {
  *
  * UI state shape:
  *   { tab: "eurasia", view: 0 (preset on screen, -1 after free pan or zoom), selection: null | {arc, branch|null},
- *     filterArc: "all" | arcId, filterStatus: "all" | status, query: "" }
+ *     filterArc: "all" | arcId, query: "" }
  *
  * Exposes: GEP.views = { renderAll, renderNav, renderHero, renderStats, renderMapChrome, renderViewButtons,
  *                        renderArcs, renderFilters, renderStages, renderWays }
@@ -1842,10 +1831,9 @@ GEP.views = (function () {
     stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
     const arcList = model.arcIds(state.tab);
     const branchCount = arcList.reduce((sum, id) => sum + model.branchIds(id).length, 0);
-    const count = status => stages.filter(s => s.status === status).length;
     const items = [
       [stages.length, "stages"], [stopNames.size, "stops"], [arcList.length, "arcs"],
-      [branchCount, "branches"], [count("next"), "next up"], [count("check"), "check first"]
+      [branchCount, "branches"]
     ];
     $("stats").innerHTML = items.map(([n, label]) => `<div class="stat"><div class="n">${n}</div><div class="l">${label}</div></div>`).join("");
   }
@@ -1886,7 +1874,6 @@ GEP.views = (function () {
     const selection = state.selection;
     $("arcs").innerHTML = model.arcIds(state.tab).map(arcId => {
       const arc = arcs[arcId], stages = model.stagesOfArc(arcId);
-      const done = stages.filter(s => s.status === "done").length;
       const stopNames = new Set();
       stages.forEach(s => s.pts.forEach(p => stopNames.add(p.name)));
       const branchList = model.branchIds(arcId);
@@ -1896,8 +1883,7 @@ GEP.views = (function () {
       return `<div class="arc${arcSelected && selection.branch === null ? " on" : ""}" style="--c:${arc.color}" data-arc="${arcId}">
         <h3>${esc(arc.name)} <em>${esc(arc.code)}</em></h3>
         <div class="route">${esc(arc.route)}</div>
-        <div class="meta">${stages.length} stages · ${stopNames.size} stops · ${branchList.length} branches · ${done} done</div>
-        <div class="bar"><div style="width:${stages.length ? Math.round(done / stages.length * 100) : 0}%"></div></div>
+        <div class="meta">${stages.length} stages · ${stopNames.size} stops · ${branchList.length} branches</div>
         <div class="meta" style="margin-top:8px">Trunk and branches, tap to show on the map</div>
         <div class="brs">${chip("", "Trunk", " tr")}${branchList.map(id => chip(id, branches[id].name, "")).join("")}</div>
       </div>`;
@@ -1910,16 +1896,12 @@ GEP.views = (function () {
     const button = (attr, value, text, on) => `<button class="btn${on ? " on" : ""}" data-${attr}="${value}">${esc(text)}</button>`;
     const arcButtons = model.arcIds(state.tab).map(id =>
       button("filter-arc", id, arcs[id].code + " · " + arcs[id].name.replace(/ arc$/, ""), state.filterArc === id));
-    const statusButtons = ["all", "next", "planned", "check", "done"].map(status =>
-      button("filter-status", status, status === "all" ? "Any status" : GEP.STATUS_LABEL[status], state.filterStatus === status));
-    $("filters").innerHTML = button("filter-arc", "all", "All arcs", state.filterArc === "all") + arcButtons.join("") +
-      `<span class="sep"></span>` + statusButtons.join("");
+    $("filters").innerHTML = button("filter-arc", "all", "All arcs", state.filterArc === "all") + arcButtons.join("");
   }
 
-  /** Does a stage pass the arc, status and search filters? */
+  /** Does a stage pass the arc filter and the search query? */
   function matchesFilters(stage, state) {
     if (state.filterArc !== "all" && stage.arc !== state.filterArc) return false;
-    if (state.filterStatus !== "all" && stage.status !== state.filterStatus) return false;
     return state.query.toLowerCase().split(/\s+/).filter(Boolean).every(word => stage.searchText.includes(word));
   }
 
@@ -1939,7 +1921,7 @@ GEP.views = (function () {
     const hasHub = stage.pts.some(p => p.hub);
     const where = stage.branch ? "Branch: " + branches[stage.branch].name : "Trunk of " + arc.name;
     return `<div class="stage" id="${stage.id}" style="--c:${arc.color}">
-      <div class="top"><span class="code">${esc(stage.code)}</span><span class="pill p-${stage.status}">${GEP.STATUS_LABEL[stage.status]}</span></div>
+      <div class="top"><span class="code">${esc(stage.code)}</span></div>
       <h4>${esc(stage.name)}${hasHub ? '<span class="hubtag">modern hub</span>' : ""}</h4>
       <div class="bd${stage.branch ? "" : " trunk"}">${esc(where)}</div>
       <div class="note">${esc(stage.note)}</div>
@@ -1964,7 +1946,7 @@ GEP.views = (function () {
       if (!matching.length) return;
       shown += matching.length;
       html += `<section class="group" style="--c:${arc.color}"><div class="ghead"><h3>${esc(arc.code)} · ${esc(arc.name)}</h3><span>${esc(arc.route)}</span></div>`;
-      html += stageGroup("Trunk", "the spine of the arc, in travel order", false, matching.filter(s => !s.branch));
+      html += stageGroup("Trunk", "the spine of the arc, in route order", false, matching.filter(s => !s.branch));
       model.branchIds(arcId).forEach(branchId => {
         const b = branches[branchId];
         html += stageGroup("Branch: " + b.name, "leaves at " + b.from + (b.to ? ", rejoins at " + b.to : ""), true, matching.filter(s => s.branch === branchId));
@@ -2011,7 +1993,7 @@ GEP.views = (function () {
   const {tabs} = GEP.data;
 
   /** The one mutable object. views.js and map.js only read it. */
-  const state = {tab: "eurasia", view: 0, selection: null, filterArc: "all", filterStatus: "all", query: ""};
+  const state = {tab: "eurasia", view: 0, selection: null, filterArc: "all", query: ""};
 
   /** Pan/zoom controller. It calls render() whenever the map needs drawing, and onChange() after it did. */
   const mapView = GEP.panzoom.create({
@@ -2025,7 +2007,7 @@ GEP.views = (function () {
 
   /** Reset everything that belongs to one page, then show the requested zoom view. */
   function openTab(tabId, viewIndex) {
-    Object.assign(state, {tab: tabId, view: viewIndex, selection: null, filterArc: "all", filterStatus: "all", query: ""});
+    Object.assign(state, {tab: tabId, view: viewIndex, selection: null, filterArc: "all", query: ""});
     $("q").value = "";
     GEP.views.renderAll(state);
     mapView.load(tabs[tabId].views, viewIndex);
@@ -2047,7 +2029,7 @@ GEP.views = (function () {
 
   /** Clear filters, show the stage card for a map dot, scroll to it and flash it. */
   function jumpToStage(stageId) {
-    Object.assign(state, {filterArc: "all", filterStatus: "all", query: ""});
+    Object.assign(state, {filterArc: "all", query: ""});
     $("q").value = "";
     GEP.views.renderFilters(state);
     GEP.views.renderStages(state);
@@ -2080,7 +2062,6 @@ GEP.views = (function () {
     const target = event.target;
     const viewButton = target.closest("[data-view]");
     const arcFilter = target.closest("[data-filter-arc]");
-    const statusFilter = target.closest("[data-filter-status]");
     const chip = target.closest(".br");
     const arcCard = target.closest(".arc");
     const dot = target.closest(".dot");
@@ -2088,10 +2069,6 @@ GEP.views = (function () {
       mapView.fitView(Number(viewButton.dataset.view));
     } else if (arcFilter) {
       state.filterArc = arcFilter.dataset.filterArc;
-      GEP.views.renderFilters(state);
-      GEP.views.renderStages(state);
-    } else if (statusFilter) {
-      state.filterStatus = statusFilter.dataset.filterStatus;
       GEP.views.renderFilters(state);
       GEP.views.renderStages(state);
     } else if (chip) {

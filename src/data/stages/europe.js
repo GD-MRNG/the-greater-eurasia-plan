@@ -1,6 +1,6 @@
 /**
  * Stages: Europe, where the arcs meet (St Petersburg to Lisbon) and its branches.
- * One s(...) call per stage, in travel order. See the schema in shared.js.
+ * One s(...) call per stage, along the route. See the schema in shared.js.
  * Depends on: shared.js (GEP.stage).  Exposes: nothing (registers stages).
  */
 (function (s) {
@@ -15,9 +15,9 @@ s("europe","","Netherlands and Belgium","Canals, art cities and the rail hub of 
 s("europe","","France: Paris to Bordeaux","The big one in the middle, then the Atlantic side.",
  "Paris 2.35 48.86 *; Rouen 1.1 49.44 ~; Mont-Saint-Michel -1.51 48.64 ~; Tours 0.69 47.39; Bordeaux -0.58 44.84 *; Biarritz -1.56 43.48 ~; Strasbourg 7.75 48.57 ~; Chamonix 6.87 45.92 ~");
 s("europe","","Basque Country, Galicia and Portugal","Along the Atlantic edge to the westernmost point of mainland Europe.",
- "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","","The Atlantic end of the line");
+ "San Sebastián -1.98 43.32; Bilbao -2.93 43.26 *; Santiago de Compostela -8.54 42.88 *; Porto -8.61 41.15 *; Lisbon -9.14 38.72 *; Sintra -9.39 38.8 ~; Cabo da Roca -9.5 38.78 ~; Évora -7.91 38.57 ~; Lagos -8.67 37.1 ~; Sagres -8.94 37.0 ~","The Atlantic end of the line");
 s("europe","e-andalusia","Madrid and Andalusia","From the capital to the south coast, with Tarifa the way to Morocco.",
- "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","","Ferry to Tangier");
+ "Burgos -3.7 42.34 ~; Madrid -3.7 40.42 *; Segovia -4.12 40.95 ~; Toledo -4.02 39.86 ~; Córdoba -4.78 37.89; Seville -5.98 37.39 *; Granada -3.6 37.18 *; Málaga -4.42 36.72; Ronda -5.17 36.74 ~; Tarifa -5.6 36.01 *","Ferry to Tangier");
 s("europe","e-med","Rhône, Provence and the Spanish Mediterranean","South from Paris to the sea and on to Barcelona and Valencia.",
  "Lyon 4.83 45.76 *; Avignon 4.81 43.95 ~; Marseille 5.37 43.3 *; Barcelona 2.17 41.39 *; Valencia -0.38 39.47");
 s("europe","e-it-north","Riviera and northern Italy","The coast, Milan and the lakes, then Venice and Trieste.",

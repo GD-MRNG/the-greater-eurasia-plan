@@ -3,8 +3,8 @@
  * check-data.js: sanity-checks the data files without a browser.
  *
  * Loads shared.js, every data file (in the order listed in index.html) and model.js
- * inside a sandbox with no DOM, then runs GEP.model.validate(): unknown arcs, branches or
- * statuses, missing "from"/"to" stops, unparseable stop strings, branches without stages.
+ * inside a sandbox with no DOM, then runs GEP.model.validate(): unknown arcs or branches,
+ * missing "from"/"to" stops, unparseable stop strings, branches without stages.
  *
  * Usage:  node tools/check-data.js     (exit code 1 when problems are found)
  */
@@ -30,10 +30,8 @@ Object.keys(tabs).forEach(tabId => {
   const list = GEP.model.stagesOfTab(tabId);
   const names = new Set();
   list.forEach(s => s.pts.forEach(p => names.add(p.name)));
-  const count = status => list.filter(s => s.status === status).length;
   console.log(tabId.padEnd(9) + list.length + " stages, " + names.size + " stops, " + GEP.model.arcIds(tabId).length + " arcs, " +
-    GEP.model.arcIds(tabId).reduce((n, a) => n + GEP.model.branchIds(a).length, 0) + " branches" +
-    " (next " + count("next") + ", check " + count("check") + ", done " + count("done") + ")");
+    GEP.model.arcIds(tabId).reduce((n, a) => n + GEP.model.branchIds(a).length, 0) + " branches");
 });
 
 if (problems.length) {

@@ -2,7 +2,7 @@
 
 A single-page route dashboard for exploring Eurasia, Africa and the Americas. It shows each region as a set of
 **arcs** (a trunk plus named branches), every stop as a dot on an inline SVG sketch map you can pan and zoom,
-and every stage as a searchable, filterable card with a status pill.
+and every stage as a searchable, filterable card.
 
 It is plain HTML, CSS and JavaScript with **no dependencies and no network access**. There are two equivalent ways to open it:
 
@@ -150,12 +150,12 @@ There are five kinds of record.
 | **Arc** | `src/data/arcs.js` | `tab`, `code` (letters used in stage codes), `name`, `color`, `route` (summary), optional `from` (stop the trunk starts from) |
 | **Branch** | `src/data/branches.js` | `arc`, `name`, `from` (stop where it leaves), optional `to` (stop where it rejoins) |
 | **Entry** | `src/data/entries.js` | `at: [lon, lat]` plus a label per tab that shows the diamond |
-| **Stage** | `src/data/stages/*.js` | `arc`, `branch` (`""` = trunk), `name`, `note`, `stops`, `status`, `onward` |
+| **Stage** | `src/data/stages/*.js` | `arc`, `branch` (`""` = trunk), `name`, `note`, `stops`, `onward` |
 
-A stage is one call, in travel order:
+A stage is one call, along the route:
 
 ```js
-s(arc, branch, name, note, stops, status, onward)
+s(arc, branch, name, note, stops, onward)
 ```
 
 Example (from `src/data/stages/silk.js`):
@@ -166,12 +166,11 @@ s("silk", "", "Kazakhstan: Almaty and the southeast",
   "Almaty 76.95 43.24 *^; Charyn Canyon 79.1 43.35 ~; Kolsay Lakes 78.3 42.9 ~; Medeu 77.06 43.16 ~");
 ```
 
-A branch stage names its branch id, and may carry a status and an onward line (illustrative):
+A branch stage names its branch id, and may carry an onward line (illustrative):
 
 ```js
-s("silk", "s-kkh", "Karakoram Highway and the CPEC link", "From Kashgar over the Khunjerab Pass to Pakistan.",
-  "Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Khunjerab Pass 75.42 36.85 *", "check",
-  "Continue into Pakistan");
+s("silk", "s-kkh", "Karakoram Highway and the CPEC link", "From Kashgar over the Khunjerab Pass to Pakistan. The pass is seasonal.",
+  "Kashgar 75.99 39.47 *^; Tashkurgan 75.23 37.77 +; Khunjerab Pass 75.42 36.85 *");
 ```
 
 **Stop strings** are `"Name lon lat flags; Name lon lat flags; ..."`: longitude first, then latitude, in decimal degrees
@@ -185,8 +184,7 @@ s("silk", "s-kkh", "Karakoram Highway and the CPEC link", "From Kashgar over the
 | `^` | modern corridor hub: gold ring (used on the Modern Silk Road) |
 | none | small dot, labelled only when zoomed in; the name shows on hover |
 
-**Statuses:** `""` or omitted = Planned, `"next"` = Next up, `"done"` = Done, `"check"` = Check first (needs a fresh
-safety and logistics check before booking). There are no dates or budgets in the data on purpose.
+There are no dates, budgets, or per-stage progress markers in the data on purpose.
 
 **Rules:** stop names are looked up across all tabs and the first one wins, so two different places must not share a name
 (the repo uses `La Paz (Baja)`). Every branch needs at least one stage. `tools/check-data.js` enforces this.
@@ -195,9 +193,7 @@ safety and logistics check before booking). There are no dates or budgets in the
 
 After any change run `node tools/check-data.js`, then `node tools/build.js`.
 
-- **Change a status.** Edit the 6th argument of the stage in `src/data/stages/*.js`: `"next"`, `"done"`, `"check"`, or `""`.
-  Use the card name or search the stop to find it. Counts and filters update by themselves.
-- **Add a stop.** Add `Name lon lat flags` to the stage's `stops` string, in travel order. If it is a detour, add `~`.
+- **Add a stop.** Add `Name lon lat flags` to the stage's `stops` string, in the order it sits on the route. If it is a detour, add `~`.
   If it should be labelled on the overview map, add `*` or `+`.
 - **Remove a stop.** Delete it from the string. If a branch or arc `from`/`to` pointed to it, the check tells you.
 - **Add a stage.** Add an `s(...)` call at the right place in the arc's file. Order in the file is order on the page and on the line.
@@ -239,7 +235,7 @@ Short version: no mapping software, no map tiles, no image editor and no framewo
 - The coastlines in `src/data/land.js` are coarse polygons typed in by hand as lists of "lon,lat" points, from general knowledge of where coasts lie. They are not survey data or downloaded shapefiles, which is why some coastal cities sit slightly off the coast.
 - Pan and zoom (`src/js/panzoom.js`) keeps a "camera" (centre lon/lat and a scale). While you drag or pinch, the SVG is moved with a CSS transform for smoothness; when you stop, `map.js` redraws from the new camera.
 
-**The content came from general travel and geography knowledge, not a live database.** Stops, branches, coordinates and notes were written out as data by the assistant that built this (Glenn's Grok Bot), and the "Check first" statuses reflect the travel advisories noted on 3 Nov 2026. Treat coordinates as approximate and verify routes before travelling.
+**The content came from general travel and geography knowledge, not a live database.** Stops, branches, coordinates and notes were written out as data by the assistant that built this (Glenn's Grok Bot). Treat coordinates as approximate and verify routes before travelling.
 
 **Tools used to build and check it.** A text editor and Node.js (for `tools/build.js` and `tools/check-data.js`, no npm packages), plus headless Google Chrome to load every tab, catch console errors, drive mouse, wheel and touch input for the pan/zoom tests, and take the screenshots in `docs/previews/`. Those test scripts were throwaway and are not shipped.
 
@@ -254,13 +250,12 @@ Short version: no mapping software, no map tiles, no image editor and no framewo
 ## Known limitations
 
 - **The map is a rough sketch, not to scale.** Outlines are hand-made and coarse, and coordinates are approximate. Do not navigate with it.
-- **Content is from memory.** Routes, border crossings and rail corridors need a fresh check before any trip. The Modern Silk Road arc lists
+- **Content is from memory.** Routes, border crossings and rail corridors are approximate. The Modern Silk Road arc lists
   corridors and hubs but deliberately gives no opening dates or timetables.
 - **Deliberately left out:** Ukraine, Belarus, Moldova, and Libya. Algeria is reachable but the Morocco and Algeria border is closed.
-- **Caspian crossing:** the Aktau and Baku link is by cargo ferry, and passenger rules need checking.
-- **Check first** marks places affected by war, closures or the Strait of Hormuz (Russia, Iran, the Gulf, Sudan, the Sahel, Venezuela, Haiti and others). Nothing is auto-updated.
+- **Caspian crossing:** the Aktau and Baku link is by cargo ferry, and passenger service is limited.
 - **Dense areas drop labels.** On the whole-route Eurasia view some labels in Europe are hidden. Use a zoom view; hover any dot for its name.
 - **Phones:** the map fits the width, so the whole-route view is dense until you zoom; the map must be activated (tap it or Move map) before one finger pans.
 - **Wheel zoom captures scrolling** while the pointer is over the map on desktop. Scroll the page from outside the map.
-- **No dates, budgets, or sync.** There is no backend, saved state or user accounts. Status changes mean editing the data and rebuilding.
+- **No dates, budgets, or sync.** There is no backend, saved state or user accounts. Content changes mean editing the data and rebuilding.
 - **No automated tests** are shipped beyond `tools/check-data.js`. The pan/zoom was checked by hand-written browser scripts that are not part of this repo, so click through after bigger changes.
