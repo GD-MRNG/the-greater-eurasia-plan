@@ -20,6 +20,10 @@ s("upper","u-korea-east","Korea's east coast","Mountains and sea between Seoul a
  "Sokcho 128.59 38.2 +; Seoraksan 128.47 38.12 ~; Gangneung 128.9 37.75; Samcheok 129.17 37.45; Pohang 129.37 36.03");
 s("upper","u-korea-sw","Southwest Korea and Jeju","Food capital, tea fields and the island.",
  "Jeonju 127.15 35.82; Gwangju 126.85 35.16; Suncheon 127.49 34.95 ~; Mokpo 126.39 34.81; Jeju 126.53 33.5 *; Seogwipo 126.56 33.25 ~");
+s("upper","u-north-korea","North Korea","Pyongyang and the cities up the peninsula.",
+ "Kaesong 126.56 37.97; Pyongyang 125.75 39.02 *; Nampo 125.41 38.74 ~; Wonsan 127.44 39.15; Mount Kumgang 128.32 38.66 ~; Hamhung 127.54 39.92; Chongjin 129.78 41.79; Sinuiju 124.4 40.1 ~");
+s("upper","u-taiwan","Taiwan","The island's cities, from the north down the west coast.",
+ "Taipei 121.57 25.03 *; Jiufen 121.84 25.11 ~; Taroko 121.62 24.16 ~; Hualien 121.61 23.98 ~; Taichung 120.68 24.15; Tainan 120.2 23.0; Kaohsiung 120.3 22.63 *; Kenting 120.8 21.95 ~");
 s("upper","","Northern China: Beijing and the Great Wall","Over to Beijing, then the Trans-Mongolian line north.",
  "Tianjin 117.2 39.1 ~; Beijing 116.4 39.9 *; Mutianyu Great Wall 116.57 40.43 ~; Chengde 117.94 40.97 ~; Datong 113.3 40.08 +; Yungang Grottoes 113.13 40.11 ~; Hohhot 111.67 40.84 ~; Erenhot 111.98 43.65","Train to Ulaanbaatar");
 s("upper","u-northeast","Northeast China","Old Manchuria, ice and Russian echoes.",
@@ -41,7 +45,7 @@ s("upper","","Russia: the Urals and the Volga","Across the Europe–Asia line to
 s("upper","","Russia: Moscow and the Golden Ring","The capital and the old towns around it.",
  "Vladimir 40.4 56.13 ~; Suzdal 40.43 56.42 ~; Sergiev Posad 38.13 56.3 ~; Moscow 37.62 55.75 *");
 s("upper","","Russia: Tver, Novgorod and St Petersburg","The imperial end of the line.",
- "Tver 35.9 56.86; Veliky Novgorod 31.27 58.52 ~; St Petersburg 30.32 59.94 *; Vyborg 28.75 60.7 ~","Overland to Finland or the Baltics, border rules permitting");
+ "Tver 35.9 56.86; Veliky Novgorod 31.27 58.52 ~; St Petersburg 30.32 59.94 *; Vyborg 28.75 60.7 ~","Overland to Finland or the Baltics");
 s("upper","u-far-east","Russian Far East","The east end of the Trans-Siberian and the Pacific side.",
  "Suifenhe 131.15 44.4 ~; Vladivostok 131.9 43.12 *; Ussuriysk 131.95 43.8 ~; Khabarovsk 135.08 48.48 *; Birobidzhan 132.9 48.8; Chita 113.5 52.03");
 s("upper","u-karelia","Karelia, Kola and Murmansk","Wooden churches, White Sea and the Arctic.",

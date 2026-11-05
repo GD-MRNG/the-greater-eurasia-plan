@@ -16,13 +16,15 @@ s("na","","California","The coast road to the border.",
 s("na","na-canada","Across Canada: prairies to the Great Lakes","By road or The Canadian rail line, east from the Rockies.",
  "Saskatoon -106.67 52.13; Winnipeg -97.14 49.9 *; Churchill -94.17 58.77 ~; Thunder Bay -89.25 48.38");
 s("na","na-canada","Ontario, Quebec and the Maritimes","From Toronto to the Atlantic.",
- "Toronto -79.38 43.65 *; Niagara Falls -79.07 43.09 *; Ottawa -75.7 45.42; Montréal -73.57 45.5 *; Québec City -71.21 46.81 *; Halifax -63.57 44.65 *; Cape Breton -60.4 46.5 ~; Charlottetown -63.13 46.24 ~; St. John's -52.71 47.56 ~");
+ "Toronto -79.38 43.65 *; Niagara Falls -79.07 43.09 *; Ottawa -75.7 45.42; Montréal -73.57 45.5 *; Québec City -71.21 46.81 *; Halifax -63.57 44.65 *; Cape Breton -60.4 46.5 ~; Charlottetown -63.13 46.24 ~; St. John's -52.71 47.56 +");
+s("na","na-greenland","Greenland","The west coast, from the south up to Disko Bay.",
+ "Qaqortoq -46.04 60.72; Nuuk -51.72 64.18 *; Sisimiut -53.67 66.94; Ilulissat -51.1 69.22 *");
 s("na","na-rockies","Rockies and Midwest","Glacier, Yellowstone and the Plains to Chicago.",
  "Glacier NP -113.8 48.7 *; Yellowstone -110.5 44.6 *; Grand Teton -110.8 43.8 ~; Salt Lake City -111.89 40.76 ~; Denver -104.99 39.74 ~+; Rocky Mountain NP -105.7 40.34 ~; Mount Rushmore -103.46 43.88 *; Badlands -102.5 43.8 ~; Minneapolis -93.27 44.98; Chicago -87.63 41.88 *");
 s("na","na-southwest","Southwest and the Deep South","Desert parks, Santa Fe, Texas and New Orleans.",
  "Las Vegas -115.14 36.17 *; Zion -113.03 37.3 ~; Bryce Canyon -112.17 37.59 ~; Grand Canyon -112.11 36.06 *; Monument Valley -110.1 36.98 ~; Sedona -111.76 34.87 ~; Santa Fe -105.94 35.69 *; Austin -97.74 30.27 *; San Antonio -98.49 29.42 ~; New Orleans -90.07 29.95 *; Memphis -90.05 35.15; Nashville -86.78 36.16 *; Great Smoky Mountains -83.5 35.6 ~; Atlanta -84.39 33.75");
 s("na","na-east","East Coast","Boston down to Miami and the Keys.",
- "Boston -71.06 42.36 *; New York -74.0 40.71 *; Philadelphia -75.16 39.95; Washington DC -77.04 38.91 *; Shenandoah -78.4 38.5 ~; Charleston -79.93 32.78 *; Savannah -81.1 32.08 ~; Miami -80.19 25.76 *; Everglades -80.9 25.4 ~; Key West -81.78 24.56 ~");
+ "Boston -71.06 42.36 *; New York -74.0 40.71 *; Philadelphia -75.16 39.95; Washington DC -77.04 38.91 *; Shenandoah -78.4 38.5 ~; Charleston -79.93 32.78 *; Savannah -81.1 32.08 ~; Miami -80.19 25.76 *; Everglades -80.9 25.4 ~; Key West -81.78 24.56 ~; Hamilton (Bermuda) -64.78 32.29 ~*");
 
 /* ============ AMERICAS: CENTRAL AMERICA ARC ============ */
 s("ca","","Northwest Mexico","Over the border at Tijuana, then the Pacific side.",
@@ -49,14 +51,26 @@ s("ca","","Costa Rica","Cloud forest, volcanoes and two coasts.",
  "Arenal -84.7 10.46 ~; Monteverde -84.8 10.3 *; San José -84.08 9.93 *; Tortuguero -83.5 10.54 ~; Manuel Antonio -84.15 9.39 ~; Puerto Viejo -82.8 9.65 ~");
 s("ca","","Panama","The canal, islands and the end of the road at the Darién Gap.",
  "Boquete -82.44 8.78 ~; Bocas del Toro -82.25 9.34 *; Panama City -79.52 8.98 *; Portobelo -79.65 9.55 ~; Guna Yala -78.0 9.55 ~","No road across the Darién Gap: fly or sail to Colombia");
+s("ca","ca-caribbean","Bahamas and Turks and Caicos","The islands north of the Greater Antilles.",
+ "Nassau -77.34 25.06 *; Freeport -78.7 26.53 ~; Providenciales -72.27 21.78 ~*");
 s("ca","ca-caribbean","Cuba","From Cancún across to the island.",
  "Havana -82.37 23.14 *; Viñales -83.7 22.62 ~; Trinidad -80.0 21.8 *; Santiago de Cuba -75.83 20.02 *");
+s("ca","ca-caribbean","Cayman Islands","The islands south of Cuba.",
+ "George Town (Cayman) -81.37 19.29 *");
 s("ca","ca-caribbean","Jamaica","Reggae and the Blue Mountains.",
  "Kingston -76.8 17.97 *; Blue Mountains -76.6 18.05 ~");
 s("ca","ca-caribbean","Haiti","Port-au-Prince, on the western side of Hispaniola.",
  "Port-au-Prince -72.34 18.54 *");
 s("ca","ca-caribbean","Dominican Republic and Puerto Rico","Colonial Santo Domingo and the island chain.",
  "Santo Domingo -69.9 18.48 *; Samaná -69.3 19.2 ~; Punta Cana -68.4 18.58 ~; San Juan -66.1 18.47 *");
+s("ca","ca-caribbean","The Leeward Islands","East from Puerto Rico along the island chain.",
+ "Charlotte Amalie -64.93 18.34 *; Road Town -64.62 18.43; The Valley (Anguilla) -63.05 18.22; Marigot -63.08 18.07 ~; Philipsburg -63.05 18.03 *; Basseterre -62.72 17.3 *; Charlestown (Nevis) -62.63 17.14 ~; St. John's (Antigua) -61.85 17.12 *; Brades -62.21 16.79; Pointe-à-Pitre -61.53 16.24 *");
+s("ca","ca-caribbean","The Windward Islands","South through the Lesser Antilles.",
+ "Roseau -61.39 15.3 *; Fort-de-France -61.07 14.6 *; Castries -61.0 14.01 *; Kingstown -61.22 13.16 *; St. George's -61.75 12.05 *; Bridgetown -59.62 13.1 *");
+s("ca","ca-caribbean","Trinidad and Tobago","The islands off Venezuela.",
+ "Port of Spain -61.51 10.65 *; Scarborough (Tobago) -60.74 11.18");
+s("ca","ca-caribbean","Aruba, Curaçao and Bonaire","The islands along the Venezuelan west coast.",
+ "Oranjestad -70.03 12.52 *; Willemstad -68.93 12.12 *; Kralendijk -68.28 12.15");
 
 /* ============ AMERICAS: SOUTH AMERICA ARC ============ */
 s("sa","","Colombia","Caribbean coast, coffee and the Andes.",
@@ -72,7 +86,9 @@ s("sa","","Chile: north and central","Atacama, then the wine valleys and Santiag
 s("sa","","Chile: lakes, Chiloé and the Carretera Austral","Volcanoes, islands and Chile's southern road.",
  "Pucón -71.95 -39.28 *; Valdivia -73.25 -39.82 ~; Puerto Varas -72.98 -41.32; Chiloé (Castro) -73.76 -42.48 *; Coyhaique -72.07 -45.57 *; Puerto Río Tranquilo -72.6 -46.6 ~; Villa O'Higgins -72.56 -48.47");
 s("sa","","Patagonia to the end of the world","Glaciers, granite and Ushuaia.",
- "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *","The southern end");
+ "El Chaltén -72.89 -49.33 *; El Calafate -72.27 -50.34 +; Perito Moreno -73.0 -50.5 ~; Torres del Paine -72.99 -51.0 *; Puerto Natales -72.5 -51.73 +; Punta Arenas -70.91 -53.16 *; Ushuaia -68.3 -54.8 *; Stanley (Falklands) -57.85 -51.7 ~*","The southern end");
+s("sa","sa-paraguay","Paraguay","The capital and the cities on the Paraná.",
+ "Ciudad del Este -54.62 -25.51 *; Asunción -57.58 -25.29 *; Encarnación -55.87 -27.33 ~");
 s("sa","sa-argentina","Argentina and Uruguay","The northwest, Mendoza, Buenos Aires and the river across to Uruguay.",
  "Purmamarca -65.5 -23.74 ~; Salta -65.41 -24.79 *; Cafayate -65.97 -26.07 ~; Mendoza -68.84 -32.89 *; Córdoba -64.18 -31.42; Buenos Aires -58.38 -34.6 *; Colonia -57.84 -34.47 ~; Montevideo -56.19 -34.9 *; Punta del Este -54.95 -34.96 ~; Bariloche -71.31 -41.13 ~");
 s("sa","sa-brazil","Brazil: Iguazú to Rio","Waterfalls, then the southern coast and Rio.",

@@ -49,16 +49,16 @@ src/
     entries.js                white diamonds: where one page hands over to another
     land.js                   hand-drawn coarse land and water outlines for the map, including Australia, New Zealand, New Guinea and the Pacific islands
     stages/
-      upper.js                Eurasia: the upper arc (Japan, Korea, China, Mongolia, Russia)
+      upper.js                Eurasia: the upper arc (Japan, Korea, Taiwan, China, Mongolia, Russia)
       silk.js                 Eurasia: the Modern Silk Road arc (Xi'an to Istanbul, Karakoram link)
-      lower.js                Eurasia: the lower arc (Southeast Asia, India, Nepal)
-      europe.js               Eurasia: Europe, from Poland and the Baltics to Lisbon, with Greece and Türkiye
-      africa.js               Africa: four arcs (north, east, south, west)
-      americas.js             Americas: North, Central and South America arcs
+      lower.js                Eurasia: the lower arc (Southeast Asia, India, the Gulf, the Levant)
+      europe.js               Eurasia: Europe, from the Baltics and Poland to Lisbon, with Iceland, Greece and Türkiye
+      africa.js               Africa: four arcs (north, east, south, west), including the Sahel, the Horn and the islands
+      americas.js             Americas: North, Central and South America, with the Caribbean
       oceania.js              Oceania: eastern Indonesia and New Guinea, Australia, New Zealand, the Pacific
 tools/
   build.js                    bundles index.html and src/ into greater-eurasia-plan.html
-  check-data.js               validates the data in Node and prints counts
+  check-data.js               validates the data in Node, checks country coverage, prints counts
 docs/previews/                screenshots used in this README
 ```
 
@@ -104,7 +104,7 @@ The code is in `src/js/panzoom.js` (gestures and controls) and `src/js/map.js` (
 Needs Node 14 or newer, nothing else.
 
 ```bash
-node tools/check-data.js   # optional: catches typos in the data
+node tools/check-data.js   # optional: catches typos, and any country with no stop
 node tools/build.js        # writes greater-eurasia-plan.html
 node tools/build.js out/my-copy.html   # or choose another output path
 ```
@@ -188,6 +188,7 @@ stops into that frame so Hawaii and Polynesia are not split. Flags go after the 
 | none | small dot, labelled only when zoomed in; the name shows on hover |
 
 There are no dates, budgets, or per-stage progress markers in the data on purpose.
+`tools/check-data.js` also keeps a list of the countries and territories each page should cover, and fails if one of them has no stop.
 
 **Rules:** stop names are looked up across all tabs and the first one wins, so two different places must not share a name
 (the repo uses `La Paz (Baja)`). Every branch needs at least one stage. `tools/check-data.js` enforces this.
@@ -209,7 +210,8 @@ After any change run `node tools/check-data.js`, then `node tools/build.js`.
 - **Add a page.** Add an object to `src/data/tabs.js`, give arcs `tab: "<id>"`, and add a copy of the stage file pattern. The nav, hash route and counts follow.
 - **Change a zoom view.** Edit `views` in `src/data/tabs.js`. The first view is the default and also sets the shape of the map box and the zoom limits; the box is `[lonMin, lonMax, latMin, latMax]`. Each view is a saved camera position for the pan/zoom, nothing more. For the Pacific, `lonMax` may be greater than 180 so the box crosses the date line in one piece. Stop coordinates stay ordinary degrees; `GEP.lonInView` in `shared.js` does the shift.
 - **Fix the map outline.** The land shapes in `src/data/land.js` are deliberately coarse. A polygon only a couple of degrees across is drawn as a fixed-size dot when it would otherwise be smaller than a few pixels, so atolls stay visible on the whole-Pacific view. Islands west of the date line are ordinary negative longitudes, same as stops.
-- **Update the date.** Edit `src/data/meta.js`. The "Before every leg" warning (Hormuz) is plain HTML in `index.html`.
+- **Update the date.** Edit `src/data/meta.js`.
+- **Cover a country.** Give it at least one stop, then add that stop name to the list for its page in `tools/check-data.js`. The check fails, and names the country, if the stop is missing.
 
 ## How the code fits together
 
@@ -254,8 +256,8 @@ Short version: no mapping software, no map tiles, no image editor and no framewo
 
 - **The map is a rough sketch, not to scale.** Outlines are hand-made and coarse, and coordinates are approximate. Do not navigate with it. On the Oceania page the view continues past 180° longitude, and very small islands are markers until you zoom in.
 - **Content is from memory.** Routes, border crossings and rail corridors are approximate. The Modern Silk Road arc lists
-  corridors and hubs but deliberately gives no opening dates or timetables.
-- **Deliberately left out:** Ukraine, Belarus, Moldova, and Libya. Algeria is reachable but the Morocco and Algeria border is closed.
+  corridors and hubs and gives no opening dates or timetables.
+- **Coverage.** The map aims to include every country in the area each page covers, and the notable territories that sit with them. It draws places. Whether to go anywhere is a separate, personal decision.
 - **Caspian crossing:** the Aktau and Baku link is by cargo ferry, and passenger service is limited.
 - **Dense areas drop labels.** On the whole-route Eurasia view some labels in Europe are hidden. Use a zoom view; hover any dot for its name.
 - **Phones:** the map fits the width, so the whole-route view is dense until you zoom; the map must be activated (tap it or Move map) before one finger pans.

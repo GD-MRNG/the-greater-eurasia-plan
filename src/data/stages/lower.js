@@ -26,8 +26,8 @@ s("lower","","Pakistan","Lahore, Islamabad and the hills.",
  "Wagah 74.57 31.6 ~; Lahore 74.34 31.55 *; Multan 71.47 30.2 ~; Karachi 67.0 24.86 ~; Taxila 72.83 33.75 ~; Islamabad 73.05 33.68 *","Iran, by air or overland");
 s("lower","","Iran","Persian cities, gardens and ruins.",
  "Tehran 51.39 35.69 *; Kashan 51.45 33.98 ~; Isfahan 51.68 32.65 *; Yazd 54.37 31.9 *; Shiraz 52.53 29.59 *; Persepolis 52.89 29.93 ~; Bandar Abbas 56.27 27.19","On to the Gulf");
-s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. The Strait of Hormuz was closed as of 3 Nov 2026.",
- "Dubai 55.3 25.2 *; Abu Dhabi 54.37 24.45; Doha 51.53 25.29 ~; Al Ain 55.76 24.2 ~; Muscat 58.4 23.59 *; Nizwa 57.53 22.93 ~; Wahiba Sands 58.8 22.4 ~; Salalah 54.1 17.02 ~","Jordan by air, or back to Istanbul");
+s("lower","","The Gulf states","Kuwait and Bahrain, then Qatar, the UAE and Oman.",
+ "Kuwait City 47.98 29.38 *; Manama 50.59 26.23 *; Doha 51.53 25.29 *; Dubai 55.3 25.2 *; Abu Dhabi 54.37 24.45; Al Ain 55.76 24.2 ~; Muscat 58.4 23.59 *; Nizwa 57.53 22.93 ~; Wahiba Sands 58.8 22.4 ~; Salalah 54.1 17.02 ~","Jordan by air, or back to Istanbul");
 s("lower","l-borneo","Borneo","Mountains and rainforest.",
  "Kuching 110.35 1.55 *; Brunei 114.94 4.89; Mount Kinabalu 116.56 6.08 ~; Kota Kinabalu 116.07 5.98 *");
 s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, optional.",
@@ -42,7 +42,7 @@ s("lower","l-north-thai","Northern Thailand and the slow boat","Temples, then th
 s("lower","l-yunnan","West Yunnan and Sichuan","Old towns and gorges, out to Chengdu.",
  "Dali 100.23 25.6 *; Lijiang 100.23 26.87 *; Tiger Leaping Gorge 100.1 27.2 ~; Shangri-La 99.7 27.83; Chengdu 104.07 30.67 *; Leshan Giant Buddha 103.77 29.55 ~; Chongqing 106.55 29.56 ~");
 s("lower","l-south-china","Guangxi, Guangdong and Hong Kong","Karst country and the south coast.",
- "Nanning 108.37 22.82; Guilin 110.29 25.27 *; Yangshuo 110.5 24.78 ~; Zhangjiajie 110.48 29.12 ~; Guangzhou 113.26 23.13; Hong Kong 114.17 22.32 *");
+ "Nanning 108.37 22.82; Guilin 110.29 25.27 *; Yangshuo 110.5 24.78 ~; Zhangjiajie 110.48 29.12 ~; Guangzhou 113.26 23.13; Macau 113.54 22.19 *; Hong Kong 114.17 22.32 *");
 s("lower","l-rajasthan","Rajasthan loop","Forts, palaces and desert.",
  "Jaipur 75.79 26.91 *; Pushkar 74.55 26.49 ~; Jodhpur 73.02 26.3; Udaipur 73.7 24.58 *; Jaisalmer 70.92 26.92 ~");
 s("lower","l-himalaya","Himalayan India","Hills and high passes.",
@@ -55,6 +55,22 @@ s("lower","l-nepal","Nepal","Kathmandu, Pokhara and the Himalaya.",
  "Lumbini 83.28 27.47 ~; Chitwan 84.4 27.5 ~; Pokhara 83.99 28.21 *; Kathmandu 85.32 27.72 *; Everest Base Camp trek 86.85 28.0 ~");
 s("lower","l-nw-iran","Northwest Iran and the Caucasus link","Tabriz and the road to the Caucasus.",
  "Tabriz 46.29 38.08 *; Kandovan 46.2 37.8 ~; Jolfa 45.63 38.95");
-s("lower","l-levant","Levant branch: Jordan","Petra, Wadi Rum and the Dead Sea.",
+s("lower","l-levant","Levant: Jordan","Petra, Wadi Rum and the Dead Sea.",
  "Amman 35.93 31.95 *; Jerash 35.9 32.28 ~; Dead Sea 35.5 31.5 ~; Petra 35.44 30.33 *; Wadi Rum 35.42 29.58 ~; Aqaba 35.0 29.53 +","Aqaba to Nuweiba ferry into Egypt");
+s("lower","l-levant","Israel and Palestine","Cities and towns from the Gulf of Aqaba to the Mediterranean.",
+ "Eilat 34.95 29.56; Jerusalem 35.21 31.78 *; Bethlehem 35.2 31.7; Hebron 35.1 31.53 ~; Jericho 35.46 31.86 ~; Ramallah 35.21 31.9 *; Nablus 35.26 32.22 ~; Nazareth 35.3 32.7 ~; Haifa 34.99 32.82; Acre 35.08 32.93 ~; Tel Aviv 34.78 32.08 *; Gaza 34.47 31.5 ~*");
+s("lower","l-levant","Lebanon","The coast and the Bekaa.",
+ "Beirut 35.5 33.89 *; Byblos 35.65 34.12; Tripoli (Lebanon) 35.84 34.44; Baalbek 36.2 34.01 *; Tyre 35.2 33.27 ~");
+s("lower","l-levant","Syria","Damascus, Aleppo and the desert cities.",
+ "Damascus 36.28 33.51 *; Bosra 36.48 32.52 ~; Homs 36.72 34.73; Palmyra 38.27 34.56 *; Aleppo 37.16 36.2 *; Latakia 35.78 35.53 ~");
+s("lower","l-levant","Iraq","The Tigris and Euphrates, from Baghdad to the north and the south.",
+ "Baghdad 44.37 33.32 *; Babylon 44.42 32.54 ~; Najaf 44.33 32.0; Karbala 44.02 32.62 ~; Basra 47.78 30.51; Erbil 44.01 36.19 *; Mosul 43.14 36.34; Samarra 43.87 34.2 ~");
+s("lower","l-bhutan","Bhutan","From the plains up into the valleys.",
+ "Phuentsholing 89.39 26.86; Paro 89.42 27.43 *; Thimphu 89.64 27.47 *; Punakha 89.87 27.59; Trongsa 90.51 27.5 ~");
+s("lower","l-maldives","Maldives","The atolls south-west of Sri Lanka.",
+ "Malé 73.51 4.18 *; Maafushi 73.49 3.94 ~; Hithadhoo 73.08 -0.6");
+s("lower","l-arabia","Saudi Arabia","The Gulf coast, the capital and the western cities.",
+ "Dammam 50.1 26.43; Riyadh 46.72 24.69 *; AlUla 37.92 26.62 *; Medina 39.61 24.47; Jeddah 39.17 21.54 *; Mecca 39.83 21.42; Abha 42.51 18.22 ~");
+s("lower","l-yemen","Yemen","The south coast, the highlands and Socotra.",
+ "Mukalla 49.1 14.54; Shibam 48.63 15.93 ~; Socotra 54.02 12.65 ~; Aden 45.03 12.79 *; Sana'a 44.21 15.35 *; Al Hudaydah 42.95 14.8");
 })(GEP.stage);

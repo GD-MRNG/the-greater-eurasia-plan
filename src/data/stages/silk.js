@@ -21,7 +21,7 @@ s("silk","","Aral Sea and Aktau: the Caspian gateway","Across the western Kazakh
 s("silk","","Azerbaijan: Baku","The Caspian port at the other end of the Middle Corridor.",
  "Baku 49.87 40.41 *^; Gobustan 49.4 40.1 ~; Sheki 47.19 41.19 ~; Ganja 46.36 40.68 +");
 s("silk","","Georgia: Tbilisi to Batumi","Wine, mountains and the Black Sea.",
- "Tbilisi 44.8 41.72 *^; Mtskheta 44.72 41.84 ~; Kazbegi 44.64 42.66 ~; Sighnaghi 45.92 41.62 ~; Kutaisi 42.7 42.25; Mestia 42.73 43.05 ~; Batumi 41.64 41.65 +","On to Kars on the Baku–Tbilisi–Kars rail corridor, by train where it runs or by road");
+ "Tbilisi 44.8 41.72 *^; Mtskheta 44.72 41.84 ~; Kazbegi 44.64 42.66 ~; Sighnaghi 45.92 41.62 ~; Kutaisi 42.7 42.25; Mestia 42.73 43.05 ~; Batumi 41.64 41.65 +; Sukhumi 41.02 43.0 ~","On to Kars on the Baku–Tbilisi–Kars rail corridor, by train where it runs or by road");
 s("silk","","Türkiye: Kars to Cappadocia","Eastern Anatolia and the heart of the plateau.",
  "Kars 43.1 40.6 *^; Ani 43.57 40.51 ~; Doğubayazıt 44.08 39.55 ~; Erzurum 41.27 39.9; Sivas 37.02 39.75; Göreme 34.83 38.64 *");
 s("silk","","Türkiye: Ankara and Istanbul","Through the capital to Istanbul, where Marmaray crosses under the Bosphorus into Europe.",
@@ -38,7 +38,7 @@ s("silk","s-astana","Kazakh heartland: Astana","The new capital and the steppe."
  "Karaganda 73.1 49.8; Astana 71.43 51.17 *^; Burabay 70.3 53.1 ~");
 s("silk","s-turkmen","Turkmenistan branch","Desert gate, Merv and the Turkmenbashi port on the Caspian.",
  "Konye-Urgench 59.15 42.32; Darvaza 58.4 40.25 *; Ashgabat 58.38 37.95 *; Nisa 58.2 37.97 ~; Merv 62.18 37.66 ~; Turkmenbashi 52.97 40.02 *^");
-s("silk","s-armenia","Armenia loop","A loop out of Tbilisi. The Armenia–Türkiye land border is not an open crossing.",
+s("silk","s-armenia","Armenia loop","A loop out of Tbilisi through the lake and the south.",
  "Dilijan 44.86 40.74 ~; Lake Sevan 45.0 40.55 ~; Yerevan 44.51 40.18 *; Garni and Geghard 44.73 40.11 ~; Echmiadzin 44.29 40.16 ~; Tatev 46.25 39.38 ~; Gyumri 43.85 40.79");
 s("silk","s-black-sea","Black Sea Türkiye","Mountain monasteries and the northern coast.",
  "Trabzon 39.72 41.0 *; Sumela Monastery 39.66 40.69 ~; Amasya 35.83 40.65; Safranbolu 32.69 41.25 +; Amasra 32.39 41.75 ~");
@@ -46,4 +46,8 @@ s("silk","s-southeast","Southeast Türkiye","Mosaics, Göbekli Tepe and Nemrut."
  "Gaziantep 37.38 37.07 +; Mount Nemrut 38.74 37.98 ~; Şanlıurfa 38.79 37.16; Göbekli Tepe 38.92 37.22 ~; Mardin 40.74 37.31 *; Diyarbakır 40.22 37.91; Van 43.38 38.5 +");
 s("silk","s-aegean","Aegean and Mediterranean Türkiye","Troy, Ephesus and the turquoise coast.",
  "Gallipoli 26.35 40.4 ~; Çanakkale 26.4 40.15; Troy 26.24 39.96 ~; İzmir 27.14 38.42 +; Ephesus 27.34 37.94 ~; Pamukkale 29.12 37.92 ~; Bodrum 27.43 37.04; Antalya 30.7 36.9 *");
+s("silk","s-afghan","Afghanistan","Across the Amu Darya and through the Hindu Kush.",
+ "Termez 67.28 37.22 +; Mazar-i-Sharif 67.11 36.71 *; Balkh 66.9 36.76 ~; Herat 62.2 34.34 ~*; Bamiyan 67.82 34.82; Kabul 69.17 34.53 *; Kandahar 65.72 31.61 ~; Jalalabad 70.45 34.43");
+s("silk","s-cyprus","Cyprus","The island south of Anatolia.",
+ "Paphos 32.42 34.76 *; Limassol 33.04 34.68; Nicosia 33.36 35.17 *; Kyrenia 33.32 35.34; Famagusta 33.94 35.12");
 })(GEP.stage);
