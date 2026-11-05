@@ -7,14 +7,14 @@
  *   GEP.map      the SVG map renderer              (js/map.js)
  *   GEP.views    HTML renderers for the page       (js/views.js)
  *
- * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl().
+ * Exposes: GEP, GEP.stage(), GEP.$(), GEP.esc(), GEP.svgEl(), GEP.lonInView().
  * Depends on: nothing.
  *
  * ---------------------------------------------------------------------------
  * DATA SCHEMA (the one place it is documented; README.md mirrors it)
  * ---------------------------------------------------------------------------
  *
- * TAB      GEP.data.tabs[tabId]            tabId: "eurasia" | "africa" | "americas"
+ * TAB      GEP.data.tabs[tabId]            tabId: "eurasia" | "africa" | "americas" | "oceania"
  *   label      text in the top nav
  *   blurb      one line shown when other pages link here
  *   g          [c1, c2, c3] gradient colours for the page title
@@ -35,7 +35,10 @@
  *
  * ENTRY    GEP.data.entries[]              ways between pages, drawn as white diamonds
  *   at         [lon, lat]
- *   eurasia | africa | americas   label text; the diamond shows on every tab that has a label
+ *   eurasia | africa | americas | oceania   label text; the diamond shows on every tab that has a label
+ *
+ * A view box may run past longitude 180 so the Pacific sits in one piece (see GEP.lonInView).
+ * Stop coordinates themselves stay ordinary degrees: west of Greenwich is negative.
  *
  * STAGE    one call per stage, in route order, in src/data/stages/*.js:
  *   s(arc, branch, name, note, stops, onward)
@@ -100,5 +103,29 @@ const GEP = {
     for (const key in attrs || {}) node.setAttribute(key, attrs[key]);
     if (parent) parent.appendChild(node);
     return node;
+  },
+
+  /**
+   * Longitude to draw for a view that may cross the 180° meridian.
+   * If adding or subtracting 360 brings `lon` inside the view box (plus a small margin, so a
+   * point just outside still pans with the map), that value is used. Otherwise `lon` is left
+   * as written, so continents outside the box are not dragged across the date line.
+   * Stop coordinates stay ordinary degrees; only the view box (tabs.js) runs past ±180.
+   * @param {number} lon
+   * @param {number[]} bounds  [lonMin, lonMax, latMin, latMax]
+   * @returns {number}
+   */
+  lonInView(lon, bounds) {
+    const lonMin = bounds[0], lonMax = bounds[1];
+    const margin = 8;
+    const lo = lonMin - margin, hi = lonMax + margin;
+    const mid = (lonMin + lonMax) / 2;
+    let best = lon, bestDist = Math.abs(lon - mid);
+    [lon + 360, lon - 360].forEach(cand => {
+      if (cand < lo || cand > hi) return;
+      const dist = Math.abs(cand - mid);
+      if (dist < bestDist) { best = cand; bestDist = dist; }
+    });
+    return best;
   }
 };

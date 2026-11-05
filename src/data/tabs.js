@@ -1,6 +1,8 @@
 /**
  * Page (tab) definitions: hero text, zoom views and faint region names.
  * `blurb` is the one-liner shown when other pages link here. Edit this file to change a tab's wording or add a zoom view.
+ * A view box is [lonMin, lonMax, latMin, latMax]. Oceania's boxes run past longitude 180 so the
+ * Pacific is one continuous sketch; stop coordinates stay ordinary degrees (see shared.js).
  * Depends on: shared.js.  Exposes: GEP.data.tabs.
  */
 GEP.data.tabs = {
@@ -50,5 +52,23 @@ GEP.data.tabs = {
       {n:"South America", b:[-84,-32,-56,14]}
     ],
     regions:[["NORTH AMERICA",-100,50],["MEXICO",-102,24],["SOUTH AMERICA",-60,-12],["PACIFIC",-150,38],["ATLANTIC",-42,25]]
+  },
+  oceania:{label:"Oceania", g:["#4cc9f0","#f4a261","#c77dff"], blurb:"Four arcs across the islands east of Bali, Australia, New Zealand and the Pacific.",
+    eyebrow:"Route overview",
+    title:'The <span>Oceania</span> arcs',
+    sub:"Four arcs cover the islands east of Bali, Australia, New Zealand and the Pacific to Hawaii. The sketch continues across the date line, so Polynesia stays in one piece.",
+    chips:[["4","arcs"],["Span:","Bali to Hawaii"]],
+    mapHint:"Solid lines are each arc's trunk, dashed lines are branches. The view crosses the date line, so Samoa and Hawaii are not split. Hollow dots are side trips, big dots are labelled. Small islands stay visible as a marker when zoomed out. Use the view buttons to zoom.",
+    views:[
+      {n:"Whole of Oceania", b:[92,238,-50,28]},
+      {n:"Eastern Indonesia and New Guinea", b:[114,156,-12,6]},
+      {n:"Australia", b:[112,154,-45,-9]},
+      {n:"New Zealand", b:[165,186,-48,-28]},
+      {n:"Melanesia", b:[156,180,-24,-4]},
+      {n:"Polynesia", b:[174,228,-28,-4]},
+      {n:"Micronesia", b:[130,192,-5,18]},
+      {n:"Hawaii", b:[198,208,18.2,23.6]}
+    ],
+    regions:[["AUSTRALIA",125,-27],["NEW GUINEA",138,-5.2],["NEW ZEALAND",162,-40],["MELANESIA",162,-14],["MICRONESIA",150,4],["POLYNESIA",196,-10],["HAWAII",214,26]]
   }
 };

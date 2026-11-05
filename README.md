@@ -1,6 +1,6 @@
 # The Greater Eurasia Plan: travel dashboard
 
-A single-page route dashboard for exploring Eurasia, Africa and the Americas. It shows each region as a set of
+A single-page route dashboard for exploring Eurasia, Africa, the Americas, and Oceania and the Pacific. It shows each region as a set of
 **arcs** (a trunk plus named branches), every stop as a dot on an inline SVG sketch map you can pan and zoom,
 and every stage as a searchable, filterable card.
 
@@ -40,14 +40,14 @@ src/
     map.js                    camera and projection, and the SVG renderer: land, routes, dots, labels
     panzoom.js                pan and zoom gestures, +/-/Reset/Move-map controls, zoom limits
     views.js                  renders nav, hero, stats, arc cards, filters, stage cards, shared cards
-    main.js                   UI state, hash routing (#eurasia, #africa, #americas), click and search handlers
+    main.js                   UI state, hash routing (#eurasia, #africa, #americas, #oceania), click and search handlers
   data/                       everything you edit to change the content
     meta.js                   "Last updated" text
-    tabs.js                   the three pages: title text, chips, preset zoom views, map region names
-    arcs.js                   the 11 arcs: code, name, colour, route summary
+    tabs.js                   the four pages: title text, chips, preset zoom views, map region names
+    arcs.js                   the 15 arcs: code, name, colour, route summary
     branches.js               the named branches of each arc
     entries.js                white diamonds: where one page hands over to another
-    land.js                   hand-drawn coarse land and water outlines for the map
+    land.js                   hand-drawn coarse land and water outlines for the map, including Australia, New Zealand, New Guinea and the Pacific islands
     stages/
       upper.js                Eurasia: the upper arc (Japan, Korea, China, Mongolia, Russia)
       silk.js                 Eurasia: the Modern Silk Road arc (Xi'an to Istanbul, Karakoram link)
@@ -55,6 +55,7 @@ src/
       europe.js               Eurasia: Europe, from Poland and the Baltics to Lisbon, with Greece and Türkiye
       africa.js               Africa: four arcs (north, east, south, west)
       americas.js             Americas: North, Central and South America arcs
+      oceania.js              Oceania: eastern Indonesia and New Guinea, Australia, New Zealand, the Pacific
 tools/
   build.js                    bundles index.html and src/ into greater-eurasia-plan.html
   check-data.js               validates the data in Node and prints counts
@@ -70,7 +71,7 @@ No install step. Pick one:
 
 After editing a file under `src/`, refresh the browser. Edits do not need a build; only `greater-eurasia-plan.html` needs rebuilding.
 
-Links to a page and zoom preset: `#eurasia`, `#africa`, `#americas`, or `#africa/2` for the third preset of that page.
+Links to a page and zoom preset: `#eurasia`, `#africa`, `#americas`, `#oceania`, or `#africa/2` for the third preset of that page. `#oceania/5` opens the Polynesia preset.
 
 ## Pan and zoom
 
@@ -146,10 +147,10 @@ There are five kinds of record.
 
 | Record | File | Fields |
 |---|---|---|
-| **Tab** | `src/data/tabs.js` | `label`, `blurb` (one line shown in other pages' "ways between" card), `g` (3 title-gradient colours), `eyebrow`, `title`, `sub`, `chips`, `mapHint`, `views` (zoom boxes `{n, b:[lonMin, lonMax, latMin, latMax]}`), `regions` (faint map names) |
+| **Tab** | `src/data/tabs.js` | `label`, `blurb` (one line shown in other pages' "ways between" card), `g` (3 title-gradient colours), `eyebrow`, `title`, `sub`, `chips`, `mapHint`, `views` (zoom boxes `{n, b:[lonMin, lonMax, latMin, latMax]}`), `regions` (faint map names). A box may use longitude past 180 so the Pacific is one continuous view |
 | **Arc** | `src/data/arcs.js` | `tab`, `code` (letters used in stage codes), `name`, `color`, `route` (summary), optional `from` (stop the trunk starts from) |
 | **Branch** | `src/data/branches.js` | `arc`, `name`, `from` (stop where it leaves), optional `to` (stop where it rejoins) |
-| **Entry** | `src/data/entries.js` | `at: [lon, lat]` plus a label per tab that shows the diamond |
+| **Entry** | `src/data/entries.js` | `at: [lon, lat]` plus a label per tab that shows the diamond (`eurasia`, `africa`, `americas`, `oceania`) |
 | **Stage** | `src/data/stages/*.js` | `arc`, `branch` (`""` = trunk), `name`, `note`, `stops`, `onward` |
 
 A stage is one call, along the route:
@@ -174,7 +175,9 @@ s("silk", "s-kkh", "Karakoram Highway and the CPEC link", "From Kashgar over the
 ```
 
 **Stop strings** are `"Name lon lat flags; Name lon lat flags; ..."`: longitude first, then latitude, in decimal degrees
-(west and south are negative). Flags go after the latitude and can be combined:
+(west and south are negative). Keep longitudes in the ordinary range, including places west of the date line
+(Honolulu is about `-157`, not `203`). The Oceania view boxes in `tabs.js` run past 180°; the map shifts those
+stops into that frame so Hawaii and Polynesia are not split. Flags go after the latitude and can be combined:
 
 | Flag | Meaning |
 |---|---|
@@ -204,8 +207,8 @@ After any change run `node tools/check-data.js`, then `node tools/build.js`.
   Add it to a stage file of the right tab, or create a new file and add a `<script>` tag for it in `index.html`, after `shared.js`.
 - **Remove an arc.** Delete it from `arcs.js` and delete its stages and branches.
 - **Add a page.** Add an object to `src/data/tabs.js`, give arcs `tab: "<id>"`, and add a copy of the stage file pattern. The nav, hash route and counts follow.
-- **Change a zoom view.** Edit `views` in `src/data/tabs.js`. The first view is the default and also sets the shape of the map box and the zoom limits; the box is `[lonMin, lonMax, latMin, latMax]`. Each view is a saved camera position for the pan/zoom, nothing more.
-- **Fix the map outline.** The land shapes in `src/data/land.js` are deliberately coarse.
+- **Change a zoom view.** Edit `views` in `src/data/tabs.js`. The first view is the default and also sets the shape of the map box and the zoom limits; the box is `[lonMin, lonMax, latMin, latMax]`. Each view is a saved camera position for the pan/zoom, nothing more. For the Pacific, `lonMax` may be greater than 180 so the box crosses the date line in one piece. Stop coordinates stay ordinary degrees; `GEP.lonInView` in `shared.js` does the shift.
+- **Fix the map outline.** The land shapes in `src/data/land.js` are deliberately coarse. A polygon only a couple of degrees across is drawn as a fixed-size dot when it would otherwise be smaller than a few pixels, so atolls stay visible on the whole-Pacific view. Islands west of the date line are ordinary negative longitudes, same as stops.
 - **Update the date.** Edit `src/data/meta.js`. The "Before every leg" warning (Hormuz) is plain HTML in `index.html`.
 
 ## How the code fits together
@@ -229,7 +232,7 @@ Short version: no mapping software, no map tiles, no image editor and no framewo
 
 **The map is SVG generated by JavaScript.** SVG is the browser's built-in vector drawing format: lines, circles, polygons and text described as tags. `src/js/map.js` builds those tags on the fly from the data:
 
-- Each place is just a longitude and latitude in the data files. A simple projection in `map.js` (equirectangular, with latitude stretched by the cosine of the view's middle latitude so shapes look roughly right) turns lon/lat into x/y pixels.
+- Each place is just a longitude and latitude in the data files. A simple projection in `map.js` (equirectangular, with latitude stretched by the cosine of the view's middle latitude so shapes look roughly right) turns lon/lat into x/y pixels. Where a view box crosses the date line, longitudes are shifted into that box first, so the Pacific is not drawn as two halves.
 - Arc trunks are SVG `<path>` lines joining their stops in order, in the arc's colour. Branches are thinner dashed paths. Stops are `<circle>` dots, side trips are hollow circles, and modern Silk Road hubs get a gold ring.
 - Labels are SVG `<text>`. They are placed greedily, most important first, and any label that would overlap another is dropped (the dot keeps a hover title). Zooming in re-renders at the new scale, so more labels fit.
 - The coastlines in `src/data/land.js` are coarse polygons typed in by hand as lists of "lon,lat" points, from general knowledge of where coasts lie. They are not survey data or downloaded shapefiles, which is why some coastal cities sit slightly off the coast.
@@ -249,7 +252,7 @@ Short version: no mapping software, no map tiles, no image editor and no framewo
 
 ## Known limitations
 
-- **The map is a rough sketch, not to scale.** Outlines are hand-made and coarse, and coordinates are approximate. Do not navigate with it.
+- **The map is a rough sketch, not to scale.** Outlines are hand-made and coarse, and coordinates are approximate. Do not navigate with it. On the Oceania page the view continues past 180° longitude, and very small islands are markers until you zoom in.
 - **Content is from memory.** Routes, border crossings and rail corridors are approximate. The Modern Silk Road arc lists
   corridors and hubs but deliberately gives no opening dates or timetables.
 - **Deliberately left out:** Ukraine, Belarus, Moldova, and Libya. Algeria is reachable but the Morocco and Algeria border is closed.

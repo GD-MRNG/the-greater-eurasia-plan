@@ -31,7 +31,8 @@ s("lower","","Gulf: UAE and Oman","Dubai and Abu Dhabi, then Oman. The Strait of
 s("lower","l-borneo","Borneo","Mountains and rainforest.",
  "Kuching 110.35 1.55 *; Brunei 114.94 4.89; Mount Kinabalu 116.56 6.08 ~; Kota Kinabalu 116.07 5.98 *");
 s("lower","l-indonesia","Indonesia island branch","Sumatra to Bali, optional.",
- "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~");
+ "Medan 98.67 3.6; Lake Toba 98.7 2.6 ~; Padang 100.35 -0.95; Jakarta 106.85 -6.2; Yogyakarta 110.37 -7.8 *; Borobudur 110.2 -7.6 ~; Mount Bromo 112.95 -7.94 ~; Ubud 115.26 -8.5 *; Komodo 119.5 -8.55 ~",
+ "East of Bali continues on the Oceania page");
 s("lower","l-phil","Philippines island branch","Optional island hopping.",
  "Palawan El Nido 119.4 11.18 ~; Cebu 123.9 10.3; Manila 120.98 14.6 *; Banaue 121.06 16.92 ~");
 s("lower","l-andaman","Andaman coast","Thailand's west coast islands.",

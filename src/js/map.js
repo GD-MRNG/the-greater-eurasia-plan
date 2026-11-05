@@ -10,6 +10,11 @@
  * a readable pixel size, and a higher zoom reveals more labels (see LABEL_MIN_SCALE). Labels are placed
  * greedily, biggest first, and anything that would overlap is dropped (the dot keeps its hover title).
  *
+ * A tab whose default view runs past longitude 180 (Oceania) is drawn in that continuous frame.
+ * Stops, lines, land and diamonds are shifted with GEP.lonInView so the date line is not a seam.
+ * A land polygon smaller than a few pixels, and smaller than a couple of degrees, is drawn as a
+ * dot of fixed size so atolls stay visible when the whole Pacific is on screen.
+ *
  * Exposes: GEP.map = { viewportFor, fitCamera, projector, draw }
  * Depends on: shared.js, model.js, data/land.js, data/tabs.js, data/arcs.js, data/entries.js.
  */
@@ -24,6 +29,9 @@ GEP.map = (function () {
   const LABEL_MIN_SCALE = 8;     // px per degree of longitude from which plain (unflagged) stops may be labelled
   const GRID_STEPS = [30, 20, 10, 5, 2, 1];   // candidate graticule spacings in degrees
   const GRID_MIN_PX = 60;        // keep graticule lines at least this far apart
+  const ISLAND_MIN_PX = 8;       // a land shape smaller than this on screen (and geographically small) becomes a marker
+  const ISLAND_MARK_R = 4;       // radius of that marker, in px
+  const ISLAND_MAX_DEG = 2;      // only shapes spanning fewer degrees than this are eligible, so a continent is never replaced
 
   /* ---------- viewport, camera and projection ---------- */
 
@@ -72,12 +80,56 @@ GEP.map = (function () {
 
   /* ---------- background: land, graticule, region names ---------- */
 
-  function polygon(svg, proj, text, fill) {
-    const points = text.trim().split(/\s+/).map(pair => {
-      const [lon, lat] = pair.split(",").map(Number);
-      return proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1);
-    }).join(" ");
-    svgEl("polygon", {points, fill, stroke: COAST, "stroke-width": 1, "stroke-linejoin": "round"}, svg);
+  /**
+   * Parse a "lon,lat lon,lat" ring, unwrap it so neighbours stay within 180° of each other,
+   * then shift the whole ring into the tab's default view when that crosses the date line.
+   * One shift for the ring (not per point) keeps a continent in one piece.
+   * @returns {number[][]} [lon, lat] pairs in the view's frame
+   */
+  function ringForView(text, bounds) {
+    const pairs = text.trim().split(/\s+/).map(pair => pair.split(",").map(Number));
+    if (!pairs.length) return [];
+    const ring = [[pairs[0][0], pairs[0][1]]];
+    for (let i = 1; i < pairs.length; i++) {
+      let lon = pairs[i][0];
+      const prev = ring[i - 1][0];
+      while (lon - prev > 180) lon -= 360;
+      while (prev - lon > 180) lon += 360;
+      ring.push([lon, pairs[i][1]]);
+    }
+    const mean = ring.reduce((sum, p) => sum + p[0], 0) / ring.length;
+    const shift = GEP.lonInView(mean, bounds) - mean;
+    return shift ? ring.map(([lon, lat]) => [lon + shift, lat]) : ring;
+  }
+
+  /** Draw one land or water ring. Tiny islands become a fixed-size marker so they survive the overview. */
+  function drawPolygon(svg, proj, ring, fill, markSmall) {
+    if (ring.length < 3) return;
+    const pts = ring.map(([lon, lat]) => [proj.x(lon), proj.y(lat)]);
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    ring.forEach(([lon, lat], i) => {
+      const [x, y] = pts[i];
+      if (x < minX) minX = x; if (x > maxX) maxX = x;
+      if (y < minY) minY = y; if (y > maxY) maxY = y;
+      if (lon < minLon) minLon = lon; if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+    });
+    const smallOnScreen = maxX - minX < ISLAND_MIN_PX && maxY - minY < ISLAND_MIN_PX;
+    const smallOnEarth = maxLon - minLon < ISLAND_MAX_DEG && maxLat - minLat < ISLAND_MAX_DEG;
+    if (markSmall && smallOnScreen && smallOnEarth) {
+      const cx = pts.reduce((sum, p) => sum + p[0], 0) / pts.length;
+      const cy = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
+      svgEl("circle", {
+        cx: cx.toFixed(1), cy: cy.toFixed(1), r: ISLAND_MARK_R,
+        fill, stroke: COAST, "stroke-width": 1
+      }, svg);
+      return;
+    }
+    svgEl("polygon", {
+      points: pts.map(([x, y]) => x.toFixed(1) + "," + y.toFixed(1)).join(" "),
+      fill, stroke: COAST, "stroke-width": 1, "stroke-linejoin": "round"
+    }, svg);
   }
 
   /** Graticule lines every N degrees, with N picked so the lines are never crowded. */
@@ -93,9 +145,9 @@ GEP.map = (function () {
     }
   }
 
-  function drawRegionNames(svg, proj, camera, viewport, tab) {
+  function drawRegionNames(svg, proj, camera, viewport, tab, mapLon) {
     (tab.regions || []).forEach(([text, lon, lat]) => {
-      const px = proj.x(lon), py = proj.y(lat);
+      const px = proj.x(mapLon(lon)), py = proj.y(lat);
       if (px < 0 || px > viewport.width || py < 0 || py > viewport.height) return;
       const node = svgEl("text", {
         x: px, y: py, "text-anchor": "middle", fill: "#8da0c0", "fill-opacity": 0.2,
@@ -106,11 +158,11 @@ GEP.map = (function () {
     });
   }
 
-  function drawBackground(svg, proj, camera, viewport, tab) {
-    land.forEach(p => polygon(svg, proj, p, "#1c2b47"));
-    water.forEach(p => polygon(svg, proj, p, SEA));
+  function drawBackground(svg, proj, camera, viewport, tab, bounds, mapLon) {
+    land.forEach(p => drawPolygon(svg, proj, ringForView(p, bounds), "#1c2b47", true));
+    water.forEach(p => drawPolygon(svg, proj, ringForView(p, bounds), SEA, false));
     drawGraticule(svg, proj, camera, viewport);
-    drawRegionNames(svg, proj, camera, viewport, tab);
+    drawRegionNames(svg, proj, camera, viewport, tab, mapLon);
   }
 
   /* ---------- selection dimming ---------- */
@@ -128,14 +180,14 @@ GEP.map = (function () {
 
   /* ---------- lines ---------- */
 
-  function drawRoute(svg, proj, selection, arcId, branchId) {
+  function drawRoute(svg, proj, mapLon, selection, arcId, branchId) {
     const points = GEP.model.pathOf(arcId, branchId);
     if (points.length < 2) return;
     const isBranch = branchId !== "";
     const emphasised = selection && selection.arc === arcId && selection.branch === branchId && isBranch;
     const opacity = opacityFor(selection, arcId, branchId);
     svgEl("polyline", {
-      points: points.map(([lon, lat]) => proj.x(lon).toFixed(1) + "," + proj.y(lat).toFixed(1)).join(" "),
+      points: points.map(([lon, lat]) => proj.x(mapLon(lon)).toFixed(1) + "," + proj.y(lat).toFixed(1)).join(" "),
       fill: "none", stroke: arcs[arcId].color,
       "stroke-width": isBranch ? (emphasised ? 3.4 : 2) : 3.6,
       "stroke-dasharray": isBranch ? "6 4" : "none",
@@ -145,10 +197,10 @@ GEP.map = (function () {
   }
 
   /** Branches first, then trunks on top. */
-  function drawRoutes(svg, proj, tabId, selection) {
+  function drawRoutes(svg, proj, mapLon, tabId, selection) {
     const arcList = GEP.model.arcIds(tabId);
-    arcList.forEach(arcId => GEP.model.branchIds(arcId).forEach(branchId => drawRoute(svg, proj, selection, arcId, branchId)));
-    arcList.forEach(arcId => drawRoute(svg, proj, selection, arcId, ""));
+    arcList.forEach(arcId => GEP.model.branchIds(arcId).forEach(branchId => drawRoute(svg, proj, mapLon, selection, arcId, branchId)));
+    arcList.forEach(arcId => drawRoute(svg, proj, mapLon, selection, arcId, ""));
   }
 
   /* ---------- stops ---------- */
@@ -157,12 +209,12 @@ GEP.map = (function () {
    * The unique stops (by name) that fall inside the box, each annotated with pixel position,
    * label tier (3 key/hub, 2 plus, 1 plain), dot radius and opacity.
    */
-  function visibleStops(proj, viewport, tabId, selection) {
+  function visibleStops(proj, mapLon, viewport, tabId, selection) {
     const seen = {}, result = [];
     GEP.model.stagesOfTab(tabId).forEach(stage => stage.pts.forEach(stop => {
       if (seen[stop.name]) return;
       seen[stop.name] = true;
-      const px = proj.x(stop.lon), py = proj.y(stop.lat);
+      const px = proj.x(mapLon(stop.lon)), py = proj.y(stop.lat);
       if (px < -4 || px > viewport.width + 4 || py < -4 || py > viewport.height + 4) return;
       const tier = (stop.key || stop.hub) ? 3 : stop.plus ? 2 : 1;
       result.push({
@@ -192,10 +244,10 @@ GEP.map = (function () {
   }
 
   /** Entries (ways between pages) that have a label on this tab and lie inside the box. */
-  function visibleEntries(proj, viewport, tabId) {
+  function visibleEntries(proj, mapLon, viewport, tabId) {
     return entries
       .filter(e => e[tabId])
-      .map(e => ({label: e[tabId], px: proj.x(e.at[0]), py: proj.y(e.at[1])}))
+      .map(e => ({label: e[tabId], px: proj.x(mapLon(e.at[0])), py: proj.y(e.at[1])}))
       .filter(e => e.px >= 0 && e.px <= viewport.width && e.py >= 0 && e.py <= viewport.height);
   }
 
@@ -273,6 +325,8 @@ GEP.map = (function () {
   function draw(container, tabId, camera, viewport, selection) {
     const tab = tabs[tabId];
     const proj = projector(camera, viewport);
+    const bounds = tab.views[0].b;
+    const mapLon = lon => GEP.lonInView(lon, bounds);
     const svg = svgEl("svg", {
       viewBox: `0 0 ${viewport.width} ${viewport.height}`, width: viewport.width, height: viewport.height,
       role: "img", "aria-label": tab.label + " map"
@@ -281,10 +335,10 @@ GEP.map = (function () {
     // Exposed for debugging and tests: the camera this render was drawn from.
     Object.assign(svg.dataset, {cx: camera.cx.toFixed(3), cy: camera.cy.toFixed(3), scale: camera.scale.toFixed(3)});
 
-    drawBackground(svg, proj, camera, viewport, tab);
-    drawRoutes(svg, proj, tabId, selection);
-    const shown = visibleStops(proj, viewport, tabId, selection);
-    const entryList = visibleEntries(proj, viewport, tabId);
+    drawBackground(svg, proj, camera, viewport, tab, bounds, mapLon);
+    drawRoutes(svg, proj, mapLon, tabId, selection);
+    const shown = visibleStops(proj, mapLon, viewport, tabId, selection);
+    const entryList = visibleEntries(proj, mapLon, viewport, tabId);
     drawStops(svg, shown);
     drawEntries(svg, entryList);
     drawLabels(svg, viewport, camera, shown, entryList);

@@ -85,5 +85,19 @@ GEP.data.branches = {
   "sa-argentina":{arc:"sa",name:"Argentina and Uruguay",from:"Tupiza"},
   "sa-brazil":{arc:"sa",name:"Brazil and the Atlantic coast",from:"Buenos Aires"},
   "sa-amazon":{arc:"sa",name:"Amazon river route",from:"Quito",to:"Belém"},
-  "sa-venezuela":{arc:"sa",name:"Venezuela and the Guianas",from:"Santa Marta",to:"Belém"}
+  "sa-venezuela":{arc:"sa",name:"Venezuela and the Guianas",from:"Santa Marta",to:"Belém"},
+  /* oceania */
+  "oi-sumba":{arc:"oi",name:"Sumba",from:"Labuan Bajo"},
+  "oi-kei":{arc:"oi",name:"Kei and Tanimbar",from:"Ambon"},
+  "oi-png-isles":{arc:"oi",name:"New Britain and Bougainville",from:"Lae"},
+  "au-centre":{arc:"au",name:"Red Centre",from:"Katherine",to:"Adelaide"},
+  "au-tasmania":{arc:"au",name:"Tasmania",from:"Melbourne"},
+  "nz-northland":{arc:"nz",name:"Northland",from:"Auckland"},
+  "nz-east":{arc:"nz",name:"East Cape",from:"Taupo"},
+  "nz-west":{arc:"nz",name:"West Coast",from:"Nelson",to:"Queenstown"},
+  "nz-stewart":{arc:"nz",name:"Stewart Island",from:"Te Anau"},
+  "nz-norfolk":{arc:"nz",name:"Norfolk Island",from:"Auckland"},
+  "pa-newcal":{arc:"pa",name:"New Caledonia",from:"Port Vila",to:"Nadi"},
+  "pa-micro":{arc:"pa",name:"Micronesia",from:"Sorong",to:"Honolulu"},
+  "pa-isles":{arc:"pa",name:"Wallis, Niue and Tokelau",from:"Apia"}
 };
