@@ -138,7 +138,7 @@ The repository root is the site. `index.html` already loads the modules from `sr
 5. **Update later.** Edit the files under `src/data/`, run `node tools/build.js`, then commit and push (`git add . && git commit -m "Update" && git push`) or
    upload the changed files again in the web UI. Pages republishes automatically.
 
-The site makes no external requests apart from three plain links to articles in the "A lens" card.
+The site makes no external requests.
 
 ## Data schema
 
